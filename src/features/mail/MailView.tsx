@@ -1,4 +1,5 @@
 import { useNavigation } from '@/hooks/useNavigation'
+import { useTranslationContext } from '@/i18n'
 import { PATHS } from '@/routes/paths'
 
 interface MailViewProps {
@@ -7,6 +8,7 @@ interface MailViewProps {
 
 const MailView = ({ folder }: MailViewProps) => {
   const { goTo } = useNavigation()
+  const { translate } = useTranslationContext()
 
   const goToInbox = () => {
     goTo(PATHS.inbox)
@@ -18,6 +20,7 @@ const MailView = ({ folder }: MailViewProps) => {
 
   return (
     <div>
+      <p>{translate('sidenav.inbox')}</p>
       <p>Current folder: {folder}</p>
       <div className="flex flex-row gap-2">
         <button onClick={goToInbox}>Go To Inbox</button>

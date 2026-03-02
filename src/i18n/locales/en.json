@@ -1,0 +1,8 @@
+{
+  "sidenav": {
+    "newMessage": "New Message",
+    "inbox": "Inbox",
+    "sent": "Sent",
+    "trash": "Trash"
+  }
+}
