@@ -9,7 +9,6 @@ export function useNavigation() {
   return {
     goTo: (path: RoutePath) => navigate(path),
     goBack: () => navigate(-1),
-    navigate,
     currentPath: location.pathname,
     params,
   }
