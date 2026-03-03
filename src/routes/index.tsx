@@ -4,6 +4,7 @@ import RootLayout from '@/layouts/RootLayout';
 
 const WelcomePage = lazy(() => import('@/features/welcome'));
 const MailView = lazy(() => import('@/features/mail/MailView'));
+const SpamDemo = lazy(() => import('@/features/spam-demo/SpamDemo'))
 
 export const routes: RouteObject[] = [
   {
@@ -21,6 +22,7 @@ export const routes: RouteObject[] = [
       },
       { path: 'inbox', element: <MailView folder="inbox" /> },
       { path: 'trash', element: <MailView folder="trash" /> },
+      { path: 'spam-demo', element: <SpamDemo folder = "demo"/>},
       {
         path: '*',
         element: <Navigate to="/inbox" replace />,
