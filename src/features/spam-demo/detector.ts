@@ -1,18 +1,16 @@
 import * as ort from 'onnxruntime-web';
-ort.env.wasm.wasmPaths = '/public/wasm/onnxruntime/';
-console.log(ort.env.wasm.wasmPaths)
 
 let sessionFull : any = null;
-let mergesPath : string = "public/vocab/merges_all_18k.txt";
-let vocabPath  : string  = "public/vocab/vocab_all_18k.json";
-let modelPath : string = "public/onnx/mail_180226_02.onnx";
+const mergesPath : string = "public/vocab/merges_all_18k.txt";
+const vocabPath  : string  = "public/vocab/vocab_all_18k.json";
+const modelPath : string = "public/onnx/mail_180226_02.onnx";
+const wasmPath: string = '/public/wasm/onnxruntime/';
 
+ort.env.wasm.wasmPaths = wasmPath;
 const LENTOKENS = 128;
 const finalVocab = await loadVocab(vocabPath);
 const vstr = await v2str(vocabPath);
-console.log("cpp vocab", vstr);
 const mstr = await m2str(mergesPath);
-console.log("cpp merges:", mstr);
 
 try {
   sessionFull = await ort.InferenceSession.create(modelPath, {
@@ -22,9 +20,14 @@ try {
 } catch (e) {
   console.error("Failed to load full model:", e);
 }
+const tensorial = new ort.Tensor("int64",new BigInt64Array(LENTOKENS),[1,LENTOKENS]);
+const atten =  new ort.Tensor('float32',new Float32Array(LENTOKENS),[1,LENTOKENS])
+const input_tensor = { 
+    input: tensorial,
+    attention: atten,
+};
 
-
-export async function loadTokenizer() {
+async function loadTokenizer() {
   return new Promise((resolve) => {
     const script = document.createElement('script')
     script.src = 'public/wasm/tokenizer/tokenizer.js'
@@ -40,7 +43,9 @@ export async function loadTokenizer() {
 }
 
 const tokenizer : any = await loadTokenizer()
-export async function loadVocab(path: string) {
+
+
+async function loadVocab(path: string) {
   const response = await fetch(path);
   let text = await response.text();
   text = text.slice(1,-1);
@@ -92,7 +97,7 @@ async function m2str(path: string) {
 }
 
 
-function runTokenizer(text: string) {
+function runTokenizer(text: string) :[BigInt64Array, Float32Array] {
   
   const vocabPtr = vstr.map(str => {
     const utf8Length = tokenizer.lengthBytesUTF8(str);
@@ -144,7 +149,7 @@ function runTokenizer(text: string) {
 
 function color(v: any) {
   const g = Math.round(255 * v);
-  return `rgb(0,0,${g})`;
+  return `rgb(${255-g},${255-g},255)`;
 }
 
 
@@ -161,18 +166,11 @@ export async function spamOrHam(message: string | undefined, result: any, explan
   if (message) {
     let messagec = message.replaceAll("\n"," ")
     console.time("Token");
-    console.log(messagec);
-    const [outputTokens, attention] =  runTokenizer(messagec);
+    const [outputTokens, atten] =  runTokenizer(messagec);
     console.timeEnd("Token")
-    console.log("Texto tokenizado:",outputTokens);
-    console.log("Mascara tokens:",attention);
     console.time("Tensor");
-    const tensorial = new ort.Tensor("int64",outputTokens,[1,LENTOKENS]);
-    const atten =  new ort.Tensor('float32',attention,[1,LENTOKENS])
-    const input_tensor = { 
-        input: tensorial,
-        attention: atten,
-    };
+    input_tensor.input.data.set(outputTokens);
+    input_tensor.attention.data.set(atten);
     console.timeEnd("Tensor")
     console.time("Inferencia")
     let running = null;
@@ -182,7 +180,6 @@ export async function spamOrHam(message: string | undefined, result: any, explan
     let relevancies;
     if (Object.values(running).length > 1){
       relevancies = running.saliencies.data;
-      console.log("Relevancies", relevancies);
     }
     console.log("Salida del modelo: ", spam);
     let s_result = "";
