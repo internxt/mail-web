@@ -1,70 +1,7 @@
-import { type LoginDetails } from '@internxt/sdk'
-import { CryptoService } from '../crypto/crypto.service'
-import { KeysService } from '../crypto/keys.service'
 import { SdkManager } from '../sdk.service'
-import type { LoginCredentials } from '@/types'
 
 export class AuthService {
   public static readonly instance: AuthService = new AuthService()
-
-  /**
-   * Login with user credentials and returns its tokens and properties
-   * @param email The user's email
-   * @param password The user's password
-   * @param twoFactorCode (Optional) The temporal two factor auth code
-   * @returns The user's properties and the tokens needed for auth
-   * @async
-   **/
-  public doLogin = async (
-    email: string,
-    password: string,
-    twoFactorCode?: string,
-  ): Promise<LoginCredentials> => {
-    const authClient = SdkManager.instance.getNewAuth()
-    const loginDetails: LoginDetails = {
-      email: email.toLowerCase(),
-      password: password,
-      tfaCode: twoFactorCode,
-    }
-
-    const data = await authClient.login(
-      loginDetails,
-      CryptoService.cryptoProvider,
-    )
-    const { user, token, newToken } = data
-    const { privateKey, publicKey } = user
-
-    const plainPrivateKeyInBase64 = privateKey
-      ? Buffer.from(
-          KeysService.instance.decryptPrivateKey(privateKey, password),
-        ).toString('base64')
-      : ''
-
-    if (privateKey) {
-      await KeysService.instance.assertPrivateKeyIsValid(privateKey, password)
-      await KeysService.instance.assertValidateKeys(
-        Buffer.from(plainPrivateKeyInBase64, 'base64').toString(),
-        Buffer.from(publicKey, 'base64').toString(),
-      )
-    }
-
-    const clearMnemonic = CryptoService.instance.decryptTextWithKey(
-      user.mnemonic,
-      password,
-    )
-
-    const clearUser = {
-      ...user,
-      mnemonic: clearMnemonic,
-      privateKey: plainPrivateKeyInBase64,
-    }
-    return {
-      user: clearUser,
-      token: token,
-      newToken: newToken,
-      mnemonic: clearMnemonic,
-    }
-  }
 
   /**
    * Checks from user's security details if it has enabled two factor auth
