@@ -1,7 +1,7 @@
 import { Button } from '@internxt/ui'
+import { useTranslationContext } from '@/i18n'
 import smallLogo from '../../assets/logos/small-logo.svg'
 import MailAppImage from '../../assets/images/welcome/welcome-page.webp'
-import { useTranslationContext } from '@/i18n'
 
 const WelcomePage = () => {
   const { translate } = useTranslationContext()

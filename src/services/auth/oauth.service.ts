@@ -8,7 +8,7 @@ import {
   type WebAuthParams,
 } from '@/types'
 import { AuthService } from './auth.service'
-import { ConfigService } from '../config/config.service'
+import { ConfigService } from '../config'
 
 export class OauthService {
   public static readonly instance: OauthService = new OauthService()

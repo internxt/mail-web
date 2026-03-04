@@ -1,4 +1,4 @@
-import { SdkManager } from '../sdk.service'
+import { SdkManager } from '../sdk'
 
 export class AuthService {
   public static readonly instance: AuthService = new AuthService()
