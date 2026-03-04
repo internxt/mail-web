@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { LocalStorageService } from '@/services/local-storage'
 import { PaymentsService } from '@/services/sdk/payments.service'
-import type { LoginCredentials } from '@/types'
+import type { LoginCredentials } from '@/types/oauth'
 import { OauthService } from '@/services/oauth/oauth.service'
 
 interface UseWebAuthProps {

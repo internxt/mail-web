@@ -5,10 +5,9 @@ import {
   type LoginCredentials,
   type WebAuthMessage,
   type WebAuthParams,
-} from '@/types'
+} from '@/types/oauth'
 import { UserService } from '../user/user.service'
 import { ConfigService } from '../config'
-import { LocalStorageService } from '../local-storage'
 import {
   AuthCancelledByUserError,
   AuthTimeoutError,
@@ -16,13 +15,14 @@ import {
   OpenAuthPopupError,
 } from './errors/oauth.errors'
 import type { UserSettings } from '@internxt/sdk/dist/shared/types/userSettings'
+import { LocalStorageService } from '../local-storage'
+
+const WEB_CLIENT_URL = ConfigService.instance.isProduction()
+  ? 'https://drive.internxt.com'
+  : 'http://localhost:3000'
 
 export class OauthService {
   public static readonly instance: OauthService = new OauthService()
-
-  private readonly WEB_CLIENT_URL = ConfigService.instance.isProduction()
-    ? 'https://drive.internxt.com'
-    : 'http://localhost:3000'
 
   private authPopup: Window | null = null
   private messageListener: ((event: MessageEvent) => void) | null = null
@@ -33,8 +33,8 @@ export class OauthService {
    */
   public get urls() {
     return {
-      login: `${this.WEB_CLIENT_URL}${WEB_AUTH_CONFIG.loginPath}?${WEB_AUTH_CONFIG.authOriginParam}`,
-      signup: `${this.WEB_CLIENT_URL}${WEB_AUTH_CONFIG.signupPath}?${WEB_AUTH_CONFIG.authOriginParam}`,
+      login: `${WEB_CLIENT_URL}${WEB_AUTH_CONFIG.loginPath}?${WEB_AUTH_CONFIG.authOriginParam}`,
+      signup: `${WEB_CLIENT_URL}${WEB_AUTH_CONFIG.signupPath}?${WEB_AUTH_CONFIG.authOriginParam}`,
     }
   }
 
@@ -214,22 +214,6 @@ export class OauthService {
   }
 
   /**
-   * Store tokens in localStorage
-   */
-  private storeTokens(newToken: string): void {
-    LocalStorageService.instance.setToken(newToken)
-  }
-
-  /**
-   * Fetch user data with provided tokens
-   */
-  private async fetchUserData() {
-    const { user } = await UserService.instance.refreshUserAndTokens()
-
-    return user
-  }
-
-  /**
    * Build login credentials response
    */
   private buildLoginCredentials(
@@ -258,9 +242,10 @@ export class OauthService {
     try {
       const mnemonic = this.decodeBase64Param(params.mnemonic)
       const newToken = this.decodeBase64Param(params.newToken)
-      this.storeTokens(newToken)
 
-      const user = await this.fetchUserData()
+      LocalStorageService.instance.setToken(newToken)
+
+      const user = await UserService.instance.getUser()
 
       return this.buildLoginCredentials(
         user as unknown as LoginCredentials['user'],

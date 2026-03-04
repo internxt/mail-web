@@ -35,10 +35,6 @@ export const WEB_AUTH_MESSAGE_TYPES = {
   ERROR: 'INTERNXT_AUTH_ERROR',
 } as const
 
-export const WEB_AUTH_STORAGE_KEYS = {
-  NEW_TOKEN: 'xNewToken',
-} as const
-
 export const WEB_AUTH_CONFIG: WebAuthConfig = {
   popupWidth: 500,
   popupHeight: 700,
