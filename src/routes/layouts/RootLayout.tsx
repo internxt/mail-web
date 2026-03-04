@@ -1,5 +1,5 @@
-import { Outlet } from 'react-router-dom'
-import { Suspense } from 'react'
+import { Outlet } from 'react-router-dom';
+import { Suspense } from 'react';
 
 /**
  * App layout (contains the static components like the sidebar)
@@ -20,7 +20,7 @@ export default function RootLayout() {
         </Suspense>
       </main>
     </div>
-  )
+  );
 }
 
 function LoadingFallback() {
@@ -28,5 +28,5 @@ function LoadingFallback() {
     <div className="flex items-center justify-center h-full">
       <div className="text-gray-500">Loading...</div>
     </div>
-  )
+  );
 }

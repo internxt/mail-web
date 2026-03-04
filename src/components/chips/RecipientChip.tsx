@@ -1,5 +1,5 @@
-import { XIcon } from '@phosphor-icons/react'
-import type { Recipient } from '../mail/composeMessageDialog/types'
+import { XIcon } from '@phosphor-icons/react';
+import type { Recipient } from '../mail/composeMessageDialog/types';
 
 interface RecipientChipProps {
   recipient: Recipient
@@ -18,4 +18,4 @@ export const RecipientChip = ({ recipient, onRemove }: RecipientChipProps) => (
       <XIcon size={12} className="text-gray-50" />
     </button>
   </span>
-)
+);

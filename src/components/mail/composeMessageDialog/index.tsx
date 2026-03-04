@@ -1,12 +1,12 @@
-import { PaperclipIcon, XIcon } from '@phosphor-icons/react'
-import { useState, useCallback } from 'react'
-import { Editor } from '@tiptap/react'
-import type { Attachment, Recipient } from './types'
-import { RecipientInput } from './components/RecipientInput'
-import { Button, Input } from '@internxt/ui'
-import { RichTextEditor } from './components/RichTextEditor'
-import { EditorBar } from './components/editorBar'
-import { DefaultAttachmentItem } from './components/DefaultAttachmentItem'
+import { PaperclipIcon, XIcon } from '@phosphor-icons/react';
+import { useState, useCallback } from 'react';
+import { Editor } from '@tiptap/react';
+import type { Attachment, Recipient } from './types';
+import { RecipientInput } from './components/RecipientInput';
+import { Button, Input } from '@internxt/ui';
+import { RichTextEditor } from './components/RichTextEditor';
+import { EditorBar } from './components/editorBar';
+import { DefaultAttachmentItem } from './components/DefaultAttachmentItem';
 
 export interface ComposeMessageDialogProps {
   isOpen: boolean
@@ -65,23 +65,23 @@ export const ComposeMessageDialog = ({
   onSubjectChange,
   text,
 }: ComposeMessageDialogProps) => {
-  const [editor, setEditor] = useState<Editor | null>(null)
-  const [showCc, setShowCc] = useState(ccRecipients.length > 0)
-  const [showBcc, setShowBcc] = useState(bccRecipients.length > 0)
+  const [editor, setEditor] = useState<Editor | null>(null);
+  const [showCc, setShowCc] = useState(ccRecipients.length > 0);
+  const [showBcc, setShowBcc] = useState(bccRecipients.length > 0);
 
   const handleEditorReady = useCallback((editorInstance: Editor) => {
-    setEditor(editorInstance)
-  }, [])
+    setEditor(editorInstance);
+  }, []);
 
   const handlePrimaryAction = useCallback(() => {
     if (editor) {
-      const html = editor.getHTML()
-      onPrimaryAction(html)
+      const html = editor.getHTML();
+      onPrimaryAction(html);
     }
-  }, [editor, onPrimaryAction])
+  }, [editor, onPrimaryAction]);
 
   if (!isOpen) {
-    return null
+    return null;
   }
 
   return (
@@ -173,14 +173,14 @@ export const ComposeMessageDialog = ({
         {attachments.length > 0 && (
           <div className="mt-4 max-h-[100px] space-y-2 overflow-y-auto">
             {attachments.map((attachment) => {
-              const handleRemove = () => onRemoveAttachment?.(attachment.id)
+              const handleRemove = () => onRemoveAttachment?.(attachment.id);
               return (
                 <DefaultAttachmentItem
                   key={attachment.id}
                   attachment={attachment}
                   onRemove={handleRemove}
                 />
-              )
+              );
             })}
           </div>
         )}
@@ -205,5 +205,5 @@ export const ComposeMessageDialog = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

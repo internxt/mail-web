@@ -5,47 +5,53 @@ import {
   type LoginCredentials,
   type WebAuthMessage,
   type WebAuthParams,
-} from '@/types/oauth'
-import { UserService } from '../user/user.service'
-import { ConfigService } from '../config'
+} from '@/types/oauth';
+import { UserService } from '../user/user.service';
+import { ConfigService } from '../config';
 import {
   AuthCancelledByUserError,
   AuthTimeoutError,
   MissingAuthParamsToken,
   OpenAuthPopupError,
-} from './errors/oauth.errors'
-import type { UserSettings } from '@internxt/sdk/dist/shared/types/userSettings'
-import { LocalStorageService } from '../local-storage'
-
-const WEB_CLIENT_URL = ConfigService.instance.isProduction()
-  ? 'https://drive.internxt.com'
-  : 'http://localhost:3000'
+  WebAuthProcessingError,
+} from './errors/oauth.errors';
+import type { UserSettings } from '@internxt/sdk/dist/shared/types/userSettings';
+import { LocalStorageService } from '../local-storage';
 
 export class OauthService {
-  public static readonly instance: OauthService = new OauthService()
+  public static readonly instance: OauthService = new OauthService();
 
-  private authPopup: Window | null = null
-  private messageListener: ((event: MessageEvent) => void) | null = null
-  private popupCheckInterval: NodeJS.Timeout | null = null
+  private authPopup: Window | null = null;
+  private messageListener: ((event: MessageEvent) => void) | null = null;
+  private popupCheckInterval: NodeJS.Timeout | null = null;
+
+  /**
+   * Get the web client URL based on current environment
+   */
+  private get webClientUrl() {
+    return ConfigService.instance.isProduction()
+      ? 'https://drive.internxt.com'
+      : 'http://localhost:3000';
+  }
 
   /**
    * Get the web auth URLs for login and signup
    */
   public get urls() {
     return {
-      login: `${WEB_CLIENT_URL}${WEB_AUTH_CONFIG.loginPath}?${WEB_AUTH_CONFIG.authOriginParam}`,
-      signup: `${WEB_CLIENT_URL}${WEB_AUTH_CONFIG.signupPath}?${WEB_AUTH_CONFIG.authOriginParam}`,
-    }
+      login: `${this.webClientUrl}${WEB_AUTH_CONFIG.loginPath}?${WEB_AUTH_CONFIG.authOriginParam}`,
+      signup: `${this.webClientUrl}${WEB_AUTH_CONFIG.signupPath}?${WEB_AUTH_CONFIG.authOriginParam}`,
+    };
   }
 
   /**
    * Calculate popup position to center it on screen
    */
   private calculatePopupPosition() {
-    const left = window.screen.width / 2 - WEB_AUTH_CONFIG.popupWidth / 2
-    const top = window.screen.height / 2 - WEB_AUTH_CONFIG.popupHeight / 2
+    const left = window.screen.width / 2 - WEB_AUTH_CONFIG.popupWidth / 2;
+    const top = window.screen.height / 2 - WEB_AUTH_CONFIG.popupHeight / 2;
 
-    return { left, top }
+    return { left, top };
   }
 
   /**
@@ -61,7 +67,7 @@ export class OauthService {
       'menubar=no',
       'location=no',
       'status=no',
-    ].join(',')
+    ].join(',');
   }
 
   /**
@@ -70,19 +76,19 @@ export class OauthService {
    * @returns Window reference or null if popup was blocked
    */
   private openAuthPopup(url: string): Window | null {
-    const { left, top } = this.calculatePopupPosition()
-    const features = this.buildPopupFeatures(left, top)
+    const { left, top } = this.calculatePopupPosition();
+    const features = this.buildPopupFeatures(left, top);
 
-    const popup = window.open(url, WEB_AUTH_CONFIG.popupName, features)
+    const popup = window.open(url, WEB_AUTH_CONFIG.popupName, features);
 
-    return popup
+    return popup;
   }
 
   /**
    * Validate origin of postMessage event
    */
   private isValidOrigin(origin: string): boolean {
-    return WEB_AUTH_VALID_ORIGINS.some((valid) => origin.includes(valid))
+    return WEB_AUTH_VALID_ORIGINS.some((valid) => origin.includes(valid));
   }
 
   /**
@@ -91,7 +97,7 @@ export class OauthService {
   private validateAuthParams(
     params: Partial<WebAuthParams>,
   ): params is WebAuthParams {
-    return !!(params.mnemonic && params.newToken)
+    return !!(params.mnemonic && params.newToken);
   }
 
   /**
@@ -103,17 +109,17 @@ export class OauthService {
     reject: (reason: Error) => void,
     timeout: NodeJS.Timeout,
   ) {
-    clearTimeout(timeout)
-    this.cleanup()
+    clearTimeout(timeout);
+    this.cleanup();
 
-    const { payload } = data
+    const { payload } = data;
 
     if (!payload || !this.validateAuthParams(payload)) {
-      reject(new MissingAuthParamsToken())
-      return
+      reject(new MissingAuthParamsToken());
+      return;
     }
 
-    resolve(payload)
+    resolve(payload);
   }
 
   /**
@@ -124,9 +130,9 @@ export class OauthService {
     reject: (reason: Error) => void,
     timeout: NodeJS.Timeout,
   ) {
-    clearTimeout(timeout)
-    this.cleanup()
-    reject(new Error(data.error || 'Authentication failed'))
+    clearTimeout(timeout);
+    this.cleanup();
+    reject(new Error(data.error || 'Authentication failed'));
   }
 
   /**
@@ -139,12 +145,12 @@ export class OauthService {
   ): NodeJS.Timeout {
     return setInterval(() => {
       if (popup.closed) {
-        if (this.popupCheckInterval) clearInterval(this.popupCheckInterval)
-        clearTimeout(timeout)
-        this.cleanup()
-        reject(new AuthCancelledByUserError())
+        if (this.popupCheckInterval) clearInterval(this.popupCheckInterval);
+        clearTimeout(timeout);
+        this.cleanup();
+        reject(new AuthCancelledByUserError());
       }
-    }, WEB_AUTH_CONFIG.popupCheckIntervalMs)
+    }, WEB_AUTH_CONFIG.popupCheckIntervalMs);
   }
 
   /**
@@ -155,35 +161,35 @@ export class OauthService {
   private waitForAuthResponse(popup: Window): Promise<WebAuthParams> {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
-        this.cleanup()
-        reject(new AuthTimeoutError())
-      }, WEB_AUTH_CONFIG.authTimeoutMs)
+        this.cleanup();
+        reject(new AuthTimeoutError());
+      }, WEB_AUTH_CONFIG.authTimeoutMs);
 
       this.messageListener = (event: MessageEvent<WebAuthMessage>) => {
         if (!this.isValidOrigin(event.origin)) {
-          console.warn('Invalid origin for auth message:', event.origin)
-          return
+          console.warn('Invalid origin for auth message:', event.origin);
+          return;
         }
 
-        const { data } = event
+        const { data } = event;
 
         if (data?.type === WEB_AUTH_MESSAGE_TYPES.SUCCESS) {
-          this.handleAuthSuccess(data, resolve, reject, timeout)
+          this.handleAuthSuccess(data, resolve, reject, timeout);
         }
 
         if (data?.type === WEB_AUTH_MESSAGE_TYPES.ERROR) {
-          this.handleAuthError(data, reject, timeout)
+          this.handleAuthError(data, reject, timeout);
         }
-      }
+      };
 
-      window.addEventListener('message', this.messageListener)
+      window.addEventListener('message', this.messageListener);
 
       this.popupCheckInterval = this.setupPopupClosedChecker(
         popup,
         reject,
         timeout,
-      )
-    })
+      );
+    });
   }
 
   /**
@@ -191,18 +197,18 @@ export class OauthService {
    */
   private cleanup() {
     if (this.authPopup && !this.authPopup.closed) {
-      this.authPopup.close()
+      this.authPopup.close();
     }
-    this.authPopup = null
+    this.authPopup = null;
 
     if (this.messageListener) {
-      window.removeEventListener('message', this.messageListener)
-      this.messageListener = null
+      window.removeEventListener('message', this.messageListener);
+      this.messageListener = null;
     }
 
     if (this.popupCheckInterval) {
-      clearInterval(this.popupCheckInterval)
-      this.popupCheckInterval = null
+      clearInterval(this.popupCheckInterval);
+      this.popupCheckInterval = null;
     }
   }
 
@@ -210,7 +216,7 @@ export class OauthService {
    * Decode base64 parameter
    */
   private decodeBase64Param(param: string): string {
-    return Buffer.from(param, 'base64').toString('utf-8')
+    return Buffer.from(param, 'base64').toString('utf-8');
   }
 
   /**
@@ -228,7 +234,7 @@ export class OauthService {
       } as unknown as LoginCredentials['user'],
       newToken,
       mnemonic,
-    }
+    };
   }
 
   /**
@@ -240,23 +246,21 @@ export class OauthService {
     params: WebAuthParams,
   ): Promise<LoginCredentials> {
     try {
-      const mnemonic = this.decodeBase64Param(params.mnemonic)
-      const newToken = this.decodeBase64Param(params.newToken)
+      const mnemonic = this.decodeBase64Param(params.mnemonic);
+      const newToken = this.decodeBase64Param(params.newToken);
 
-      LocalStorageService.instance.setToken(newToken)
+      LocalStorageService.instance.setToken(newToken);
 
-      const user = await UserService.instance.getUser()
+      const user = await UserService.instance.getUser();
 
       return this.buildLoginCredentials(
         user as unknown as LoginCredentials['user'],
         mnemonic,
         newToken,
-      )
+      );
     } catch (error) {
-      console.error('Error while processing web auth params', error)
-      throw new Error(
-        `Web authentication processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      )
+      console.error('Error while processing web auth params', error);
+      throw new WebAuthProcessingError(error as Error);
     }
   }
 
@@ -265,18 +269,18 @@ export class OauthService {
    */
   private async executeWebAuth(url: string): Promise<LoginCredentials> {
     try {
-      this.authPopup = this.openAuthPopup(url)
+      this.authPopup = this.openAuthPopup(url);
 
       if (!this.authPopup) {
-        throw new OpenAuthPopupError()
+        throw new OpenAuthPopupError();
       }
 
-      const authParams = await this.waitForAuthResponse(this.authPopup)
+      const authParams = await this.waitForAuthResponse(this.authPopup);
 
-      return await this.processWebAuthParams(authParams)
+      return await this.processWebAuthParams(authParams);
     } catch (error) {
-      this.cleanup()
-      throw error
+      this.cleanup();
+      throw error;
     }
   }
 
@@ -285,7 +289,7 @@ export class OauthService {
    * @returns Promise that resolves with login credentials
    */
   public async loginWithWeb(): Promise<LoginCredentials> {
-    return this.executeWebAuth(this.urls.login)
+    return this.executeWebAuth(this.urls.login);
   }
 
   /**
@@ -293,6 +297,6 @@ export class OauthService {
    * @returns Promise that resolves with login credentials
    */
   public async signupWithWeb(): Promise<LoginCredentials> {
-    return this.executeWebAuth(this.urls.signup)
+    return this.executeWebAuth(this.urls.signup);
   }
 }

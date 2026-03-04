@@ -1,14 +1,14 @@
-import { useEditor, EditorContent, Editor } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import { Underline } from '@tiptap/extension-underline'
-import { TextAlign } from '@tiptap/extension-text-align'
-import { Link } from '@tiptap/extension-link'
-import { Image } from '@tiptap/extension-image'
-import { TextStyle } from '@tiptap/extension-text-style'
-import { Color } from '@tiptap/extension-color'
-import { FontFamily } from '@tiptap/extension-font-family'
-import { useEffect } from 'react'
-import { FontSize } from './fontSizeExtension'
+import { useEditor, EditorContent, Editor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { Underline } from '@tiptap/extension-underline';
+import { TextAlign } from '@tiptap/extension-text-align';
+import { Link } from '@tiptap/extension-link';
+import { Image } from '@tiptap/extension-image';
+import { TextStyle } from '@tiptap/extension-text-style';
+import { Color } from '@tiptap/extension-color';
+import { FontFamily } from '@tiptap/extension-font-family';
+import { useEffect } from 'react';
+import { FontSize } from './fontSizeExtension';
 
 export interface RichTextEditorProps {
   value?: string
@@ -71,63 +71,63 @@ export const RichTextEditor = ({
     ],
     content: value,
     onUpdate: ({ editor }) => {
-      onChange?.(editor.getHTML())
+      onChange?.(editor.getHTML());
     },
     editorProps: {
       attributes: {
         class: `focus:outline-none h-full ${className}`,
       },
       handlePaste: (view, event) => {
-        const text = event.clipboardData?.getData('text/plain')
-        const { from, to } = view.state.selection
-        const hasSelection = from !== to
+        const text = event.clipboardData?.getData('text/plain');
+        const { from, to } = view.state.selection;
+        const hasSelection = from !== to;
 
         if (text && hasSelection) {
-          const urlPattern = /^(https?:\/\/|www\.)[^\s]+$/i
+          const urlPattern = /^(https?:\/\/|www\.)[^\s]+$/i;
           if (urlPattern.test(text)) {
-            const url = text.startsWith('www.') ? `https://${text}` : text
+            const url = text.startsWith('www.') ? `https://${text}` : text;
             view.dispatch(
               view.state.tr.addMark(
                 from,
                 to,
                 view.state.schema.marks.link.create({ href: url }),
               ),
-            )
-            return true
+            );
+            return true;
           }
         }
-        return false
+        return false;
       },
     },
-  })
+  });
 
   useEffect(() => {
     if (editor && onEditorReady) {
-      onEditorReady(editor)
+      onEditorReady(editor);
     }
-  }, [editor, onEditorReady])
+  }, [editor, onEditorReady]);
 
   useEffect(() => {
     if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value)
+      editor.commands.setContent(value);
     }
-  }, [value, editor])
+  }, [value, editor]);
 
   useEffect(() => {
     if (editor) {
-      editor.setEditable(!disabled)
+      editor.setEditable(!disabled);
     }
-  }, [editor, disabled])
+  }, [editor, disabled]);
 
   if (!editor) {
-    return null
+    return null;
   }
 
   return (
     <div className="h-[300px] overflow-y-auto">
       <EditorContent editor={editor} className="h-full" />
     </div>
-  )
-}
+  );
+};
 
-export type { Editor }
+export type { Editor };

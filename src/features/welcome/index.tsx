@@ -1,23 +1,23 @@
-import { Button } from '@internxt/ui'
-import smallLogo from '../../assets/logos/small-logo.svg'
-import MailAppImage from '../../assets/images/welcome/welcome-page.webp'
-import { useTranslationContext } from '@/i18n'
-import { useAuth } from '@/hooks/useAuth'
-import { useNavigation } from '@/hooks/useNavigation'
+import { Button } from '@internxt/ui';
+import smallLogo from '../../assets/logos/small-logo.svg';
+import MailAppImage from '../../assets/images/welcome/welcome-page.webp';
+import { useTranslationContext } from '@/i18n';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigation } from '@/hooks/useNavigation';
 
 const WelcomePage = () => {
-  const { translate } = useTranslationContext()
-  const { goTo } = useNavigation()
+  const { translate } = useTranslationContext();
+  const { goTo } = useNavigation();
 
   const handleOnLogin = () => {
-    console.log('onLogin')
-    goTo('/inbox')
-  }
+    console.log('onLogin');
+    goTo('/inbox');
+  };
 
   const { handleWebLogin, handleWebSignup } = useAuth({
     onLogin: handleOnLogin,
     translate,
-  })
+  });
 
   return (
     <div className="flex flex-col w-full h-screen overflow-hidden bg-linear-to-r from-gray-5 to-primary/20">
@@ -62,7 +62,7 @@ const WelcomePage = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default WelcomePage
+export default WelcomePage;

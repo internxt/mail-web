@@ -1,8 +1,8 @@
-import { useCallback, useState } from 'react'
-import { LocalStorageService } from '@/services/local-storage'
-import { PaymentsService } from '@/services/sdk/payments.service'
-import type { LoginCredentials } from '@/types/oauth'
-import { OauthService } from '@/services/oauth/oauth.service'
+import { useCallback, useState } from 'react';
+import { LocalStorageService } from '@/services/local-storage';
+import { PaymentsService } from '@/services/sdk/payments.service';
+import type { LoginCredentials } from '@/types/oauth';
+import { OauthService } from '@/services/oauth/oauth.service';
 
 interface UseWebAuthProps {
   onLogin?: (token: string) => void
@@ -10,7 +10,7 @@ interface UseWebAuthProps {
 }
 
 export function useAuth({ onLogin, translate }: UseWebAuthProps) {
-  const [webAuthError, setWebAuthError] = useState('')
+  const [webAuthError, setWebAuthError] = useState('');
 
   const saveUserSession = useCallback(
     async (credentials: LoginCredentials) => {
@@ -18,86 +18,86 @@ export function useAuth({ onLogin, translate }: UseWebAuthProps) {
         credentials.user,
         credentials.mnemonic,
         credentials.newToken,
-      )
+      );
 
       try {
         const subscription =
-          await PaymentsService.instance.getUserSubscription()
-        LocalStorageService.instance.setSubscription(subscription)
+          await PaymentsService.instance.getUserSubscription();
+        LocalStorageService.instance.setSubscription(subscription);
       } catch (err) {
-        console.error('Error getting user subscription:', err)
+        console.error('Error getting user subscription:', err);
       }
 
-      onLogin?.(credentials.newToken)
+      onLogin?.(credentials.newToken);
     },
     [LocalStorageService, onLogin],
-  )
+  );
 
   /**
    * Handles web-based login using popup window
    */
   const handleWebLogin = async () => {
-    setWebAuthError('')
+    setWebAuthError('');
 
     try {
-      const credentials = await OauthService.instance.loginWithWeb()
+      const credentials = await OauthService.instance.loginWithWeb();
 
       if (!credentials?.newToken || !credentials?.user) {
-        throw new Error(translate('meet.auth.modal.error.invalidCredentials'))
+        throw new Error(translate('meet.auth.modal.error.invalidCredentials'));
       }
 
-      await saveUserSession(credentials)
+      await saveUserSession(credentials);
     } catch (err: unknown) {
-      errorHandler(err)
+      errorHandler(err);
     }
-  }
+  };
 
   /**
    * Handles web-based signup using popup window
    */
   const handleWebSignup = async () => {
-    setWebAuthError('')
+    setWebAuthError('');
 
     try {
-      const credentials = await OauthService.instance.signupWithWeb()
+      const credentials = await OauthService.instance.signupWithWeb();
 
       if (!credentials?.newToken || !credentials?.user) {
-        throw new Error(translate('meet.auth.modal.error.invalidCredentials'))
+        throw new Error(translate('meet.auth.modal.error.invalidCredentials'));
       }
 
-      await saveUserSession(credentials)
+      await saveUserSession(credentials);
     } catch (err: unknown) {
-      errorHandler(err)
+      errorHandler(err);
     }
-  }
+  };
 
   const errorHandler = useCallback(
     (err: unknown) => {
       if (err instanceof Error) {
         if (err.message.includes('popup blocker')) {
-          setWebAuthError(translate('meet.auth.modal.error.popupBlocked'))
+          setWebAuthError(translate('meet.auth.modal.error.popupBlocked'));
         } else if (err.message.includes('cancelled')) {
-          setWebAuthError(translate('meet.auth.modal.error.authCancelled'))
+          setWebAuthError(translate('meet.auth.modal.error.authCancelled'));
         } else if (err.message.includes('timeout')) {
-          setWebAuthError(translate('meet.auth.modal.error.authTimeout'))
+          setWebAuthError(translate('meet.auth.modal.error.authTimeout'));
         } else {
-          setWebAuthError(err.message)
+          setWebAuthError(err.message);
         }
       } else {
-        setWebAuthError(translate('meet.auth.modal.error.genericError'))
+        setWebAuthError(translate('meet.auth.modal.error.genericError'));
       }
     },
     [setWebAuthError],
-  )
+  );
 
   const resetState = useCallback(() => {
-    setWebAuthError('')
-  }, [])
+    setWebAuthError('');
+  }, []);
 
   return {
     webAuthError,
     handleWebLogin,
     handleWebSignup,
     resetState,
-  }
+  };
 }

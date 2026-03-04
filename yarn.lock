@@ -519,6 +519,14 @@
   dependencies:
     tailwindcss "^4.1.17"
 
+"@internxt/eslint-config-internxt@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@internxt/eslint-config-internxt/-/eslint-config-internxt-2.0.1.tgz#0d4c4f085245f10937a3b1914ba091811dba9d05"
+  integrity sha512-Ueczo0BAy8T9P8tXztRUoTnY7KU0ISoJ5H4cfqVTiJqkot09uPOaWmLTwI1xTMeKIkBF4h34PzNbGQ32N/nlMw==
+  dependencies:
+    eslint-config-prettier "^10.1.8"
+    typescript-eslint "^8.40.0"
+
 "@internxt/sdk@^1.15.1":
   version "1.15.1"
   resolved "https://registry.yarnpkg.com/@internxt/sdk/-/sdk-1.15.1.tgz#69ad13a3c8cacbd929f025f24adc6fd2d1faf8ef"
@@ -2727,6 +2735,11 @@ escape-string-regexp@^4.0.0:
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-4.0.0.tgz#14ba83a5d373e3d311e5afca29cf5bfad965bf34"
   integrity sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==
 
+eslint-config-prettier@^10.1.8:
+  version "10.1.8"
+  resolved "https://registry.yarnpkg.com/eslint-config-prettier/-/eslint-config-prettier-10.1.8.tgz#15734ce4af8c2778cc32f0b01b37b0b5cd1ecb97"
+  integrity sha512-82GZUjRS0p/jganf6q1rEO25VSoHH0hKPCTrgillPjdI/3bgBhAE1QzHrHTizjpRvy6pGAvKjDJtk2pF9NDq8w==
+
 eslint-plugin-react-hooks@^7.0.1:
   version "7.0.1"
   resolved "https://registry.yarnpkg.com/eslint-plugin-react-hooks/-/eslint-plugin-react-hooks-7.0.1.tgz#66e258db58ece50723ef20cc159f8aa908219169"
@@ -4607,7 +4620,7 @@ typed-array-buffer@^1.0.3:
     es-errors "^1.3.0"
     is-typed-array "^1.1.14"
 
-typescript-eslint@^8.48.0:
+typescript-eslint@^8.40.0, typescript-eslint@^8.48.0:
   version "8.56.1"
   resolved "https://registry.yarnpkg.com/typescript-eslint/-/typescript-eslint-8.56.1.tgz#15a9fcc5d2150a0d981772bb36f127a816fe103f"
   integrity sha512-U4lM6pjmBX7J5wk4szltF7I1cGBHXZopnAXCMXb3+fZ3B/0Z3hq3wS/CCUB2NZBNAExK92mCU2tEohWuwVMsDQ==

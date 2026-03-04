@@ -1,4 +1,4 @@
-import { type UserSettings } from '@internxt/sdk/dist/shared/types/userSettings'
+import { type UserSettings } from '@internxt/sdk/dist/shared/types/userSettings';
 
 export interface LoginCredentials {
   user: UserSettings
@@ -33,7 +33,7 @@ export interface WebAuthConfig {
 export const WEB_AUTH_MESSAGE_TYPES = {
   SUCCESS: 'INTERNXT_AUTH_SUCCESS',
   ERROR: 'INTERNXT_AUTH_ERROR',
-} as const
+} as const;
 
 export const WEB_AUTH_CONFIG: WebAuthConfig = {
   popupWidth: 500,
@@ -44,10 +44,10 @@ export const WEB_AUTH_CONFIG: WebAuthConfig = {
   authOriginParam: 'authOrigin=mail',
   loginPath: '/login',
   signupPath: '/new',
-}
+};
 
 export const WEB_AUTH_VALID_ORIGINS = [
   'internxt.com',
   'localhost',
   'pages.dev',
-] as const
+] as const;
