@@ -1,15 +1,24 @@
 import { type RouteObject, Navigate } from 'react-router-dom'
 import { lazy } from 'react'
-import RootLayout from '@/layouts/RootLayout'
+import RootLayout from '@/routes/layouts/RootLayout'
+import WelcomePage from '@/features/welcome'
 
 const MailView = lazy(() => import('@/features/mail/MailView'))
 
 export const routes: RouteObject[] = [
   {
+    index: true,
+    path: '/welcome',
+    element: <WelcomePage />,
+  },
+  {
     path: '/',
     element: <RootLayout />,
     children: [
-      { index: true, element: <Navigate to="/inbox" replace /> },
+      {
+        index: true,
+        element: <Navigate to="/welcome" replace />,
+      },
       { path: 'inbox', element: <MailView folder="inbox" /> },
       { path: 'trash', element: <MailView folder="trash" /> },
       {
