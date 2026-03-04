@@ -1,10 +1,23 @@
 import { Button } from '@internxt/ui'
-import { useTranslationContext } from '@/i18n'
 import smallLogo from '../../assets/logos/small-logo.svg'
 import MailAppImage from '../../assets/images/welcome/welcome-page.webp'
+import { useTranslationContext } from '@/i18n'
+import { useAuth } from '@/hooks/useAuth'
+import { useNavigation } from '@/hooks/useNavigation'
 
 const WelcomePage = () => {
   const { translate } = useTranslationContext()
+  const { goTo } = useNavigation()
+
+  const handleOnLogin = () => {
+    console.log('onLogin')
+    goTo('/inbox')
+  }
+
+  const { handleWebLogin, handleWebSignup } = useAuth({
+    onLogin: handleOnLogin,
+    translate,
+  })
 
   return (
     <div className="flex flex-col w-full h-screen overflow-hidden bg-linear-to-r from-gray-5 to-primary/20">
@@ -15,8 +28,12 @@ const WelcomePage = () => {
             <p>{translate('meet')}</p>
           </div>
           <div className="flex flex-row gap-4">
-            <Button variant="secondary">{translate('actions.logIn')}</Button>
-            <Button variant="primary">{translate('actions.signUp')}</Button>
+            <Button variant="secondary" onClick={handleWebLogin}>
+              {translate('actions.logIn')}
+            </Button>
+            <Button variant="primary" onClick={handleWebSignup}>
+              {translate('actions.signUp')}
+            </Button>
           </div>
         </div>
         <div className="flex flex-row justify-between pt-10">

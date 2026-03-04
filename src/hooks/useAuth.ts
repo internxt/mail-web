@@ -1,17 +1,15 @@
 import { useCallback, useState } from 'react'
-import { OauthService } from '@/services/auth/oauth.service'
 import { LocalStorageService } from '@/services/local-storage'
 import { PaymentsService } from '@/services/sdk/payments.service'
 import type { LoginCredentials } from '@/types'
+import { OauthService } from '@/services/oauth/oauth.service'
 
 interface UseWebAuthProps {
-  onClose: () => void
   onLogin?: (token: string) => void
   translate: (key: string) => string
 }
 
-export function useAuth({ onClose, onLogin, translate }: UseWebAuthProps) {
-  const [isLoggingIn, setIsLoggingIn] = useState(false)
+export function useAuth({ onLogin, translate }: UseWebAuthProps) {
   const [webAuthError, setWebAuthError] = useState('')
 
   const saveUserSession = useCallback(
@@ -39,7 +37,6 @@ export function useAuth({ onClose, onLogin, translate }: UseWebAuthProps) {
    * Handles web-based login using popup window
    */
   const handleWebLogin = async () => {
-    setIsLoggingIn(true)
     setWebAuthError('')
 
     try {
@@ -50,23 +47,8 @@ export function useAuth({ onClose, onLogin, translate }: UseWebAuthProps) {
       }
 
       await saveUserSession(credentials)
-      onClose()
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        if (err.message.includes('popup blocker')) {
-          setWebAuthError(translate('meet.auth.modal.error.popupBlocked'))
-        } else if (err.message.includes('cancelled')) {
-          setWebAuthError(translate('meet.auth.modal.error.authCancelled'))
-        } else if (err.message.includes('timeout')) {
-          setWebAuthError(translate('meet.auth.modal.error.authTimeout'))
-        } else {
-          setWebAuthError(err.message)
-        }
-      } else {
-        setWebAuthError(translate('meet.auth.modal.error.genericError'))
-      }
-    } finally {
-      setIsLoggingIn(false)
+      errorHandler(err)
     }
   }
 
@@ -74,7 +56,6 @@ export function useAuth({ onClose, onLogin, translate }: UseWebAuthProps) {
    * Handles web-based signup using popup window
    */
   const handleWebSignup = async () => {
-    setIsLoggingIn(true)
     setWebAuthError('')
 
     try {
@@ -85,8 +66,13 @@ export function useAuth({ onClose, onLogin, translate }: UseWebAuthProps) {
       }
 
       await saveUserSession(credentials)
-      onClose()
     } catch (err: unknown) {
+      errorHandler(err)
+    }
+  }
+
+  const errorHandler = useCallback(
+    (err: unknown) => {
       if (err instanceof Error) {
         if (err.message.includes('popup blocker')) {
           setWebAuthError(translate('meet.auth.modal.error.popupBlocked'))
@@ -100,18 +86,15 @@ export function useAuth({ onClose, onLogin, translate }: UseWebAuthProps) {
       } else {
         setWebAuthError(translate('meet.auth.modal.error.genericError'))
       }
-    } finally {
-      setIsLoggingIn(false)
-    }
-  }
+    },
+    [setWebAuthError],
+  )
 
   const resetState = useCallback(() => {
     setWebAuthError('')
-    setIsLoggingIn(false)
   }, [])
 
   return {
-    isLoggingIn,
     webAuthError,
     handleWebLogin,
     handleWebSignup,

@@ -2,7 +2,6 @@ import { type UserSettings } from '@internxt/sdk/dist/shared/types/userSettings'
 
 export interface LoginCredentials {
   user: UserSettings
-  token: string
   newToken: string
   mnemonic: string
 }
@@ -13,7 +12,9 @@ export interface WebAuthParams {
 }
 
 export interface WebAuthMessage {
-  type: 'INTERNXT_AUTH_SUCCESS' | 'INTERNXT_AUTH_ERROR'
+  type:
+    | typeof WEB_AUTH_MESSAGE_TYPES.SUCCESS
+    | typeof WEB_AUTH_MESSAGE_TYPES.ERROR
   payload?: WebAuthParams
   error?: string
 }

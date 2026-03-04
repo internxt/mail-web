@@ -1,14 +1,21 @@
 import {
   WEB_AUTH_CONFIG,
   WEB_AUTH_MESSAGE_TYPES,
-  WEB_AUTH_STORAGE_KEYS,
   WEB_AUTH_VALID_ORIGINS,
   type LoginCredentials,
   type WebAuthMessage,
   type WebAuthParams,
 } from '@/types'
-import { AuthService } from './auth.service'
+import { UserService } from '../user/user.service'
 import { ConfigService } from '../config'
+import { LocalStorageService } from '../local-storage'
+import {
+  AuthCancelledByUserError,
+  AuthTimeoutError,
+  MissingAuthParamsToken,
+  OpenAuthPopupError,
+} from './errors/oauth.errors'
+import type { UserSettings } from '@internxt/sdk/dist/shared/types/userSettings'
 
 export class OauthService {
   public static readonly instance: OauthService = new OauthService()
@@ -102,11 +109,9 @@ export class OauthService {
     const { payload } = data
 
     if (!payload || !this.validateAuthParams(payload)) {
-      reject(new Error('Missing authentication parameters'))
+      reject(new MissingAuthParamsToken())
       return
     }
-
-    console.log('handleAuthSuccess', payload)
 
     resolve(payload)
   }
@@ -134,10 +139,10 @@ export class OauthService {
   ): NodeJS.Timeout {
     return setInterval(() => {
       if (popup.closed) {
-        clearInterval(this.popupCheckInterval!)
+        if (this.popupCheckInterval) clearInterval(this.popupCheckInterval)
         clearTimeout(timeout)
         this.cleanup()
-        reject(new Error('Authentication cancelled by user'))
+        reject(new AuthCancelledByUserError())
       }
     }, WEB_AUTH_CONFIG.popupCheckIntervalMs)
   }
@@ -151,7 +156,7 @@ export class OauthService {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         this.cleanup()
-        reject(new Error('Authentication timeout'))
+        reject(new AuthTimeoutError())
       }, WEB_AUTH_CONFIG.authTimeoutMs)
 
       this.messageListener = (event: MessageEvent<WebAuthMessage>) => {
@@ -212,14 +217,14 @@ export class OauthService {
    * Store tokens in localStorage
    */
   private storeTokens(newToken: string): void {
-    localStorage.setItem(WEB_AUTH_STORAGE_KEYS.NEW_TOKEN, newToken)
+    LocalStorageService.instance.setToken(newToken)
   }
 
   /**
    * Fetch user data with provided tokens
    */
   private async fetchUserData() {
-    const { user } = await AuthService.instance.refreshUserAndTokens()
+    const { user } = await UserService.instance.refreshUserAndTokens()
 
     return user
   }
@@ -228,17 +233,15 @@ export class OauthService {
    * Build login credentials response
    */
   private buildLoginCredentials(
-    user: any,
+    user: UserSettings,
     mnemonic: string,
     newToken: string,
   ): LoginCredentials {
-    console.log('buildLoginCredentials', user, mnemonic, newToken)
     return {
       user: {
         ...user,
         mnemonic,
       } as unknown as LoginCredentials['user'],
-      token: '', // Token is not used in web auth flow, remove when remove all old token references
       newToken,
       mnemonic,
     }
@@ -259,11 +262,13 @@ export class OauthService {
 
       const user = await this.fetchUserData()
 
-      console.log('user', user)
-
-      return this.buildLoginCredentials(user, mnemonic, newToken)
+      return this.buildLoginCredentials(
+        user as unknown as LoginCredentials['user'],
+        mnemonic,
+        newToken,
+      )
     } catch (error) {
-      console.log('processWebAuthParams error', error)
+      console.error('Error while processing web auth params', error)
       throw new Error(
         `Web authentication processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       )
@@ -278,13 +283,11 @@ export class OauthService {
       this.authPopup = this.openAuthPopup(url)
 
       if (!this.authPopup) {
-        throw new Error(
-          'Failed to open authentication popup. Please check your popup blocker settings.',
-        )
+        throw new OpenAuthPopupError()
       }
 
       const authParams = await this.waitForAuthResponse(this.authPopup)
-      console.log('authParams', authParams)
+
       return await this.processWebAuthParams(authParams)
     } catch (error) {
       this.cleanup()
