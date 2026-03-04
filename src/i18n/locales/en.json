@@ -1,5 +1,19 @@
 {
-  "sidenav": {
+  "meet": "Meet",
+  "actions": {
+    "logIn": "Log in",
+    "signUp": "Sign up",
+    "logOut": "Log out",
+    "newMessage": "New Message"
+  },
+  "welcome": {
+    "title": {
+      "highlighted": "Email that protects",
+      "normal": "what you send"
+    },
+    "description": "Encrypted email built for real privacy. Zero tracking. Full control."
+  },
+  "sidebar": {
     "newMessage": "New Message",
     "inbox": "Inbox",
     "sent": "Sent",
