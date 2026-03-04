@@ -9,7 +9,7 @@ import {
   KeysDoNotMatchError,
   WrongIterationsToEncryptPrivateKeyError,
 } from './errors/keys.errors'
-import { ConfigService } from '../config/config.service'
+import { ConfigService } from '../config'
 
 export interface AesInit {
   iv: string
@@ -22,8 +22,8 @@ export class KeysService {
 
   private getAesInit(): { iv: string; salt: string } {
     return {
-      iv: ConfigService.instance.get('MAGIC_IV'),
-      salt: ConfigService.instance.get('MAGIC_SALT'),
+      iv: ConfigService.instance.getVariable('MAGIC_IV'),
+      salt: ConfigService.instance.getVariable('MAGIC_SALT'),
     }
   }
 

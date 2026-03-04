@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import RootLayout from '@/routes/layouts/RootLayout'
 import WelcomePage from '@/features/welcome'
 
+const WelcomePage = lazy(() => import('@/features/welcome'))
 const MailView = lazy(() => import('@/features/mail/MailView'))
 
 export const routes: RouteObject[] = [

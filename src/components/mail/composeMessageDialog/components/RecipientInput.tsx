@@ -1,6 +1,6 @@
 import { useState, type KeyboardEvent } from 'react'
 import type { Recipient } from '../types'
-import { RecipientChip } from '../../chips/RecipientChip'
+import { RecipientChip } from '@/components/chips/RecipientChip'
 
 interface RecipientInputProps {
   label: string
@@ -46,7 +46,7 @@ export const RecipientInput = ({
       inputValue === '' &&
       recipients.length > 0
     ) {
-      onRemoveRecipient(recipients[recipients.length - 1].id)
+      onRemoveRecipient(recipients.at(-1)!.id)
     }
   }
 
@@ -60,9 +60,7 @@ export const RecipientInput = ({
 
   return (
     <div className="flex flex-row gap-2 items-start">
-      <p className="font-medium max-w-[64px] w-full text-gray-100 py-2">
-        {label}
-      </p>
+      <p className="font-medium max-w-16 w-full text-gray-100 py-2">{label}</p>
       <div className="flex-1 flex items-center gap-1 flex-wrap rounded-lg border border-gray-10 bg-surface px-3 py-1.5 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
         {recipients.map((recipient) => (
           <RecipientChip
@@ -78,7 +76,7 @@ export const RecipientInput = ({
           onKeyDown={handleKeyDown}
           onBlur={handleBlur}
           disabled={disabled}
-          className={`flex-1 min-w-[120px] bg-transparent text-sm text-gray-100 placeholder:text-gray-40 focus:outline-none py-0.5 ${disabled ? 'cursor-not-allowed' : ''}`}
+          className={`flex-1 min-w-30 bg-transparent text-sm text-gray-100 placeholder:text-gray-40 focus:outline-none py-0.5 ${disabled ? 'cursor-not-allowed' : ''}`}
         />
         {showCcBcc && (showCcButton || showBccButton) && (
           <div className="flex items-center gap-1 ml-auto shrink-0">
@@ -87,7 +85,7 @@ export const RecipientInput = ({
                 type="button"
                 onClick={onCcClick}
                 disabled={disabled}
-                className={`px-1.5 py-0.5 text-sm font-medium text-primary hover:bg-gray-5 rounded bg-primary/20 hover:bg-primary/30 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`px-1.5 py-0.5 text-sm font-medium text-primary rounded bg-primary/20 hover:bg-primary/30 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {ccButtonText}
               </button>
@@ -97,7 +95,7 @@ export const RecipientInput = ({
                 type="button"
                 onClick={onBccClick}
                 disabled={disabled}
-                className={`px-1.5 py-0.5 text-sm font-medium text-primary hover:bg-gray-5 rounded bg-primary/20 hover:bg-primary/30 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`px-1.5 py-0.5 text-sm font-medium text-primary rounded bg-primary/20 hover:bg-primary/30 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {bccButtonText}
               </button>

@@ -18,7 +18,6 @@ export default defineConfig({
       protocolImports: true,
     }),
   ],
-
   server: {
     port: 3001,
   },

@@ -1,7 +1,7 @@
 import { type CryptoProvider } from '@internxt/sdk'
 import { type Keys, type Password } from '@internxt/sdk/dist/auth'
 import crypto from 'node:crypto'
-import { ConfigService } from '../config/config.service'
+import { ConfigService } from '../config'
 import { KeysService } from './keys.service'
 
 export class CryptoService {
@@ -71,7 +71,8 @@ export class CryptoService {
    * @returns The encrypted string in 'hex' encoding
    **/
   public encryptText = (textToEncrypt: string): string => {
-    const APP_CRYPTO_SECRET = ConfigService.instance.get('CRYPTO_SECRET')
+    const APP_CRYPTO_SECRET =
+      ConfigService.instance.getVariable('CRYPTO_SECRET')
     return this.encryptTextWithKey(textToEncrypt, APP_CRYPTO_SECRET)
   }
 
@@ -81,7 +82,8 @@ export class CryptoService {
    * @returns The decrypted string in 'utf8' encoding
    **/
   public decryptText = (encryptedText: string): string => {
-    const APP_CRYPTO_SECRET = ConfigService.instance.get('CRYPTO_SECRET')
+    const APP_CRYPTO_SECRET =
+      ConfigService.instance.getVariable('CRYPTO_SECRET')
     return this.decryptTextWithKey(encryptedText, APP_CRYPTO_SECRET)
   }
 
