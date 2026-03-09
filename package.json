@@ -43,6 +43,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@internxt/eslint-config-internxt": "^2.0.1",
+    "@internxt/prettier-config": "internxt/prettier-config#v1.0.2",
     "@types/node": "^25.3.3",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
