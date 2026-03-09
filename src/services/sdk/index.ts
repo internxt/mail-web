@@ -4,7 +4,7 @@ import packageJson from '../../../package.json';
 import { ConfigService } from '../config';
 import { LocalStorageService } from '../local-storage';
 
-export type SdkManagerApiSecurity = ApiSecurity & { newToken: string }
+export type SdkManagerApiSecurity = ApiSecurity & { newToken: string };
 
 export class SdkManager {
   public static readonly instance: SdkManager = new SdkManager();

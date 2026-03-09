@@ -1,12 +1,12 @@
 import { VariableNotFoundError } from './config.errors';
 
 interface ConfigKeys {
-  DRIVE_API_URL: string
-  MAIL_API_URL: string
-  PAYMENTS_API_URL: string
-  CRYPTO_SECRET: string
-  MAGIC_IV: string
-  MAGIC_SALT: string
+  DRIVE_API_URL: string;
+  MAIL_API_URL: string;
+  PAYMENTS_API_URL: string;
+  CRYPTO_SECRET: string;
+  MAGIC_IV: string;
+  MAGIC_SALT: string;
 }
 
 const configKeys: Record<keyof ConfigKeys, string> = {

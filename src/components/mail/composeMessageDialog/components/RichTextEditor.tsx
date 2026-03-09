@@ -11,11 +11,11 @@ import { useEffect } from 'react';
 import { FontSize } from './fontSizeExtension';
 
 export interface RichTextEditorProps {
-  value?: string
-  onChange?: (html: string) => void
-  onEditorReady?: (editor: Editor) => void
-  className?: string
-  disabled?: boolean
+  value?: string;
+  onChange?: (html: string) => void;
+  onEditorReady?: (editor: Editor) => void;
+  className?: string;
+  disabled?: boolean;
 }
 
 export const RichTextEditor = ({
@@ -86,13 +86,7 @@ export const RichTextEditor = ({
           const urlPattern = /^(https?:\/\/|www\.)[^\s]+$/i;
           if (urlPattern.test(text)) {
             const url = text.startsWith('www.') ? `https://${text}` : text;
-            view.dispatch(
-              view.state.tr.addMark(
-                from,
-                to,
-                view.state.schema.marks.link.create({ href: url }),
-              ),
-            );
+            view.dispatch(view.state.tr.addMark(from, to, view.state.schema.marks.link.create({ href: url })));
             return true;
           }
         }

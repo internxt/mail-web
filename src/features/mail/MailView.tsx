@@ -3,7 +3,7 @@ import { useTranslationContext } from '@/i18n';
 import { PATHS } from '@/routes/paths';
 
 interface MailViewProps {
-  folder: string
+  folder: string;
 }
 
 const MailView = ({ folder }: MailViewProps) => {

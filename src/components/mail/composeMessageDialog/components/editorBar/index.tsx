@@ -21,8 +21,8 @@ import { EditorBarGroup } from './EditorBarGroup';
 import type { EditorBarItem } from '../../types';
 
 export interface ActionBarProps {
-  editor: Editor | null
-  disabled?: boolean
+  editor: Editor | null;
+  disabled?: boolean;
 }
 
 const FONTS = [
@@ -80,22 +80,13 @@ export const EditorBar = ({ editor, disabled }: ActionBarProps) => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        colorPickerRef.current &&
-        !colorPickerRef.current.contains(event.target as Node)
-      ) {
+      if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
         setShowColorPicker(false);
       }
-      if (
-        fontPickerRef.current &&
-        !fontPickerRef.current.contains(event.target as Node)
-      ) {
+      if (fontPickerRef.current && !fontPickerRef.current.contains(event.target as Node)) {
         setShowFontPicker(false);
       }
-      if (
-        sizePickerRef.current &&
-        !sizePickerRef.current.contains(event.target as Node)
-      ) {
+      if (sizePickerRef.current && !sizePickerRef.current.contains(event.target as Node)) {
         setShowSizePicker(false);
       }
     };
@@ -230,10 +221,7 @@ export const EditorBar = ({ editor, disabled }: ActionBarProps) => {
       <div className="w-px h-5 bg-gray-10" />
       {/* Color picker */}
       <div ref={colorPickerRef} className="relative">
-        <EditorBarButton
-          onClick={() => setShowColorPicker(!showColorPicker)}
-          disabled={disabled}
-        >
+        <EditorBarButton onClick={() => setShowColorPicker(!showColorPicker)} disabled={disabled}>
           <PaintBucketIcon size={20} />
         </EditorBarButton>
         {showColorPicker && (
@@ -336,8 +324,7 @@ export const EditorBar = ({ editor, disabled }: ActionBarProps) => {
             {
               id: 'alignCenter',
               icon: TextAlignCenterIcon,
-              onClick: () =>
-                editor.chain().focus().setTextAlign('center').run(),
+              onClick: () => editor.chain().focus().setTextAlign('center').run(),
               isActive: editor.isActive({ textAlign: 'center' }),
             },
             {
@@ -364,8 +351,7 @@ export const EditorBar = ({ editor, disabled }: ActionBarProps) => {
             {
               id: 'clear',
               icon: EraserIcon,
-              onClick: () =>
-                editor.chain().focus().unsetAllMarks().clearNodes().run(),
+              onClick: () => editor.chain().focus().unsetAllMarks().clearNodes().run(),
             },
           ] satisfies EditorBarItem[]
         }

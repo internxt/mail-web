@@ -3,18 +3,18 @@ import type { Recipient } from '../types';
 import { RecipientChip } from '@/components/chips/RecipientChip';
 
 interface RecipientInputProps {
-  label: string
-  recipients: Recipient[]
-  onAddRecipient: (email: string) => void
-  onRemoveRecipient: (id: string) => void
-  showCcBcc?: boolean
-  onCcClick?: () => void
-  onBccClick?: () => void
-  showCcButton?: boolean
-  showBccButton?: boolean
-  ccButtonText?: string
-  bccButtonText?: string
-  disabled?: boolean
+  label: string;
+  recipients: Recipient[];
+  onAddRecipient: (email: string) => void;
+  onRemoveRecipient: (id: string) => void;
+  showCcBcc?: boolean;
+  onCcClick?: () => void;
+  onBccClick?: () => void;
+  showCcButton?: boolean;
+  showBccButton?: boolean;
+  ccButtonText?: string;
+  bccButtonText?: string;
+  disabled?: boolean;
 }
 
 export const RecipientInput = ({
@@ -41,11 +41,7 @@ export const RecipientInput = ({
         onAddRecipient(email);
         setInputValue('');
       }
-    } else if (
-      e.key === 'Backspace' &&
-      inputValue === '' &&
-      recipients.length > 0
-    ) {
+    } else if (e.key === 'Backspace' && inputValue === '' && recipients.length > 0) {
       onRemoveRecipient(recipients.at(-1)!.id);
     }
   };
@@ -63,11 +59,7 @@ export const RecipientInput = ({
       <p className="font-medium max-w-16 w-full text-gray-100 py-2">{label}</p>
       <div className="flex-1 flex items-center gap-1 flex-wrap rounded-lg border border-gray-10 bg-surface px-3 py-1.5 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
         {recipients.map((recipient) => (
-          <RecipientChip
-            key={recipient.id}
-            recipient={recipient}
-            onRemove={() => onRemoveRecipient(recipient.id)}
-          />
+          <RecipientChip key={recipient.id} recipient={recipient} onRemove={() => onRemoveRecipient(recipient.id)} />
         ))}
         <input
           type="text"

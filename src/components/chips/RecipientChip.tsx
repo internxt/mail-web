@@ -2,8 +2,8 @@ import { XIcon } from '@phosphor-icons/react';
 import type { Recipient } from '../mail/composeMessageDialog/types';
 
 interface RecipientChipProps {
-  recipient: Recipient
-  onRemove: () => void
+  recipient: Recipient;
+  onRemove: () => void;
 }
 
 export const RecipientChip = ({ recipient, onRemove }: RecipientChipProps) => (

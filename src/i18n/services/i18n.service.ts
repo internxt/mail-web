@@ -10,8 +10,7 @@ const dayJsLocale: Record<string, ILocale> = {
   en,
 };
 
-const deviceLang: string =
-  localStorage.getItem('i18nextLng') ?? navigator.language.split('-')[0];
+const deviceLang: string = localStorage.getItem('i18nextLng') ?? navigator.language.split('-')[0];
 
 dayjs.locale(dayJsLocale[deviceLang] || dayJsLocale['en']);
 
