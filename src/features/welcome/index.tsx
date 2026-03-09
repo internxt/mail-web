@@ -4,10 +4,6 @@ import MailAppImage from '../../assets/images/welcome/welcome-page.webp';
 import { useTranslationContext } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigation } from '@/hooks/useNavigation';
-;
-;
-;
-;
 
 const WelcomePage = () => {
   const { translate } = useTranslationContext();
