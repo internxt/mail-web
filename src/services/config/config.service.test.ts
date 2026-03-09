@@ -28,9 +28,7 @@ describe('Config Service', () => {
     test('When the variable does not exist, then an error indicating so is thrown', () => {
       vi.stubEnv('VITE_DRIVE_API_URL', undefined);
 
-      expect(() => configService.getVariable('DRIVE_API_URL')).toThrow(
-        VariableNotFoundError,
-      );
+      expect(() => configService.getVariable('DRIVE_API_URL')).toThrow(VariableNotFoundError);
     });
   });
 

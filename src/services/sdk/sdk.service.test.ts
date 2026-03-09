@@ -39,19 +39,15 @@ describe('SDK Manager', () => {
     localStorage.clear();
     vi.clearAllMocks();
 
-    vi.spyOn(ConfigService.instance, 'getVariable').mockImplementation(
-      (key: string) => {
-        const config: Record<string, string> = {
-          DRIVE_API_URL: 'https://api-drive.internxt.com',
-          PAYMENTS_API_URL: 'https://api-payments.internxt.com',
-        };
-        return config[key] || '';
-      },
-    );
+    vi.spyOn(ConfigService.instance, 'getVariable').mockImplementation((key: string) => {
+      const config: Record<string, string> = {
+        DRIVE_API_URL: 'https://api-drive.internxt.com',
+        PAYMENTS_API_URL: 'https://api-payments.internxt.com',
+      };
+      return config[key] || '';
+    });
 
-    vi.spyOn(LocalStorageService.instance, 'getToken').mockReturnValue(
-      'mock-token',
-    );
+    vi.spyOn(LocalStorageService.instance, 'getToken').mockReturnValue('mock-token');
     vi.spyOn(LocalStorageService.instance, 'clearCredentials').mockReturnValue();
   });
 
@@ -92,9 +88,7 @@ describe('SDK Manager', () => {
     });
 
     test('When requesting credentials without initialization and throwError is true, then should throw error', () => {
-      expect(() => SdkManager.getApiSecurity()).toThrow(
-        'Api security properties not found in SdkManager',
-      );
+      expect(() => SdkManager.getApiSecurity()).toThrow('Api security properties not found in SdkManager');
     });
 
     test('When requesting credentials without initialization and throwError is false, then should return undefined', () => {

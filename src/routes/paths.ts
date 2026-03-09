@@ -3,4 +3,4 @@ export const PATHS = {
   trash: '/trash',
 } as const;
 
-export type RoutePath = (typeof PATHS)[keyof typeof PATHS]
+export type RoutePath = (typeof PATHS)[keyof typeof PATHS];

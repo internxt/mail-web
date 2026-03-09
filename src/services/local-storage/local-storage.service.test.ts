@@ -56,9 +56,7 @@ describe('Local Storage Service', () => {
   describe('Subscription data', () => {
     test('When storing subscription info, then it should persist the data', () => {
       const subscription = { plan: 'plan', status: 'status' };
-      localStorageService.setSubscription(
-        subscription as unknown as UserSubscription,
-      );
+      localStorageService.setSubscription(subscription as unknown as UserSubscription);
       const savedSubscription = localStorageService.getSubscription();
       expect(savedSubscription).toStrictEqual(subscription);
     });

@@ -1,13 +1,7 @@
 import { PaperclipIcon, XIcon } from '@phosphor-icons/react';
 import type { Attachment } from '../types';
 
-export const DefaultAttachmentItem = ({
-  attachment,
-  onRemove,
-}: {
-  attachment: Attachment
-  onRemove: () => void
-}) => (
+export const DefaultAttachmentItem = ({ attachment, onRemove }: { attachment: Attachment; onRemove: () => void }) => (
   <div className="flex items-center justify-between rounded-lg border border-gray-10 bg-gray-5 px-3 py-2">
     <div className="flex items-center gap-2 min-w-0">
       <PaperclipIcon size={16} className="shrink-0 text-gray-50" />

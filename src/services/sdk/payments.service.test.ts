@@ -34,9 +34,7 @@ describe('Payments Service', () => {
         getUserTier: vi.fn().mockResolvedValue(mockedTier),
       } as any;
 
-      vi.spyOn(SdkManager.instance, 'getPayments').mockReturnValue(
-        mockPaymentsClient,
-      );
+      vi.spyOn(SdkManager.instance, 'getPayments').mockReturnValue(mockPaymentsClient);
 
       const result = await PaymentsService.instance.getUserTier();
 
@@ -51,13 +49,9 @@ describe('Payments Service', () => {
         getUserTier: vi.fn().mockRejectedValue(unexpectedError),
       } as any;
 
-      vi.spyOn(SdkManager.instance, 'getPayments').mockReturnValue(
-        mockPaymentsClient,
-      );
+      vi.spyOn(SdkManager.instance, 'getPayments').mockReturnValue(mockPaymentsClient);
 
-      await expect(PaymentsService.instance.getUserTier()).rejects.toThrow(
-        unexpectedError,
-      );
+      await expect(PaymentsService.instance.getUserTier()).rejects.toThrow(unexpectedError);
     });
   });
 
@@ -72,9 +66,7 @@ describe('Payments Service', () => {
         getUserSubscription: vi.fn().mockResolvedValue(mockedSubscription),
       } as any;
 
-      vi.spyOn(SdkManager.instance, 'getPayments').mockReturnValue(
-        mockPaymentsClient,
-      );
+      vi.spyOn(SdkManager.instance, 'getPayments').mockReturnValue(mockPaymentsClient);
 
       const result = await PaymentsService.instance.getUserSubscription();
 
@@ -89,13 +81,9 @@ describe('Payments Service', () => {
         getUserSubscription: vi.fn().mockRejectedValue(unexpectedError),
       } as any;
 
-      vi.spyOn(SdkManager.instance, 'getPayments').mockReturnValue(
-        mockPaymentsClient,
-      );
+      vi.spyOn(SdkManager.instance, 'getPayments').mockReturnValue(mockPaymentsClient);
 
-      await expect(
-        PaymentsService.instance.getUserSubscription(),
-      ).rejects.toThrow(unexpectedError);
+      await expect(PaymentsService.instance.getUserSubscription()).rejects.toThrow(unexpectedError);
     });
   });
 });
