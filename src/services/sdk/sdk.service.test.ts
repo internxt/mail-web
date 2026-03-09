@@ -1,8 +1,8 @@
-import { Auth, Drive } from '@internxt/sdk'
-import { beforeEach, describe, expect, test, vi, afterEach } from 'vitest'
-import { SdkManager } from '.'
-import { ConfigService } from '../config'
-import { LocalStorageService } from '../local-storage'
+import { Auth, Drive } from '@internxt/sdk';
+import { beforeEach, describe, expect, test, vi, afterEach } from 'vitest';
+import { SdkManager } from '.';
+import { ConfigService } from '../config';
+import { LocalStorageService } from '../local-storage';
 
 vi.mock('@internxt/sdk', () => ({
   Auth: {
@@ -31,33 +31,29 @@ vi.mock('@internxt/sdk', () => ({
       })),
     },
   },
-}))
+}));
 
 describe('SDK Manager', () => {
   beforeEach(() => {
-    SdkManager.clean()
-    localStorage.clear()
-    vi.clearAllMocks()
+    SdkManager.clean();
+    localStorage.clear();
+    vi.clearAllMocks();
 
-    vi.spyOn(ConfigService.instance, 'getVariable').mockImplementation(
-      (key: string) => {
-        const config: Record<string, string> = {
-          DRIVE_API_URL: 'https://api-drive.internxt.com',
-          PAYMENTS_API_URL: 'https://api-payments.internxt.com',
-        }
-        return config[key] || ''
-      },
-    )
+    vi.spyOn(ConfigService.instance, 'getVariable').mockImplementation((key: string) => {
+      const config: Record<string, string> = {
+        DRIVE_API_URL: 'https://api-drive.internxt.com',
+        PAYMENTS_API_URL: 'https://api-payments.internxt.com',
+      };
+      return config[key] || '';
+    });
 
-    vi.spyOn(LocalStorageService.instance, 'getToken').mockReturnValue(
-      'mock-token',
-    )
-    vi.spyOn(LocalStorageService.instance, 'clearCredentials').mockReturnValue()
-  })
+    vi.spyOn(LocalStorageService.instance, 'getToken').mockReturnValue('mock-token');
+    vi.spyOn(LocalStorageService.instance, 'clearCredentials').mockReturnValue();
+  });
 
   afterEach(() => {
-    vi.restoreAllMocks()
-  })
+    vi.restoreAllMocks();
+  });
 
   describe('Security initialization', () => {
     test('When initializing with API security, then credentials should be stored', () => {
@@ -65,57 +61,55 @@ describe('SDK Manager', () => {
         token: 'test-token',
         newToken: 'new-test-token',
         userId: 'test-user-id',
-      }
+      };
 
-      SdkManager.init(mockApiSecurity)
+      SdkManager.init(mockApiSecurity);
       const storedSecurity = SdkManager.getApiSecurity({
         throwErrorOnMissingCredentials: false,
-      })
+      });
 
-      expect(storedSecurity).toEqual(mockApiSecurity)
-    })
+      expect(storedSecurity).toEqual(mockApiSecurity);
+    });
 
     test('When cleaning the manager, then security credentials should be removed', () => {
       const mockApiSecurity = {
         token: 'test-token',
         newToken: 'new-test-token',
         userId: 'test-user-id',
-      }
+      };
 
-      SdkManager.init(mockApiSecurity)
-      SdkManager.clean()
+      SdkManager.init(mockApiSecurity);
+      SdkManager.clean();
 
       const storedSecurity = SdkManager.getApiSecurity({
         throwErrorOnMissingCredentials: false,
-      })
-      expect(storedSecurity).toBeUndefined()
-    })
+      });
+      expect(storedSecurity).toBeUndefined();
+    });
 
     test('When requesting credentials without initialization and throwError is true, then should throw error', () => {
-      expect(() => SdkManager.getApiSecurity()).toThrow(
-        'Api security properties not found in SdkManager',
-      )
-    })
+      expect(() => SdkManager.getApiSecurity()).toThrow('Api security properties not found in SdkManager');
+    });
 
     test('When requesting credentials without initialization and throwError is false, then should return undefined', () => {
       const result = SdkManager.getApiSecurity({
         throwErrorOnMissingCredentials: false,
-      })
-      expect(result).toBeUndefined()
-    })
-  })
+      });
+      expect(result).toBeUndefined();
+    });
+  });
 
   describe('App metadata', () => {
     test('When getting app details, then package information should be returned', () => {
-      const appDetails = SdkManager.getAppDetails()
+      const appDetails = SdkManager.getAppDetails();
 
       expect(appDetails).toEqual({
         clientName: 'mail-web',
         clientVersion: expect.any(String),
-      })
-      expect(appDetails.clientVersion).toMatch(/^\d+\.\d+\.\d+$/)
-    })
-  })
+      });
+      expect(appDetails.clientVersion).toMatch(/^\d+\.\d+\.\d+$/);
+    });
+  });
 
   describe('Auth client creation', () => {
     test('When creating Auth client with initialized security, then client should use provided credentials', () => {
@@ -123,12 +117,12 @@ describe('SDK Manager', () => {
         token: 'test-token',
         newToken: 'new-test-token',
         userId: 'test-user-id',
-      }
-      SdkManager.init(mockApiSecurity)
+      };
+      SdkManager.init(mockApiSecurity);
 
-      const authClient = SdkManager.instance.getNewAuth()
+      const authClient = SdkManager.instance.getNewAuth();
 
-      expect(authClient).toBeDefined()
+      expect(authClient).toBeDefined();
       expect(Auth.client).toHaveBeenCalledWith(
         'https://api-drive.internxt.com',
         expect.objectContaining({
@@ -136,29 +130,29 @@ describe('SDK Manager', () => {
           clientVersion: expect.any(String),
         }),
         mockApiSecurity,
-      )
-    })
+      );
+    });
 
     test('When creating Auth client without initialized security, then client should use undefined credentials', () => {
-      const authClient = SdkManager.instance.getNewAuth()
+      const authClient = SdkManager.instance.getNewAuth();
 
-      expect(authClient).toBeDefined()
+      expect(authClient).toBeDefined();
       expect(Auth.client).toHaveBeenCalledWith(
         'https://api-drive.internxt.com',
         expect.objectContaining({
           clientName: 'mail-web',
         }),
         undefined,
-      )
-    })
-  })
+      );
+    });
+  });
 
   describe('Users client creation', () => {
     test('When creating Users client, then it should use token from localStorage', () => {
-      const usersClient = SdkManager.instance.getUsers()
+      const usersClient = SdkManager.instance.getUsers();
 
-      expect(usersClient).toBeDefined()
-      expect(LocalStorageService.instance.getToken).toHaveBeenCalled()
+      expect(usersClient).toBeDefined();
+      expect(LocalStorageService.instance.getToken).toHaveBeenCalled();
       expect(Drive.Users.client).toHaveBeenCalledWith(
         'https://api-drive.internxt.com',
         expect.objectContaining({
@@ -169,26 +163,26 @@ describe('SDK Manager', () => {
           token: 'mock-token',
           unauthorizedCallback: expect.any(Function),
         }),
-      )
-    })
+      );
+    });
 
     test('When Users client receives unauthorized response, then credentials should be cleared', () => {
-      SdkManager.instance.getUsers()
+      SdkManager.instance.getUsers();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const securityArg = (Drive.Users.client as any).mock.calls[0][2]
-      securityArg.unauthorizedCallback()
+      const securityArg = (Drive.Users.client as any).mock.calls[0][2];
+      securityArg.unauthorizedCallback();
 
-      expect(LocalStorageService.instance.clearCredentials).toHaveBeenCalled()
-    })
-  })
+      expect(LocalStorageService.instance.clearCredentials).toHaveBeenCalled();
+    });
+  });
 
   describe('Payments client creation', () => {
     test('When creating Payments client, then it should use correct API URL and token', () => {
-      const paymentsClient = SdkManager.instance.getPayments()
+      const paymentsClient = SdkManager.instance.getPayments();
 
-      expect(paymentsClient).toBeDefined()
-      expect(LocalStorageService.instance.getToken).toHaveBeenCalled()
+      expect(paymentsClient).toBeDefined();
+      expect(LocalStorageService.instance.getToken).toHaveBeenCalled();
       expect(Drive.Payments.client).toHaveBeenCalledWith(
         'https://api-payments.internxt.com',
         expect.objectContaining({
@@ -199,17 +193,17 @@ describe('SDK Manager', () => {
           token: 'mock-token',
           unauthorizedCallback: expect.any(Function),
         }),
-      )
-    })
+      );
+    });
 
     test('When Payments client receives unauthorized response, then credentials should be cleared', () => {
-      SdkManager.instance.getPayments()
+      SdkManager.instance.getPayments();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const securityArg = (Drive.Payments.client as any).mock.calls[0][2]
-      securityArg.unauthorizedCallback()
+      const securityArg = (Drive.Payments.client as any).mock.calls[0][2];
+      securityArg.unauthorizedCallback();
 
-      expect(LocalStorageService.instance.clearCredentials).toHaveBeenCalled()
-    })
-  })
-})
+      expect(LocalStorageService.instance.clearCredentials).toHaveBeenCalled();
+    });
+  });
+});

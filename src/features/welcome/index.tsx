@@ -1,10 +1,10 @@
-import { Button } from '@internxt/ui'
-import smallLogo from '../../assets/logos/small-logo.svg'
-import MailAppImage from '../../assets/images/welcome/welcome-page.webp'
-import { useTranslationContext } from '@/i18n'
+import { Button } from '@internxt/ui';
+import smallLogo from '../../assets/logos/small-logo.svg';
+import MailAppImage from '../../assets/images/welcome/welcome-page.webp';
+import { useTranslationContext } from '@/i18n';
 
 const WelcomePage = () => {
-  const { translate } = useTranslationContext()
+  const { translate } = useTranslationContext();
 
   return (
     <div className="flex flex-col w-full h-screen overflow-hidden bg-linear-to-r from-gray-5 to-primary/20">
@@ -22,30 +22,20 @@ const WelcomePage = () => {
         <div className="flex flex-row justify-between pt-10">
           <div className="flex flex-col pl-20 w-max max-w-lg pt-20 gap-6">
             <h1 className="text-5xl font-semibold leading-tight">
-              <span className="text-primary">
-                {translate('welcome.title.highlighted')}
-              </span>{' '}
-              <br /> {translate('welcome.title.normal')}
+              <span className="text-primary">{translate('welcome.title.highlighted')}</span> <br />{' '}
+              {translate('welcome.title.normal')}
             </h1>
-            <p className="tex-xl text-gray-50">
-              {translate('welcome.description')}
-            </p>
+            <p className="tex-xl text-gray-50">{translate('welcome.description')}</p>
             <div className="w-full border border-gray-10" />
           </div>
 
           <div className="flex translate-x-50">
-            <img
-              src={MailAppImage}
-              height={504}
-              width={806}
-              draggable={false}
-              alt="Mail app"
-            />
+            <img src={MailAppImage} height={504} width={806} draggable={false} alt="Mail app" />
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default WelcomePage
+export default WelcomePage;

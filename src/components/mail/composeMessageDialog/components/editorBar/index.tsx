@@ -13,16 +13,16 @@ import {
   ImageIcon,
   CaretDownIcon,
   PaintBucketIcon,
-} from '@phosphor-icons/react'
-import { Editor } from '@tiptap/react'
-import { useCallback, useState, useRef, useEffect, useReducer } from 'react'
-import { EditorBarButton } from './EditorBarButton'
-import { EditorBarGroup } from './EditorBarGroup'
-import type { EditorBarItem } from '../../types'
+} from '@phosphor-icons/react';
+import { Editor } from '@tiptap/react';
+import { useCallback, useState, useRef, useEffect, useReducer } from 'react';
+import { EditorBarButton } from './EditorBarButton';
+import { EditorBarGroup } from './EditorBarGroup';
+import type { EditorBarItem } from '../../types';
 
 export interface ActionBarProps {
-  editor: Editor | null
-  disabled?: boolean
+  editor: Editor | null;
+  disabled?: boolean;
 }
 
 const FONTS = [
@@ -31,9 +31,9 @@ const FONTS = [
   { label: 'Georgia', value: 'Georgia, serif' },
   { label: 'Verdana', value: 'Verdana, sans-serif' },
   { label: 'Courier New', value: 'Courier New, monospace' },
-]
+];
 
-const FONT_SIZES = ['10', '12', '14', '16', '18', '20', '24', '28', '32']
+const FONT_SIZES = ['10', '12', '14', '16', '18', '20', '24', '28', '32'];
 
 const COLORS = [
   '#000000',
@@ -52,117 +52,108 @@ const COLORS = [
   '#0000FF',
   '#9900FF',
   '#FF00FF',
-]
+];
 
 export const EditorBar = ({ editor, disabled }: ActionBarProps) => {
-  const [showColorPicker, setShowColorPicker] = useState(false)
-  const [showFontPicker, setShowFontPicker] = useState(false)
-  const [showSizePicker, setShowSizePicker] = useState(false)
-  const [currentFont, setCurrentFont] = useState('Arial')
-  const [currentSize, setCurrentSize] = useState('14')
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showFontPicker, setShowFontPicker] = useState(false);
+  const [showSizePicker, setShowSizePicker] = useState(false);
+  const [currentFont, setCurrentFont] = useState('Arial');
+  const [currentSize, setCurrentSize] = useState('14');
 
-  const colorPickerRef = useRef<HTMLDivElement>(null)
-  const fontPickerRef = useRef<HTMLDivElement>(null)
-  const sizePickerRef = useRef<HTMLDivElement>(null)
-  const [, forceUpdate] = useReducer((x) => x + 1, 0)
+  const colorPickerRef = useRef<HTMLDivElement>(null);
+  const fontPickerRef = useRef<HTMLDivElement>(null);
+  const sizePickerRef = useRef<HTMLDivElement>(null);
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
   useEffect(() => {
-    if (!editor) return
+    if (!editor) return;
 
-    editor.on('selectionUpdate', forceUpdate)
-    editor.on('transaction', forceUpdate)
+    editor.on('selectionUpdate', forceUpdate);
+    editor.on('transaction', forceUpdate);
 
     return () => {
-      editor.off('selectionUpdate', forceUpdate)
-      editor.off('transaction', forceUpdate)
-    }
-  }, [editor])
+      editor.off('selectionUpdate', forceUpdate);
+      editor.off('transaction', forceUpdate);
+    };
+  }, [editor]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        colorPickerRef.current &&
-        !colorPickerRef.current.contains(event.target as Node)
-      ) {
-        setShowColorPicker(false)
+      if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
+        setShowColorPicker(false);
       }
-      if (
-        fontPickerRef.current &&
-        !fontPickerRef.current.contains(event.target as Node)
-      ) {
-        setShowFontPicker(false)
+      if (fontPickerRef.current && !fontPickerRef.current.contains(event.target as Node)) {
+        setShowFontPicker(false);
       }
-      if (
-        sizePickerRef.current &&
-        !sizePickerRef.current.contains(event.target as Node)
-      ) {
-        setShowSizePicker(false)
+      if (sizePickerRef.current && !sizePickerRef.current.contains(event.target as Node)) {
+        setShowSizePicker(false);
       }
-    }
+    };
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // TODO: Update this to use the Modal component instead
   const setLink = useCallback(() => {
-    if (!editor) return
+    if (!editor) return;
 
-    const previousUrl = editor.getAttributes('link').href
-    const url = window.prompt('URL', previousUrl)
+    const previousUrl = editor.getAttributes('link').href;
+    const url = window.prompt('URL', previousUrl);
 
-    if (url === null) return
+    if (url === null) return;
 
     if (url === '') {
-      editor.chain().focus().extendMarkRange('link').unsetLink().run()
-      return
+      editor.chain().focus().extendMarkRange('link').unsetLink().run();
+      return;
     }
 
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
-  }, [editor])
+    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+  }, [editor]);
 
   // TODO: Update this to use the Modal component instead
   const addImage = useCallback(() => {
-    if (!editor) return
+    if (!editor) return;
 
-    const url = window.prompt('Image URL')
+    const url = window.prompt('Image URL');
 
     if (url) {
-      editor.chain().focus().setImage({ src: url }).run()
+      editor.chain().focus().setImage({ src: url }).run();
     }
-  }, [editor])
+  }, [editor]);
 
   const setColor = useCallback(
     (color: string) => {
-      if (!editor) return
-      editor.chain().focus().setColor(color).run()
-      setShowColorPicker(false)
+      if (!editor) return;
+      editor.chain().focus().setColor(color).run();
+      setShowColorPicker(false);
     },
     [editor],
-  )
+  );
 
   const setFont = useCallback(
     (font: { label: string; value: string }) => {
-      if (!editor) return
-      editor.chain().focus().setFontFamily(font.value).run()
-      setCurrentFont(font.label)
-      setShowFontPicker(false)
+      if (!editor) return;
+      editor.chain().focus().setFontFamily(font.value).run();
+      setCurrentFont(font.label);
+      setShowFontPicker(false);
     },
     [editor],
-  )
+  );
 
   const setFontSize = useCallback(
     (size: string) => {
-      if (!editor) return
-      editor.chain().focus().setFontSize(`${size}px`).run()
-      setCurrentSize(size)
-      setShowSizePicker(false)
+      if (!editor) return;
+      editor.chain().focus().setFontSize(`${size}px`).run();
+      setCurrentSize(size);
+      setShowSizePicker(false);
     },
     [editor],
-  )
+  );
 
   if (!editor) {
-    return null
+    return null;
   }
 
   return (
@@ -230,10 +221,7 @@ export const EditorBar = ({ editor, disabled }: ActionBarProps) => {
       <div className="w-px h-5 bg-gray-10" />
       {/* Color picker */}
       <div ref={colorPickerRef} className="relative">
-        <EditorBarButton
-          onClick={() => setShowColorPicker(!showColorPicker)}
-          disabled={disabled}
-        >
+        <EditorBarButton onClick={() => setShowColorPicker(!showColorPicker)} disabled={disabled}>
           <PaintBucketIcon size={20} />
         </EditorBarButton>
         {showColorPicker && (
@@ -336,8 +324,7 @@ export const EditorBar = ({ editor, disabled }: ActionBarProps) => {
             {
               id: 'alignCenter',
               icon: TextAlignCenterIcon,
-              onClick: () =>
-                editor.chain().focus().setTextAlign('center').run(),
+              onClick: () => editor.chain().focus().setTextAlign('center').run(),
               isActive: editor.isActive({ textAlign: 'center' }),
             },
             {
@@ -364,8 +351,7 @@ export const EditorBar = ({ editor, disabled }: ActionBarProps) => {
             {
               id: 'clear',
               icon: EraserIcon,
-              onClick: () =>
-                editor.chain().focus().unsetAllMarks().clearNodes().run(),
+              onClick: () => editor.chain().focus().unsetAllMarks().clearNodes().run(),
             },
           ] satisfies EditorBarItem[]
         }
@@ -376,5 +362,5 @@ export const EditorBar = ({ editor, disabled }: ActionBarProps) => {
         <ImageIcon size={20} />
       </EditorBarButton>
     </div>
-  )
-}
+  );
+};

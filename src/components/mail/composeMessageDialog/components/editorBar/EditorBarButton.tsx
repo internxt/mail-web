@@ -1,16 +1,11 @@
 export interface EditorBarButtonProps {
-  onClick: () => void
-  isActive?: boolean
-  disabled?: boolean
-  children: React.ReactNode
+  onClick: () => void;
+  isActive?: boolean;
+  disabled?: boolean;
+  children: React.ReactNode;
 }
 
-export const EditorBarButton = ({
-  onClick,
-  isActive,
-  disabled,
-  children,
-}: EditorBarButtonProps) => (
+export const EditorBarButton = ({ onClick, isActive, disabled, children }: EditorBarButtonProps) => (
   <button
     type="button"
     onClick={onClick}
@@ -19,4 +14,4 @@ export const EditorBarButton = ({
   >
     {children}
   </button>
-)
+);

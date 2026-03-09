@@ -1,22 +1,22 @@
-import { useNavigation } from '@/hooks/useNavigation'
-import { useTranslationContext } from '@/i18n'
-import { PATHS } from '@/routes/paths'
+import { useNavigation } from '@/hooks/useNavigation';
+import { useTranslationContext } from '@/i18n';
+import { PATHS } from '@/routes/paths';
 
 interface MailViewProps {
-  folder: string
+  folder: string;
 }
 
 const MailView = ({ folder }: MailViewProps) => {
-  const { goTo } = useNavigation()
-  const { translate } = useTranslationContext()
+  const { goTo } = useNavigation();
+  const { translate } = useTranslationContext();
 
   const goToInbox = () => {
-    goTo(PATHS.inbox)
-  }
+    goTo(PATHS.inbox);
+  };
 
   const goToTrash = () => {
-    goTo(PATHS.trash)
-  }
+    goTo(PATHS.trash);
+  };
 
   return (
     <div>
@@ -27,7 +27,7 @@ const MailView = ({ folder }: MailViewProps) => {
         <button onClick={goToTrash}>Go To Trash</button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default MailView
+export default MailView;

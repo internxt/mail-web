@@ -1,9 +1,9 @@
-import { type RouteObject, Navigate } from 'react-router-dom'
-import { lazy } from 'react'
-import RootLayout from '@/layouts/RootLayout'
+import { type RouteObject, Navigate } from 'react-router-dom';
+import { lazy } from 'react';
+import RootLayout from '@/layouts/RootLayout';
 
-const WelcomePage = lazy(() => import('@/features/welcome'))
-const MailView = lazy(() => import('@/features/mail/MailView'))
+const WelcomePage = lazy(() => import('@/features/welcome'));
+const MailView = lazy(() => import('@/features/mail/MailView'));
 
 export const routes: RouteObject[] = [
   {
@@ -27,4 +27,4 @@ export const routes: RouteObject[] = [
       },
     ],
   },
-]
+];

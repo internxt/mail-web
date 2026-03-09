@@ -1,20 +1,20 @@
-import { useState, type KeyboardEvent } from 'react'
-import type { Recipient } from '../types'
-import { RecipientChip } from '@/components/chips/RecipientChip'
+import { useState, type KeyboardEvent } from 'react';
+import type { Recipient } from '../types';
+import { RecipientChip } from '@/components/chips/RecipientChip';
 
 interface RecipientInputProps {
-  label: string
-  recipients: Recipient[]
-  onAddRecipient: (email: string) => void
-  onRemoveRecipient: (id: string) => void
-  showCcBcc?: boolean
-  onCcClick?: () => void
-  onBccClick?: () => void
-  showCcButton?: boolean
-  showBccButton?: boolean
-  ccButtonText?: string
-  bccButtonText?: string
-  disabled?: boolean
+  label: string;
+  recipients: Recipient[];
+  onAddRecipient: (email: string) => void;
+  onRemoveRecipient: (id: string) => void;
+  showCcBcc?: boolean;
+  onCcClick?: () => void;
+  onBccClick?: () => void;
+  showCcButton?: boolean;
+  showBccButton?: boolean;
+  ccButtonText?: string;
+  bccButtonText?: string;
+  disabled?: boolean;
 }
 
 export const RecipientInput = ({
@@ -31,43 +31,35 @@ export const RecipientInput = ({
   bccButtonText = 'BCC',
   disabled,
 }: RecipientInputProps) => {
-  const [inputValue, setInputValue] = useState('')
+  const [inputValue, setInputValue] = useState('');
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault()
-      const email = inputValue.trim().replace(/,$/, '')
+      e.preventDefault();
+      const email = inputValue.trim().replace(/,$/, '');
       if (email) {
-        onAddRecipient(email)
-        setInputValue('')
+        onAddRecipient(email);
+        setInputValue('');
       }
-    } else if (
-      e.key === 'Backspace' &&
-      inputValue === '' &&
-      recipients.length > 0
-    ) {
-      onRemoveRecipient(recipients.at(-1)!.id)
+    } else if (e.key === 'Backspace' && inputValue === '' && recipients.length > 0) {
+      onRemoveRecipient(recipients.at(-1)!.id);
     }
-  }
+  };
 
   const handleBlur = () => {
-    const email = inputValue.trim()
+    const email = inputValue.trim();
     if (email) {
-      onAddRecipient(email)
-      setInputValue('')
+      onAddRecipient(email);
+      setInputValue('');
     }
-  }
+  };
 
   return (
     <div className="flex flex-row gap-2 items-start">
       <p className="font-medium max-w-16 w-full text-gray-100 py-2">{label}</p>
       <div className="flex-1 flex items-center gap-1 flex-wrap rounded-lg border border-gray-10 bg-surface px-3 py-1.5 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
         {recipients.map((recipient) => (
-          <RecipientChip
-            key={recipient.id}
-            recipient={recipient}
-            onRemove={() => onRemoveRecipient(recipient.id)}
-          />
+          <RecipientChip key={recipient.id} recipient={recipient} onRemove={() => onRemoveRecipient(recipient.id)} />
         ))}
         <input
           type="text"
@@ -104,5 +96,5 @@ export const RecipientInput = ({
         )}
       </div>
     </div>
-  )
-}
+  );
+};

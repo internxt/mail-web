@@ -1,19 +1,18 @@
-import { initReactI18next } from 'react-i18next'
-import i18next from 'i18next'
+import { initReactI18next } from 'react-i18next';
+import i18next from 'i18next';
 
-import dayjs from 'dayjs'
-import en from 'dayjs/locale/en'
+import dayjs from 'dayjs';
+import en from 'dayjs/locale/en';
 
-import enJson from '../locales/en.json'
+import enJson from '../locales/en.json';
 
 const dayJsLocale: Record<string, ILocale> = {
   en,
-}
+};
 
-const deviceLang: string =
-  localStorage.getItem('i18nextLng') ?? navigator.language.split('-')[0]
+const deviceLang: string = localStorage.getItem('i18nextLng') ?? navigator.language.split('-')[0];
 
-dayjs.locale(dayJsLocale[deviceLang] || dayJsLocale['en'])
+dayjs.locale(dayJsLocale[deviceLang] || dayJsLocale['en']);
 
 export default i18next.use(initReactI18next).init({
   resources: {
@@ -30,4 +29,4 @@ export default i18next.use(initReactI18next).init({
   interpolation: {
     escapeValue: false,
   },
-})
+});
