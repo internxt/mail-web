@@ -9,13 +9,13 @@ const WelcomePage = () => {
   const { translate } = useTranslationContext();
   const { goTo } = useNavigation();
 
-  const handleOnLogin = () => {
+  const onSuccess = () => {
     console.log('onLogin');
     goTo('/inbox');
   };
 
   const { handleWebLogin, handleWebSignup } = useAuth({
-    onLogin: handleOnLogin,
+    onSuccess,
     translate,
   });
 

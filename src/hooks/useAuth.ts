@@ -5,32 +5,32 @@ import type { LoginCredentials } from '@/types/oauth';
 import { OauthService } from '@/services/oauth/oauth.service';
 
 interface UseWebAuthProps {
-  onLogin?: (token: string) => void
-  translate: (key: string) => string
+  onSuccess?: (token: string) => void;
+  translate: (key: string) => string;
 }
 
-export function useAuth({ onLogin, translate }: UseWebAuthProps) {
+export function useAuth({ onSuccess, translate }: UseWebAuthProps) {
   const [webAuthError, setWebAuthError] = useState('');
 
   const saveUserSession = useCallback(
     async (credentials: LoginCredentials) => {
-      LocalStorageService.instance.saveCredentials(
-        credentials.user,
-        credentials.mnemonic,
-        credentials.newToken,
-      );
+      LocalStorageService.instance.saveCredentials(credentials.user, credentials.mnemonic, credentials.newToken);
 
       try {
-        const subscription =
-          await PaymentsService.instance.getUserSubscription();
-        LocalStorageService.instance.setSubscription(subscription);
+        const [userTier, userSubscription] = await Promise.all([
+          PaymentsService.instance.getUserTier(),
+          PaymentsService.instance.getUserSubscription(),
+        ]);
+
+        LocalStorageService.instance.setTier(userTier);
+        LocalStorageService.instance.setSubscription(userSubscription);
       } catch (err) {
-        console.error('Error getting user subscription:', err);
+        console.error('Error getting user subscription and tier:', err);
       }
 
-      onLogin?.(credentials.newToken);
+      onSuccess?.(credentials.newToken);
     },
-    [LocalStorageService, onLogin],
+    [LocalStorageService, onSuccess],
   );
 
   /**

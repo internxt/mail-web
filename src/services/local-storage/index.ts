@@ -1,9 +1,13 @@
+import type { Tier } from '@internxt/sdk/dist/drive/payments/types/tiers';
 import type { UserSubscription } from '@internxt/sdk/dist/drive/payments/types/types';
 import type { UserSettings } from '@internxt/sdk/dist/shared/types/userSettings';
 
 const LocalStorageKeys = {
   xUser: 'xUser',
+  xMnemonic: 'xMnemonic',
   xNewToken: 'xNewToken',
+  xSubscription: 'xSubscription',
+  xTier: 'xTier',
 };
 
 export class LocalStorageService {
@@ -43,19 +47,28 @@ export class LocalStorageService {
   }
 
   setMnemonic(mnemonic: string) {
-    localStorage.setItem('xMnemonic', mnemonic);
+    localStorage.setItem(LocalStorageKeys.xMnemonic, mnemonic);
   }
 
   getMnemonic(): string | null {
-    return localStorage.getItem('xMnemonic');
+    return localStorage.getItem(LocalStorageKeys.xMnemonic);
   }
 
-  setSubscription(subscription: UserSubscription) {
-    localStorage.setItem('xSubscription', JSON.stringify(subscription));
+  setSubscription(subscription: UserSubscription): void {
+    localStorage.setItem(LocalStorageKeys.xSubscription, JSON.stringify(subscription));
   }
 
   getSubscription(): UserSubscription | null {
     const subscription = localStorage.getItem('xSubscription');
+    return subscription ? JSON.parse(subscription) : null;
+  }
+
+  setTier(subscription: Tier): void {
+    localStorage.setItem(LocalStorageKeys.xTier, JSON.stringify(subscription));
+  }
+
+  getTier(): Tier | null {
+    const subscription = localStorage.getItem(LocalStorageKeys.xTier);
     return subscription ? JSON.parse(subscription) : null;
   }
 
@@ -66,9 +79,6 @@ export class LocalStorageService {
   }
 
   clearCredentials() {
-    localStorage.removeItem('xUser');
-    localStorage.removeItem('xNewToken');
-    localStorage.removeItem('xSubscription');
-    localStorage.removeItem('xMnemonic');
+    Object.values(LocalStorageKeys).forEach((key) => this.remove(key));
   }
 }
