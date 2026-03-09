@@ -1,8 +1,2 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-echo "Running lint on staged files..."
 yarn lint-staged
-
-echo "Running tests..."
 yarn test
