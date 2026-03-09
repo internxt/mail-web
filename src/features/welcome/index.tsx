@@ -1,10 +1,10 @@
-import { Button } from '@internxt/ui'
-import smallLogo from '../../assets/logos/small-logo.svg'
-import MailAppImage from '../../assets/images/welcome/welcome-page.webp'
-import { useTranslationContext } from '@/i18n'
+import { Button } from '@internxt/ui';
+import smallLogo from '../../assets/logos/small-logo.svg';
+import MailAppImage from '../../assets/images/welcome/welcome-page.webp';
+import { useTranslationContext } from '@/i18n';
 
 const WelcomePage = () => {
-  const { translate } = useTranslationContext()
+  const { translate } = useTranslationContext();
 
   return (
     <div className="flex flex-col w-full h-screen overflow-hidden bg-linear-to-r from-gray-5 to-primary/20">
@@ -45,7 +45,7 @@ const WelcomePage = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default WelcomePage
+export default WelcomePage;

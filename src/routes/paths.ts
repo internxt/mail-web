@@ -1,6 +1,6 @@
 export const PATHS = {
   inbox: '/inbox',
   trash: '/trash',
-} as const
+} as const;
 
 export type RoutePath = (typeof PATHS)[keyof typeof PATHS]

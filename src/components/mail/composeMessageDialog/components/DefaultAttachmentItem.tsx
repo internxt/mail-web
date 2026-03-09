@@ -1,5 +1,5 @@
-import { PaperclipIcon, XIcon } from '@phosphor-icons/react'
-import type { Attachment } from '../types'
+import { PaperclipIcon, XIcon } from '@phosphor-icons/react';
+import type { Attachment } from '../types';
 
 export const DefaultAttachmentItem = ({
   attachment,
@@ -23,4 +23,4 @@ export const DefaultAttachmentItem = ({
       <XIcon size={14} className="text-gray-50" />
     </button>
   </div>
-)
+);

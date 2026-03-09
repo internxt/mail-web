@@ -1,5 +1,5 @@
-import type { EditorBarItem } from '../../types'
-import { EditorBarButton } from './EditorBarButton'
+import type { EditorBarItem } from '../../types';
+import { EditorBarButton } from './EditorBarButton';
 
 export interface EditorBarGroupProps {
   items: EditorBarItem[]
@@ -19,4 +19,4 @@ export const EditorBarGroup = ({ items, disabled }: EditorBarGroupProps) => (
       </EditorBarButton>
     ))}
   </div>
-)
+);
