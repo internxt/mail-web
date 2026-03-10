@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 @config '../node_modules/@internxt/css-config/dist/index.js';
 @source '../src/**/*.{js,ts,jsx,tsx}';
-@source '../node_modules/@internxt/ui/src/**/*.{js,ts,jsx,tsx}';
+@source '../node_modules/@internxt/ui/dist/**/*.{js,ts,jsx,tsx}';
 
 .body {
   overscroll-behavior: none;

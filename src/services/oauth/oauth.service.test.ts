@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { OauthService } from './oauth.service';
 import { UserService } from '../user/user.service';
@@ -39,7 +39,7 @@ describe('OAuth Service', () => {
   });
 
   describe('Processing authentication credentials', () => {
-    it('when credentials are received, then the mnemonic is decoded from base64', async () => {
+    test('when credentials are received, then the mnemonic is decoded from base64', async () => {
       const mnemonic = 'test mnemonic phrase';
       const encodedMnemonic = Buffer.from(mnemonic).toString('base64');
       const encodedNewToken = Buffer.from('test-new-token').toString('base64');
@@ -55,7 +55,7 @@ describe('OAuth Service', () => {
       expect(result.user.mnemonic).toBe(mnemonic);
     });
 
-    it('when credentials are processed, then the token is stored in local storage', async () => {
+    test('when credentials are processed, then the token is stored in local storage', async () => {
       const newToken = 'test-new-token-value';
       const encodedNewToken = Buffer.from(newToken).toString('base64');
       const encodedMnemonic = Buffer.from('test mnemonic').toString('base64');
@@ -72,7 +72,7 @@ describe('OAuth Service', () => {
       expect(setTokenSpy).toHaveBeenCalledWith(newToken);
     });
 
-    it('when credentials are stored, then user data is fetched from the API', async () => {
+    test('when credentials are stored, then user data is fetched from the API', async () => {
       const encodedNewToken = Buffer.from('test-new-token').toString('base64');
       const encodedMnemonic = Buffer.from('test mnemonic').toString('base64');
 
@@ -88,7 +88,7 @@ describe('OAuth Service', () => {
       expect(getUserSpy).toHaveBeenCalledTimes(1);
     });
 
-    it('when credentials are fully processed, then complete authentication data is returned', async () => {
+    test('when credentials are fully processed, then complete authentication data is returned', async () => {
       const mnemonic = 'test mnemonic phrase';
       const newToken = 'test-new-token-value';
       const encodedMnemonic = Buffer.from(mnemonic).toString('base64');
@@ -107,7 +107,7 @@ describe('OAuth Service', () => {
       expect(result.user).toHaveProperty('mnemonic', mnemonic);
     });
 
-    it('when user data cannot be retrieved, then an error indicating so is thrown', async () => {
+    test('when user data cannot be retrieved, then an error indicating so is thrown', async () => {
       vi.spyOn(UserService.instance, 'getUser').mockRejectedValue(new Error('API Error'));
 
       const params: WebAuthParams = {
@@ -120,7 +120,7 @@ describe('OAuth Service', () => {
   });
 
   describe('Validating authentication parameters', () => {
-    it('when all required parameters are provided, then validation passes', () => {
+    test('when all required parameters are provided, then validation passes', () => {
       const params: WebAuthParams = {
         mnemonic: 'test-mnemonic',
         newToken: 'test-token',
@@ -131,7 +131,7 @@ describe('OAuth Service', () => {
       expect(isValid).toBe(true);
     });
 
-    it('when the mnemonic is missing, then validation fails', () => {
+    test('when the mnemonic is missing, then validation fails', () => {
       const params = {
         newToken: 'test-token',
       };
@@ -141,7 +141,7 @@ describe('OAuth Service', () => {
       expect(isValid).toBe(false);
     });
 
-    it('when the token is missing, then validation fails', () => {
+    test('when the token is missing, then validation fails', () => {
       const params = {
         mnemonic: 'test-mnemonic',
       };
@@ -151,7 +151,7 @@ describe('OAuth Service', () => {
       expect(isValid).toBe(false);
     });
 
-    it('when no parameters are provided, then validation fails', () => {
+    test('when no parameters are provided, then validation fails', () => {
       const params = {};
 
       const isValid = (service as any).validateAuthParams(params);
@@ -161,25 +161,25 @@ describe('OAuth Service', () => {
   });
 
   describe('Origin security validation', () => {
-    it('when the origin is from internxt.com domain, then it is accepted', () => {
+    test('when the origin is from internxt.com domain, then it is accepted', () => {
       const isValid = (service as any).isValidOrigin('https://drive.internxt.com');
 
       expect(isValid).toBe(true);
     });
 
-    it('when the origin is from localhost, then it is accepted', () => {
+    test('when the origin is from localhost, then it is accepted', () => {
       const isValid = (service as any).isValidOrigin('http://localhost:3000');
 
       expect(isValid).toBe(true);
     });
 
-    it('when the origin is from an unknown domain, then it is rejected', () => {
+    test('when the origin is from an unknown domain, then it is rejected', () => {
       const isValid = (service as any).isValidOrigin('https://malicious-site.com');
 
       expect(isValid).toBe(false);
     });
 
-    it('when the origin is empty, then it is rejected', () => {
+    test('when the origin is empty, then it is rejected', () => {
       const isValid = (service as any).isValidOrigin('');
 
       expect(isValid).toBe(false);
@@ -187,7 +187,7 @@ describe('OAuth Service', () => {
   });
 
   describe('Handling authentication success messages', () => {
-    it('when a success message with valid credentials is received, then authentication completes successfully', () => {
+    test('when a success message with valid credentials is received, then authentication completes successfully', () => {
       const mockResolve = vi.fn();
       const mockReject = vi.fn();
       const mockTimeout = setTimeout(() => {}, 1000) as any;
@@ -208,7 +208,7 @@ describe('OAuth Service', () => {
       expect(mockReject).not.toHaveBeenCalled();
     });
 
-    it('when a success message has incomplete credentials, then authentication fails', () => {
+    test('when a success message has incomplete credentials, then authentication fails', () => {
       const mockResolve = vi.fn();
       const mockReject = vi.fn();
       const mockTimeout = setTimeout(() => {}, 1000) as any;
@@ -226,7 +226,7 @@ describe('OAuth Service', () => {
   });
 
   describe('Handling authentication error messages', () => {
-    it('when an error message with a description is received, then authentication fails with that error', () => {
+    test('when an error message with a description is received, then authentication fails with that error', () => {
       const mockReject = vi.fn();
       const mockTimeout = setTimeout(() => {}, 1000) as any;
 
@@ -240,7 +240,7 @@ describe('OAuth Service', () => {
       expect(mockReject).toHaveBeenCalledWith(new Error('Authentication failed'));
     });
 
-    it('when an error message without a description is received, then authentication fails with a default error', () => {
+    test('when an error message without a description is received, then authentication fails with a default error', () => {
       const mockReject = vi.fn();
       const mockTimeout = setTimeout(() => {}, 1000) as any;
 
@@ -255,7 +255,7 @@ describe('OAuth Service', () => {
   });
 
   describe('Decoding base64 parameters', () => {
-    it('when a base64-encoded string is received, then it is decoded to plain text', () => {
+    test('when a base64-encoded string is received, then it is decoded to plain text', () => {
       const originalText = 'test text with spaces';
       const encoded = Buffer.from(originalText).toString('base64');
 
@@ -264,7 +264,7 @@ describe('OAuth Service', () => {
       expect(decoded).toBe(originalText);
     });
 
-    it('when the encoded string contains special characters, then they are preserved after decoding', () => {
+    test('when the encoded string contains special characters, then they are preserved after decoding', () => {
       const originalText = 'test!@#$%^&*()_+-=[]{}|;:",.<>?';
       const encoded = Buffer.from(originalText).toString('base64');
 
@@ -273,7 +273,7 @@ describe('OAuth Service', () => {
       expect(decoded).toBe(originalText);
     });
 
-    it('when the encoded string contains unicode characters, then they are preserved after decoding', () => {
+    test('when the encoded string contains unicode characters, then they are preserved after decoding', () => {
       const originalText = 'test émojis 😀🎉 and àccénts';
       const encoded = Buffer.from(originalText).toString('base64');
 
@@ -284,7 +284,7 @@ describe('OAuth Service', () => {
   });
 
   describe('Popup window positioning', () => {
-    it('when the popup is created, then it is centered on the screen', () => {
+    test('when the popup is created, then it is centered on the screen', () => {
       Object.defineProperty(window, 'screen', {
         value: {
           width: 1920,
@@ -302,7 +302,7 @@ describe('OAuth Service', () => {
       expect(top).toBe(expectedTop);
     });
 
-    it('when the screen size changes, then the popup position is recalculated correctly', () => {
+    test('when the screen size changes, then the popup position is recalculated correctly', () => {
       Object.defineProperty(window, 'screen', {
         value: {
           width: 1366,
@@ -322,7 +322,7 @@ describe('OAuth Service', () => {
   });
 
   describe('Popup window configuration', () => {
-    it('when the popup window is configured, then it includes all required security and layout features', () => {
+    test('when the popup window is configured, then it includes all required security and layout features', () => {
       const left = 100;
       const top = 200;
 
@@ -340,7 +340,7 @@ describe('OAuth Service', () => {
   });
 
   describe('Popup closed detection', () => {
-    it('when the popup is closed by the user, then authentication is cancelled', () => {
+    test('when the popup is closed by the user, then authentication is cancelled', () => {
       vi.useFakeTimers();
 
       const mockReject = vi.fn();
@@ -360,7 +360,7 @@ describe('OAuth Service', () => {
   });
 
   describe('Building login credentials', () => {
-    it('when user data is available, then login credentials are built correctly', () => {
+    test('when user data is available, then login credentials are built correctly', () => {
       const user = {
         userId: '123',
         email: 'test@example.com',
@@ -381,7 +381,7 @@ describe('OAuth Service', () => {
   });
 
   describe('Cleanup', () => {
-    it('when cleanup is called, then all resources are cleaned up', () => {
+    test('when cleanup is called, then all resources are cleaned up', () => {
       const mockPopup = {
         closed: false,
         close: vi.fn(),

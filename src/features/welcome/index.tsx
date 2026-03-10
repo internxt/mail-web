@@ -3,15 +3,13 @@ import smallLogo from '../../assets/logos/small-logo.svg';
 import MailAppImage from '../../assets/images/welcome/welcome-page.webp';
 import { useTranslationContext } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigation } from '@/hooks/useNavigation';
+import { NavigationService } from '@/services/navigation';
 
 const WelcomePage = () => {
   const { translate } = useTranslationContext();
-  const { goTo } = useNavigation();
 
   const onSuccess = () => {
-    console.log('onLogin');
-    goTo('/inbox');
+    NavigationService.instance.replace('/inbox');
   };
 
   const { handleWebLogin, handleWebSignup } = useAuth({
