@@ -21,7 +21,12 @@ describe('OAuth Service', () => {
     } as any);
 
     vi.spyOn(LocalStorageService.instance, 'setToken').mockImplementation(() => {});
-    vi.spyOn(ConfigService.instance, 'isProduction').mockReturnValue(true);
+    vi.spyOn(ConfigService.instance, 'getVariable').mockImplementation((key: string) => {
+      const config: Record<string, string> = {
+        DRIVE_APP_URL: 'https://drive.internxt.com',
+      };
+      return config[key] || '';
+    });
 
     service = OauthService.instance;
   });
