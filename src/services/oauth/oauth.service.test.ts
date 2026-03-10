@@ -1,11 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { OauthService } from './oauth.service';
 import { UserService } from '../user/user.service';
-import { ConfigService } from '../config';
 import { LocalStorageService } from '../local-storage';
 import { WEB_AUTH_CONFIG, WEB_AUTH_MESSAGE_TYPES, type WebAuthMessage, type WebAuthParams } from '@/types/oauth';
 import { AuthCancelledByUserError, MissingAuthParamsToken, WebAuthProcessingError } from './errors/oauth.errors';
+
+vi.mock('../config', () => ({
+  ConfigService: {
+    instance: {
+      getVariable: (key: string) => {
+        const config: Record<string, string> = {
+          DRIVE_APP_URL: 'https://drive.internxt.com',
+        };
+        return config[key] || '';
+      },
+    },
+  },
+}));
 
 describe('OAuth Service', () => {
   let service: OauthService;
@@ -21,12 +34,6 @@ describe('OAuth Service', () => {
     } as any);
 
     vi.spyOn(LocalStorageService.instance, 'setToken').mockImplementation(() => {});
-    vi.spyOn(ConfigService.instance, 'getVariable').mockImplementation((key: string) => {
-      const config: Record<string, string> = {
-        DRIVE_APP_URL: 'https://drive.internxt.com',
-      };
-      return config[key] || '';
-    });
 
     service = OauthService.instance;
   });
