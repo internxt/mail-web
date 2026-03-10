@@ -100,7 +100,7 @@ export const EditorBar = ({ editor, disabled }: ActionBarProps) => {
     if (!editor) return;
 
     const previousUrl = editor.getAttributes('link').href;
-    const url = window.prompt('URL', previousUrl);
+    const url = globalThis.prompt('URL', previousUrl);
 
     if (url === null) return;
 
@@ -116,7 +116,7 @@ export const EditorBar = ({ editor, disabled }: ActionBarProps) => {
   const addImage = useCallback(() => {
     if (!editor) return;
 
-    const url = window.prompt('Image URL');
+    const url = globalThis.prompt('Image URL');
 
     if (url) {
       editor.chain().focus().setImage({ src: url }).run();

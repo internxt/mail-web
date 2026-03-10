@@ -10,6 +10,7 @@ describe('Config Service', () => {
     vi.stubEnv('VITE_CRYPTO_SECRET', 'test-secret');
     vi.stubEnv('VITE_MAGIC_IV', 'test-iv');
     vi.stubEnv('VITE_MAGIC_SALT', 'test-salt');
+    vi.stubEnv('VITE_DRIVE_APP_URL', 'https://drive.internxt.com');
     vi.stubEnv('PROD', false);
   });
 
