@@ -20,27 +20,19 @@ import { LocalStorageService } from '../local-storage';
 
 export class OauthService {
   public static readonly instance: OauthService = new OauthService();
+  private readonly DRIVE_APP_URL = ConfigService.instance.getVariable('DRIVE_APP_URL');
 
   private authPopup: Window | null = null;
   private messageListener: ((event: MessageEvent) => void) | null = null;
   private popupCheckInterval: NodeJS.Timeout | null = null;
 
   /**
-   * Get the web client URL based on current environment
-   */
-  private get webClientUrl() {
-    return ConfigService.instance.isProduction()
-      ? 'https://drive.internxt.com'
-      : 'http://localhost:3000';
-  }
-
-  /**
    * Get the web auth URLs for login and signup
    */
   public get urls() {
     return {
-      login: `${this.webClientUrl}${WEB_AUTH_CONFIG.loginPath}?${WEB_AUTH_CONFIG.authOriginParam}`,
-      signup: `${this.webClientUrl}${WEB_AUTH_CONFIG.signupPath}?${WEB_AUTH_CONFIG.authOriginParam}`,
+      login: `${this.DRIVE_APP_URL}${WEB_AUTH_CONFIG.loginPath}?${WEB_AUTH_CONFIG.authOriginParam}`,
+      signup: `${this.DRIVE_APP_URL}${WEB_AUTH_CONFIG.signupPath}?${WEB_AUTH_CONFIG.authOriginParam}`,
     };
   }
 
@@ -94,9 +86,7 @@ export class OauthService {
   /**
    * Validate authentication parameters
    */
-  private validateAuthParams(
-    params: Partial<WebAuthParams>,
-  ): params is WebAuthParams {
+  private validateAuthParams(params: Partial<WebAuthParams>): params is WebAuthParams {
     return !!(params.mnemonic && params.newToken);
   }
 
@@ -125,11 +115,7 @@ export class OauthService {
   /**
    * Handle auth error message
    */
-  private handleAuthError(
-    data: WebAuthMessage,
-    reject: (reason: Error) => void,
-    timeout: NodeJS.Timeout,
-  ) {
+  private handleAuthError(data: WebAuthMessage, reject: (reason: Error) => void, timeout: NodeJS.Timeout) {
     clearTimeout(timeout);
     this.cleanup();
     reject(new Error(data.error || 'Authentication failed'));
@@ -184,11 +170,7 @@ export class OauthService {
 
       window.addEventListener('message', this.messageListener);
 
-      this.popupCheckInterval = this.setupPopupClosedChecker(
-        popup,
-        reject,
-        timeout,
-      );
+      this.popupCheckInterval = this.setupPopupClosedChecker(popup, reject, timeout);
     });
   }
 
@@ -222,11 +204,7 @@ export class OauthService {
   /**
    * Build login credentials response
    */
-  private buildLoginCredentials(
-    user: UserSettings,
-    mnemonic: string,
-    newToken: string,
-  ): LoginCredentials {
+  private buildLoginCredentials(user: UserSettings, mnemonic: string, newToken: string): LoginCredentials {
     return {
       user: {
         ...user,
@@ -242,9 +220,7 @@ export class OauthService {
    * @param params The authentication parameters from the web
    * @returns The processed login credentials
    */
-  private async processWebAuthParams(
-    params: WebAuthParams,
-  ): Promise<LoginCredentials> {
+  private async processWebAuthParams(params: WebAuthParams): Promise<LoginCredentials> {
     try {
       const mnemonic = this.decodeBase64Param(params.mnemonic);
       const newToken = this.decodeBase64Param(params.newToken);
@@ -253,11 +229,7 @@ export class OauthService {
 
       const user = await UserService.instance.getUser();
 
-      return this.buildLoginCredentials(
-        user as unknown as LoginCredentials['user'],
-        mnemonic,
-        newToken,
-      );
+      return this.buildLoginCredentials(user as unknown as LoginCredentials['user'], mnemonic, newToken);
     } catch (error) {
       console.error('Error while processing web auth params', error);
       throw new WebAuthProcessingError(error as Error);

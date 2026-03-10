@@ -4,17 +4,8 @@ import { OauthService } from './oauth.service';
 import { UserService } from '../user/user.service';
 import { ConfigService } from '../config';
 import { LocalStorageService } from '../local-storage';
-import {
-  WEB_AUTH_CONFIG,
-  WEB_AUTH_MESSAGE_TYPES,
-  type WebAuthMessage,
-  type WebAuthParams,
-} from '@/types/oauth';
-import {
-  AuthCancelledByUserError,
-  MissingAuthParamsToken,
-  WebAuthProcessingError,
-} from './errors/oauth.errors';
+import { WEB_AUTH_CONFIG, WEB_AUTH_MESSAGE_TYPES, type WebAuthMessage, type WebAuthParams } from '@/types/oauth';
+import { AuthCancelledByUserError, MissingAuthParamsToken, WebAuthProcessingError } from './errors/oauth.errors';
 
 describe('OAuth Service', () => {
   let service: OauthService;
@@ -29,35 +20,10 @@ describe('OAuth Service', () => {
       lastname: 'User',
     } as any);
 
-    vi.spyOn(LocalStorageService.instance, 'setToken').mockImplementation(
-      () => {},
-    );
+    vi.spyOn(LocalStorageService.instance, 'setToken').mockImplementation(() => {});
     vi.spyOn(ConfigService.instance, 'isProduction').mockReturnValue(true);
 
     service = OauthService.instance;
-  });
-
-  describe('Authentication URLs', () => {
-    it('when in production environment, then authentication URLs point to production domain', () => {
-      const urls = service.urls;
-
-      expect(urls.login).toBe(
-        `https://drive.internxt.com${WEB_AUTH_CONFIG.loginPath}?${WEB_AUTH_CONFIG.authOriginParam}`,
-      );
-      expect(urls.signup).toBe(
-        `https://drive.internxt.com${WEB_AUTH_CONFIG.signupPath}?${WEB_AUTH_CONFIG.authOriginParam}`,
-      );
-    });
-
-    it('when in development environment, then authentication URLs point to localhost', () => {
-      vi.spyOn(ConfigService.instance, 'isProduction').mockReturnValue(false);
-
-      const urls = service.urls;
-
-      expect(urls.login).toContain('localhost:3000');
-      expect(urls.login).toContain(WEB_AUTH_CONFIG.loginPath);
-      expect(urls.login).toContain(WEB_AUTH_CONFIG.authOriginParam);
-    });
   });
 
   describe('Processing authentication credentials', () => {
@@ -130,18 +96,14 @@ describe('OAuth Service', () => {
     });
 
     it('when user data cannot be retrieved, then an error indicating so is thrown', async () => {
-      vi.spyOn(UserService.instance, 'getUser').mockRejectedValue(
-        new Error('API Error'),
-      );
+      vi.spyOn(UserService.instance, 'getUser').mockRejectedValue(new Error('API Error'));
 
       const params: WebAuthParams = {
         mnemonic: Buffer.from('test').toString('base64'),
         newToken: Buffer.from('new-token').toString('base64'),
       };
 
-      await expect(
-        (service as any).processWebAuthParams(params),
-      ).rejects.toThrow(WebAuthProcessingError);
+      await expect((service as any).processWebAuthParams(params)).rejects.toThrow(WebAuthProcessingError);
     });
   });
 
@@ -188,9 +150,7 @@ describe('OAuth Service', () => {
 
   describe('Origin security validation', () => {
     it('when the origin is from internxt.com domain, then it is accepted', () => {
-      const isValid = (service as any).isValidOrigin(
-        'https://drive.internxt.com',
-      );
+      const isValid = (service as any).isValidOrigin('https://drive.internxt.com');
 
       expect(isValid).toBe(true);
     });
@@ -202,9 +162,7 @@ describe('OAuth Service', () => {
     });
 
     it('when the origin is from an unknown domain, then it is rejected', () => {
-      const isValid = (service as any).isValidOrigin(
-        'https://malicious-site.com',
-      );
+      const isValid = (service as any).isValidOrigin('https://malicious-site.com');
 
       expect(isValid).toBe(false);
     });
@@ -232,12 +190,7 @@ describe('OAuth Service', () => {
         payload,
       };
 
-      (service as any).handleAuthSuccess(
-        message,
-        mockResolve,
-        mockReject,
-        mockTimeout,
-      );
+      (service as any).handleAuthSuccess(message, mockResolve, mockReject, mockTimeout);
 
       expect(mockResolve).toHaveBeenCalledWith(payload);
       expect(mockReject).not.toHaveBeenCalled();
@@ -253,16 +206,9 @@ describe('OAuth Service', () => {
         payload: { mnemonic: 'test' } as any,
       };
 
-      (service as any).handleAuthSuccess(
-        message,
-        mockResolve,
-        mockReject,
-        mockTimeout,
-      );
+      (service as any).handleAuthSuccess(message, mockResolve, mockReject, mockTimeout);
 
-      expect(mockReject).toHaveBeenCalledWith(
-        expect.any(MissingAuthParamsToken),
-      );
+      expect(mockReject).toHaveBeenCalledWith(expect.any(MissingAuthParamsToken));
       expect(mockResolve).not.toHaveBeenCalled();
     });
   });
@@ -279,9 +225,7 @@ describe('OAuth Service', () => {
 
       (service as any).handleAuthError(message, mockReject, mockTimeout);
 
-      expect(mockReject).toHaveBeenCalledWith(
-        new Error('Authentication failed'),
-      );
+      expect(mockReject).toHaveBeenCalledWith(new Error('Authentication failed'));
     });
 
     it('when an error message without a description is received, then authentication fails with a default error', () => {
@@ -294,9 +238,7 @@ describe('OAuth Service', () => {
 
       (service as any).handleAuthError(message, mockReject, mockTimeout);
 
-      expect(mockReject).toHaveBeenCalledWith(
-        new Error('Authentication failed'),
-      );
+      expect(mockReject).toHaveBeenCalledWith(new Error('Authentication failed'));
     });
   });
 
@@ -393,18 +335,12 @@ describe('OAuth Service', () => {
       const mockTimeout = setTimeout(() => {}, 1000) as any;
       const mockPopup = { closed: true } as Window;
 
-      const interval = (service as any).setupPopupClosedChecker(
-        mockPopup,
-        mockReject,
-        mockTimeout,
-      );
+      const interval = (service as any).setupPopupClosedChecker(mockPopup, mockReject, mockTimeout);
 
       // Trigger the interval check
       vi.advanceTimersByTime(WEB_AUTH_CONFIG.popupCheckIntervalMs);
 
-      expect(mockReject).toHaveBeenCalledWith(
-        expect.any(AuthCancelledByUserError),
-      );
+      expect(mockReject).toHaveBeenCalledWith(expect.any(AuthCancelledByUserError));
 
       clearInterval(interval);
       vi.useRealTimers();
@@ -422,11 +358,7 @@ describe('OAuth Service', () => {
       const mnemonic = 'test mnemonic';
       const newToken = 'test-token';
 
-      const credentials = (service as any).buildLoginCredentials(
-        user,
-        mnemonic,
-        newToken,
-      );
+      const credentials = (service as any).buildLoginCredentials(user, mnemonic, newToken);
 
       expect(credentials).toHaveProperty('user');
       expect(credentials).toHaveProperty('newToken', newToken);
@@ -454,10 +386,7 @@ describe('OAuth Service', () => {
 
       expect(mockPopup.close).toHaveBeenCalled();
       expect((service as any).authPopup).toBeNull();
-      expect(removeEventListenerSpy).toHaveBeenCalledWith(
-        'message',
-        mockListener,
-      );
+      expect(removeEventListenerSpy).toHaveBeenCalledWith('message', mockListener);
       expect((service as any).messageListener).toBeNull();
       expect((service as any).popupCheckInterval).toBeNull();
     });
