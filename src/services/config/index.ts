@@ -7,6 +7,7 @@ interface ConfigKeys {
   CRYPTO_SECRET: string;
   MAGIC_IV: string;
   MAGIC_SALT: string;
+  DRIVE_APP_URL: string;
 }
 
 const configKeys: Record<keyof ConfigKeys, string> = {
@@ -16,6 +17,7 @@ const configKeys: Record<keyof ConfigKeys, string> = {
   CRYPTO_SECRET: 'VITE_CRYPTO_SECRET',
   MAGIC_IV: 'VITE_MAGIC_IV',
   MAGIC_SALT: 'VITE_MAGIC_SALT',
+  DRIVE_APP_URL: 'VITE_DRIVE_APP_URL',
 };
 
 export class ConfigService {

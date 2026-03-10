@@ -1,4 +1,5 @@
 export const PATHS = {
+  welcome: '/welcome',
   inbox: '/inbox',
   trash: '/trash',
 } as const;

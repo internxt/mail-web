@@ -1,6 +1,6 @@
 import { type RouteObject, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
-import RootLayout from '@/layouts/RootLayout';
+import RootLayout from '@/routes/layouts/RootLayout';
 
 const WelcomePage = lazy(() => import('@/features/welcome'));
 const MailView = lazy(() => import('@/features/mail/MailView'));
