@@ -131,11 +131,12 @@ function runTokenizer(text: string): [BigInt64Array, Float32Array] {
   tokenizer._tokenizer(tokensPtr, maskPtr, textPtr, vPtr, mPtr, LENTOKENS, vstr.length, mstr.length);
 
   const tokens = new Int32Array(tokenizer.HEAP32.buffer, tokensPtr, LENTOKENS);
-  const mask = new Float32Array(tokenizer.HEAPF32.buffer, maskPtr, LENTOKENS);
+  const maskView = new Float32Array(tokenizer.HEAPF32.buffer, maskPtr, LENTOKENS);
   const tokens64 = new BigInt64Array(LENTOKENS);
   for (let i = 0; i < LENTOKENS; i++) {
     tokens64[i] = BigInt(tokens[i]);
   }
+  const mask = new Float32Array(maskView);
 
   tokenizer._free(tokensPtr);
   tokenizer._free(maskPtr);
@@ -253,5 +254,4 @@ const SpamDemo = ({ folder }: MailViewProps) => {
     </div>
   );
 };
-
 export default SpamDemo;
