@@ -1,6 +1,6 @@
 import { type Tier } from '@internxt/sdk/dist/drive/payments/types/tiers';
 import { type UserSubscription } from '@internxt/sdk/dist/drive/payments/types/types';
-import { SdkManager } from '.';
+import { SdkManager } from '..';
 
 export class PaymentsService {
   public static readonly instance: PaymentsService = new PaymentsService();

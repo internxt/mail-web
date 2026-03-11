@@ -4,12 +4,22 @@ import MailAppImage from '../../assets/images/welcome/welcome-page.webp';
 import { useTranslationContext } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { NavigationService } from '@/services/navigation';
+import { useAppSelector } from '@/store/hooks';
+import { useEffect } from 'react';
+import { AppView } from '@/routes/paths';
 
 const WelcomePage = () => {
   const { translate } = useTranslationContext();
+  const { isAuthenticated } = useAppSelector((state) => state.user);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      NavigationService.instance.replace(AppView.inbox);
+    }
+  }, [isAuthenticated]);
 
   const onSuccess = () => {
-    NavigationService.instance.replace('/inbox');
+    NavigationService.instance.replace(AppView.inbox);
   };
 
   const { handleWebLogin, handleWebSignup } = useAuth({

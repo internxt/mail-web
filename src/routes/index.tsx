@@ -17,7 +17,7 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <Navigate to="/welcome" replace />,
+        element: <Navigate to="/inbox" replace />,
       },
       { path: 'inbox', element: <MailView folder="inbox" /> },
       { path: 'trash', element: <MailView folder="trash" /> },

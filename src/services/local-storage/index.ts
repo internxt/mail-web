@@ -2,7 +2,7 @@ import type { Tier } from '@internxt/sdk/dist/drive/payments/types/tiers';
 import type { UserSubscription } from '@internxt/sdk/dist/drive/payments/types/types';
 import type { UserSettings } from '@internxt/sdk/dist/shared/types/userSettings';
 
-const LocalStorageKeys = {
+export const LocalStorageKeys = {
   xUser: 'xUser',
   xMnemonic: 'xMnemonic',
   xNewToken: 'xNewToken',
