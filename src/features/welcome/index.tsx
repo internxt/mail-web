@@ -2,7 +2,7 @@ import { Button } from '@internxt/ui';
 import smallLogo from '../../assets/logos/small-logo.svg';
 import MailAppImage from '../../assets/images/welcome/welcome-page.webp';
 import { useTranslationContext } from '@/i18n';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/auth/useAuth';
 import { NavigationService } from '@/services/navigation';
 import { useAppSelector } from '@/store/hooks';
 import { useEffect } from 'react';
