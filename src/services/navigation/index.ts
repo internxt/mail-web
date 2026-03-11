@@ -1,4 +1,4 @@
-import type { RoutePath } from '@/routes/paths';
+import { getRouteConfig, getViewByPath, type AppView } from '@/routes/paths';
 import type { NavigateFunction, RouterNavigateOptions } from 'react-router-dom';
 import { NavigationNotInitializedError } from './navigation.errors';
 
@@ -6,23 +6,35 @@ export class NavigationService {
   static readonly instance = new NavigationService();
   private navigation?: NavigateFunction;
 
-  private getNavigation(to: RoutePath, options?: RouterNavigateOptions) {
+  private getNavigation(appView: AppView, params?: Record<string, string>, options?: RouterNavigateOptions) {
     if (!this.navigation) {
       throw new NavigationNotInitializedError();
     }
+
+    let to = getRouteConfig(appView).path;
+
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        to = to.replace(`:${key}`, value);
+      });
+    }
+
     return this.navigation(to, options);
   }
 
   /**
-   * Initializes the NavigationService with the provided navigate function.
+   * Initializes the service with the provided navigate function.
    * @param {NavigateFunction} navigate - The navigate function to use for navigation - comes from react-router-dom.
    */
   init(navigate: NavigateFunction) {
     this.navigation = navigate;
   }
 
-  getPathname() {
-    return globalThis.location.pathname;
+  getView() {
+    const { pathname } = globalThis.location;
+    const path = getViewByPath(pathname);
+
+    return path;
   }
 
   /**
@@ -33,8 +45,8 @@ export class NavigationService {
    * @param replace - whether to replace the current URL in the browser's history stack
    */
 
-  navigate(to: RoutePath, options?: RouterNavigateOptions) {
-    this.getNavigation(to, options);
+  navigate({ id, params, options }: { id: AppView; params?: Record<string, string>; options?: RouterNavigateOptions }) {
+    this.getNavigation(id, params, options);
   }
 
   /**
@@ -43,7 +55,15 @@ export class NavigationService {
    * @param to - the route path to navigate to
    */
 
-  replace(to: RoutePath, options?: Omit<RouterNavigateOptions, 'replace'>) {
-    this.getNavigation(to, { replace: true, ...options });
+  replace({
+    id,
+    params,
+    options,
+  }: {
+    id: AppView;
+    params?: Record<string, string>;
+    options?: Omit<RouterNavigateOptions, 'replace'>;
+  }) {
+    this.getNavigation(id, params, { replace: true, ...options });
   }
 }

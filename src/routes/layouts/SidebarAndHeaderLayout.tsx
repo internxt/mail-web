@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 /**
  * App layout (contains the static components like the sidebar)
  */
-export default function RootLayout() {
+const SidebarAndHeaderLayout = () => {
   return (
     <div className="flex h-screen w-screen overflow-hidden">
       <aside className="w-64 border-r bg-gray-50">
@@ -21,7 +21,7 @@ export default function RootLayout() {
       </main>
     </div>
   );
-}
+};
 
 function LoadingFallback() {
   return (
@@ -30,3 +30,5 @@ function LoadingFallback() {
     </div>
   );
 }
+
+export default SidebarAndHeaderLayout;
