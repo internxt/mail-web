@@ -17,6 +17,11 @@ const MailView = ({ folder }: MailViewProps) => {
     NavigationService.instance.navigate(AppView.trash);
   };
 
+  const goToDemo = () => {
+    goTo(PATHS.demo)
+  }
+
+
   return (
     <div>
       <p>
@@ -28,6 +33,7 @@ const MailView = ({ folder }: MailViewProps) => {
       <div className="flex flex-row gap-2">
         <button onClick={goToInbox}>Go To Inbox</button>
         <button onClick={goToTrash}>Go To Trash</button>
+        <button onClick={goToDemo}>Go To Spam-demo</button>
       </div>
     </div>
   );

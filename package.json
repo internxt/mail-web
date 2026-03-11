@@ -36,6 +36,7 @@
     "axios": "^1.13.6",
     "dayjs": "^1.11.19",
     "i18next": "^25.8.13",
+    "onnxruntime-web": "^1.24.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-i18next": "^16.5.4",
