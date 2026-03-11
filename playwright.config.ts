@@ -3,7 +3,7 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   timeout: 5000,
   reporter: 'html',
-  testDir: 'src/features/spam-demo/',
+  testDir: 'tests/spam-detector/',
   use: {
     baseURL: 'http://localhost:3001/spam-demo',
     browserName: 'chromium',
