@@ -6,6 +6,7 @@ import { UserService } from '../user/user.service';
 import { LocalStorageService } from '../local-storage';
 import { WEB_AUTH_CONFIG, WEB_AUTH_MESSAGE_TYPES, type WebAuthMessage, type WebAuthParams } from '@/types/oauth';
 import { AuthCancelledByUserError, MissingAuthParamsToken, WebAuthProcessingError } from './errors/oauth.errors';
+import { getMockedUser } from '@/test-utils/fixtures';
 
 vi.mock('../config', () => ({
   ConfigService: {
@@ -20,18 +21,15 @@ vi.mock('../config', () => ({
   },
 }));
 
+const mockedUser = getMockedUser();
+
 describe('OAuth Service', () => {
   let service: OauthService;
 
   beforeEach(() => {
     vi.clearAllMocks();
 
-    vi.spyOn(UserService.instance, 'getUser').mockResolvedValue({
-      userId: '123',
-      email: 'test@example.com',
-      name: 'Test',
-      lastname: 'User',
-    } as any);
+    vi.spyOn(UserService.instance, 'getUser').mockResolvedValue(mockedUser as any);
 
     vi.spyOn(LocalStorageService.instance, 'setToken').mockImplementation(() => {});
 

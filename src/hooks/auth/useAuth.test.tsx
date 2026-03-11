@@ -8,18 +8,12 @@ import { LocalStorageService } from '@/services/local-storage';
 import { PaymentsService } from '@/services/sdk/payments';
 import { OauthService } from '@/services/oauth/oauth.service';
 import type { LoginCredentials } from '@/types/oauth';
-import type { UserSettings } from '@internxt/sdk/dist/shared/types/userSettings';
-import type { Tier } from '@internxt/sdk/dist/drive/payments/types/tiers';
-import type { UserSubscription } from '@internxt/sdk/dist/drive/payments/types/types';
+import { getMockedLoginCredentials, getMockedSubscription, getMockedTier } from '@/test-utils/fixtures';
 
-const mockedUser = { uuid: '123', name: 'Test', email: 'test@example' } as UserSettings;
-const mockedTier = { id: 'tier-1', label: 'Free' } as Tier;
-const mockedSubscription = { type: 'free' } as UserSubscription;
-const mockedCredentials: LoginCredentials = {
-  user: mockedUser,
-  mnemonic: 'test-mnemonic',
-  newToken: 'test-token',
-} as LoginCredentials;
+const mockedTier = getMockedTier();
+const mockedSubscription = getMockedSubscription();
+const mockedCredentials = getMockedLoginCredentials();
+const mockedUser = mockedCredentials.user;
 
 const translate = vi.fn((key: string) => key);
 const onSuccess = vi.fn();
