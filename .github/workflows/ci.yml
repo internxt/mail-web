@@ -18,7 +18,7 @@ jobs:
       VITE_MAGIC_IV: ${{ secrets.MAGIC_IV }}
       VITE_MAGIC_SALT: ${{ secrets.MAGIC_SALT }}
       VITE_CRYPTO_SECRET: ${{ secrets.CRYPTO_SECRET }}
-      VITE_DRIVE_APP_URL: https://drive.internxt.com
+      VITE_DRIVE_APP_URL: ${{ secrets.DRIVE_APP_URL }}
 
     steps:
       - uses: actions/checkout@v4
