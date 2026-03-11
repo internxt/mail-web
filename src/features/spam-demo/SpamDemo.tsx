@@ -7,7 +7,8 @@ import * as ort from 'onnxruntime-web';
 let sessionFull: object = {};
 const mergesPath: string = 'public/vocab/merges_all_18k.txt';
 const vocabPath: string = 'public/vocab/vocab_all_18k.json';
-const modelPath: string = 'public/onnx/mail_180226_02.onnx';
+// const modelPath: string = 'public/onnx/mail_180226_02.onnx';
+const modelPath: string = 'https://spam-models.s3.gra.io.cloud.ovh.net/mail_180226_02.onnx';
 const wasmPath: string = '/node_modules/onnxruntime-web/dist/';
 ort.env.wasm.wasmPaths = wasmPath;
 const LENTOKENS = 128;
@@ -157,7 +158,7 @@ function provide_explanation(
   s_result: string,
   relevancies: Float32Array,
   outputTokens: BigInt64Array,
-  container: () => void,
+  container: (arg0: string) => void,
 ) {
   let strexp =
     '<span style ="color:white"> Your document was labeled as ' + s_result + ' because of the blue tokens: \n </span>';
@@ -169,7 +170,11 @@ function provide_explanation(
   container(strexp);
 }
 
-async function spamOrHam(message: string | undefined, result: () => void, explanation: () => void) {
+async function spamOrHam(
+  message: string | undefined,
+  result: (arg0: string) => void,
+  explanation: (arg0: string) => void,
+) {
   if (message) {
     const messagec = message.replaceAll('\n', ' ');
     console.time('Token');
@@ -191,17 +196,18 @@ async function spamOrHam(message: string | undefined, result: () => void, explan
     console.log('Salida del modelo: ', spam);
     console.log('Relevancies type: ', relevancies);
     console.log('output tokens type: ', outputTokens);
-    console.log('explanations', typeof explanation);
     let s_result = '';
     if (spam[0] > spam[1]) {
       result('This mail is: ham');
       s_result = 'ham';
     } else {
-      result('The mail is: spam');
+      result('This mail is: spam');
       s_result = 'spam';
     }
     if (Object.values(running).length > 1 && s_result == 'spam') {
       provide_explanation(s_result, relevancies, outputTokens, explanation);
+    } else {
+      explanation('');
     }
   }
 }
@@ -239,13 +245,19 @@ const SpamDemo = ({ folder }: MailViewProps) => {
       <p>Current folder: {folder}</p>
       <label>Content: </label>
       <br></br>
-      <textarea value={mail} style={{ width: '100%', height: '300px' }} onChange={(e) => setMail(e.target.value)} />
+      <textarea
+        value={mail}
+        id="mailInput"
+        style={{ width: '100%', height: '300px' }}
+        onChange={(e) => setMail(e.target.value)}
+      />
       <div>
-        <button onClick={evalDemo}>Evaluate</button>
-        <label id="result">The mail is: {lab}</label>
+        <button onClick={evalDemo} id="evaluate">
+          Evaluate
+        </button>
+        <label id="result">{lab}</label>
       </div>
-      <label dangerouslySetInnerHTML={{ __html: expl }} />
-      <div id="output"></div>
+      <label dangerouslySetInnerHTML={{ __html: expl }} id="output" />
       <div className="flex flex-row gap-2">
         <button onClick={goToInbox}>Go To Inbox</button>
         <button onClick={goToTrash}>Go To Trash</button>

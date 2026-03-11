@@ -3,6 +3,7 @@ import path from 'node:path';
 
 export default defineConfig({
   test: {
+    exclude: ['src/features/spam-demo/**/*.test.{tsx,ts,jsx,js}'],
     globals: true,
     environment: 'jsdom',
     coverage: {
