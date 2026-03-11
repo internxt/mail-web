@@ -7,7 +7,7 @@ import type { RootState } from '@/store';
 
 export const logoutThunk = createAsyncThunk<void, void, { state: RootState }>(
   'user/logout',
-  async (payload: void, { dispatch }) => {
+  async (_: void, { dispatch }) => {
     await AuthService.instance.logOut();
 
     dispatch(userActions.resetState());
