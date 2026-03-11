@@ -94,11 +94,38 @@ export const getMockedTier = (params?: Partial<Tier>): Tier => {
   };
 };
 
-export const getMockedSubscription = (params?: UserSubscription): UserSubscription => {
-  return {
-    type: 'free',
-    ...params,
-  };
+export const getMockedSubscription = (params?: Partial<UserSubscription>): UserSubscription => {
+  switch (params?.type) {
+    case 'lifetime': {
+      return {
+        type: 'lifetime',
+        productId: faker.string.uuid(),
+        ...(params as Partial<Extract<UserSubscription, { type: 'lifetime' }>>),
+      };
+    }
+
+    case 'subscription': {
+      const subscriptionParams = params as Partial<Extract<UserSubscription, { type: 'subscription' }>>;
+      return {
+        type: 'subscription',
+        subscriptionId: faker.string.uuid(),
+        amount: faker.number.int({ min: 100, max: 10000 }),
+        currency: 'USD',
+        interval: faker.helpers.arrayElement(['year', 'month'] as const),
+        nextPayment: faker.date.future().getTime(),
+        priceId: faker.string.uuid(),
+        productId: faker.string.uuid(),
+        amountAfterCoupon: faker.number.int({ min: 0, max: 100 }),
+        ...subscriptionParams,
+      };
+    }
+
+    default: {
+      return {
+        type: 'free',
+      };
+    }
+  }
 };
 export const getMockedLoginCredentials = () => {
   return {
