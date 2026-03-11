@@ -6,14 +6,12 @@ import type { UserSettings } from '@internxt/sdk/dist/shared/types/userSettings'
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { initializeUserThunk, logoutThunk } from './thunks';
 
-type UserTierFeatures = Tier['featuresPerService'];
-
 export interface UserState {
   isInitializing: boolean;
   isAuthenticated: boolean;
   isInitialized: boolean;
   user?: UserSettings;
-  userTierFeatures?: UserTierFeatures;
+  userTier?: Tier;
 }
 
 export const initialUserState: UserState = {
@@ -21,7 +19,7 @@ export const initialUserState: UserState = {
   isAuthenticated: false,
   isInitialized: false,
   user: undefined,
-  userTierFeatures: undefined,
+  userTier: undefined,
 };
 
 export const userSlice = createSlice({
@@ -35,10 +33,12 @@ export const userSlice = createSlice({
     setIsUserInitialized: (state: UserState, action: PayloadAction<boolean>) => {
       state.isInitialized = action.payload;
     },
-    setUserTierFeatures(state: UserState, action: PayloadAction<UserTierFeatures>) {
-      state.userTierFeatures = action.payload;
+    setUserTier(state: UserState, action: PayloadAction<Tier>) {
+      state.userTier = action.payload;
+
+      LocalStorageService.instance.setTier(action.payload);
     },
-    setUser: (state: UserState, action: PayloadAction<UserSettings>) => {
+    setUser: (state: UserState, action: PayloadAction<UserSettings | undefined>) => {
       state.isAuthenticated = !!action.payload;
       state.user = action.payload;
 

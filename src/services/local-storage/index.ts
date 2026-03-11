@@ -7,7 +7,7 @@ export const LocalStorageKeys = {
   xMnemonic: 'xMnemonic',
   xNewToken: 'xNewToken',
   xSubscription: 'xSubscription',
-  xTier: 'xTier',
+  xUserTierFeatures: 'xUserTierFeatures',
 };
 
 export class LocalStorageService {
@@ -63,12 +63,12 @@ export class LocalStorageService {
     return subscription ? JSON.parse(subscription) : null;
   }
 
-  setTier(subscription: Tier): void {
-    localStorage.setItem(LocalStorageKeys.xTier, JSON.stringify(subscription));
+  setTier(tier: Tier): void {
+    localStorage.setItem(LocalStorageKeys.xUserTierFeatures, JSON.stringify(tier));
   }
 
   getTier(): Tier | null {
-    const subscription = localStorage.getItem(LocalStorageKeys.xTier);
+    const subscription = localStorage.getItem(LocalStorageKeys.xUserTierFeatures);
     return subscription ? JSON.parse(subscription) : null;
   }
 

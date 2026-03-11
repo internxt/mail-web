@@ -28,7 +28,7 @@ export function useAuth({ onSuccess, translate }: UseWebAuthProps) {
 
         LocalStorageService.instance.setTier(userTier);
         LocalStorageService.instance.setSubscription(userSubscription);
-        dispatch(userActions.setUserTierFeatures(userTier.featuresPerService));
+        dispatch(userActions.setUserTier(userTier));
       } catch (err) {
         console.error('Error getting user subscription and tier:', err);
       }
