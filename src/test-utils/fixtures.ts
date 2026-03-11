@@ -3,42 +3,42 @@ import type { LoginCredentials } from '@/types/oauth';
 import type { Tier } from '@internxt/sdk/dist/drive/payments/types/tiers';
 import type { UserSubscription } from '@internxt/sdk/dist/drive/payments/types/types';
 import type { AppSumoDetails } from '@internxt/sdk/dist/shared/types/appsumo';
-import crypto from 'node:crypto';
+import { faker } from '@faker-js/faker';
 
 export const getMockedUser = (params?: Partial<LoginCredentials['user']>): LoginCredentials['user'] => {
   return {
     hasReferralsProgram: false,
-    privateKey: crypto.randomBytes(16).toString('hex'),
-    publicKey: crypto.randomBytes(16).toString('hex'),
+    privateKey: faker.string.alphanumeric(64),
+    publicKey: faker.string.alphanumeric(64),
     registerCompleted: false,
-    revocationKey: crypto.randomBytes(16).toString('hex'),
-    root_folder_id: 123456789,
-    rootFolderUuid: crypto.randomBytes(16).toString('hex'),
-    userId: crypto.randomBytes(16).toString('hex'),
-    uuid: crypto.randomBytes(16).toString('hex'),
-    email: crypto.randomBytes(16).toString('hex'),
-    name: crypto.randomBytes(16).toString('hex'),
-    lastname: crypto.randomBytes(16).toString('hex'),
-    username: crypto.randomBytes(16).toString('hex'),
-    bridgeUser: crypto.randomBytes(16).toString('hex'),
-    bucket: crypto.randomBytes(16).toString('hex'),
-    rootFolderId: crypto.randomBytes(16).toString('hex'),
-    mnemonic: crypto.randomBytes(16).toString('hex'),
-    createdAt: new Date(),
-    avatar: crypto.randomBytes(16).toString('hex'),
+    revocationKey: faker.string.uuid(),
+    root_folder_id: faker.number.int({ min: 100000, max: 999999999 }),
+    rootFolderUuid: faker.string.uuid(),
+    userId: faker.string.uuid(),
+    uuid: faker.string.uuid(),
+    email: faker.internet.email(),
+    name: faker.person.firstName(),
+    lastname: faker.person.lastName(),
+    username: faker.internet.username(),
+    bridgeUser: faker.internet.email(),
+    bucket: faker.string.alphanumeric(24),
+    rootFolderId: faker.string.uuid(),
+    mnemonic: faker.lorem.words(12),
+    createdAt: faker.date.past(),
+    avatar: faker.image.avatar(),
     emailVerified: true,
     sharedWorkspace: false,
     appSumoDetails: {} as AppSumoDetails,
-    backupsBucket: crypto.randomBytes(16).toString('hex'),
+    backupsBucket: faker.string.alphanumeric(24),
     credit: 0,
     keys: {
       ecc: {
-        privateKey: crypto.randomBytes(16).toString('hex'),
-        publicKey: crypto.randomBytes(16).toString('hex'),
+        privateKey: faker.string.alphanumeric(64),
+        publicKey: faker.string.alphanumeric(64),
       },
       kyber: {
-        privateKey: crypto.randomBytes(16).toString('hex'),
-        publicKey: crypto.randomBytes(16).toString('hex'),
+        privateKey: faker.string.alphanumeric(64),
+        publicKey: faker.string.alphanumeric(64),
       },
     },
     ...params,
@@ -66,7 +66,7 @@ export const getMockedTier = (params?: Partial<Tier>): Tier => {
       },
       vpn: {
         enabled: true,
-        featureId: crypto.randomBytes(16).toString('hex'),
+        featureId: faker.string.uuid(),
       },
       drive: {
         enabled: true,
