@@ -46,7 +46,7 @@ export class SdkManager {
     };
   };
 
-  getNewAuth() {
+  getAuth() {
     const driveApi = ConfigService.instance.getVariable('DRIVE_API_URL');
 
     const apiSecurity = SdkManager.getApiSecurity({

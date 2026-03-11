@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest';
-import { SdkManager } from '.';
-import { PaymentsService } from './payments.service';
+import { SdkManager } from '..';
+import { PaymentsService } from '.';
 
 describe('Payments Service', () => {
   beforeEach(() => {

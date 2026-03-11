@@ -120,7 +120,7 @@ describe('SDK Manager', () => {
       };
       SdkManager.init(mockApiSecurity);
 
-      const authClient = SdkManager.instance.getNewAuth();
+      const authClient = SdkManager.instance.getAuth();
 
       expect(authClient).toBeDefined();
       expect(Auth.client).toHaveBeenCalledWith(
@@ -134,7 +134,7 @@ describe('SDK Manager', () => {
     });
 
     test('When creating Auth client without initialized security, then client should use undefined credentials', () => {
-      const authClient = SdkManager.instance.getNewAuth();
+      const authClient = SdkManager.instance.getAuth();
 
       expect(authClient).toBeDefined();
       expect(Auth.client).toHaveBeenCalledWith(

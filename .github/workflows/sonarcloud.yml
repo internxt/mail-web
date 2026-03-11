@@ -29,6 +29,13 @@ jobs:
         run: yarn install
       - name: Unit test run
         run: yarn test:coverage
+        env:
+          VITE_PAYMENTS_API_URL: ${{ secrets.PAYMENTS_API_URL }}
+          VITE_DRIVE_API_URL: ${{ secrets.DRIVE_API_URL }}
+          VITE_MAGIC_IV: ${{ secrets.MAGIC_IV }}
+          VITE_MAGIC_SALT: ${{ secrets.MAGIC_SALT }}
+          VITE_CRYPTO_SECRET: ${{ secrets.CRYPTO_SECRET }}
+          VITE_DRIVE_APP_URL: ${{ secrets.DRIVE_APP_URL }}
 
       # Analyze with SonarCloud
       - name: Analyze with SonarCloud
