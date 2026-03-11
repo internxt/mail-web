@@ -18,7 +18,7 @@ describe('Navigation Service', () => {
     test('When init is called with a navigate function, then navigation should be initialized', () => {
       navigationService.init(mockNavigate as any);
 
-      expect(() => navigationService.navigate(AppView.inbox)).not.toThrow();
+      expect(() => navigationService.navigate({ id: AppView.Inbox })).not.toThrow();
     });
   });
 
@@ -26,24 +26,24 @@ describe('Navigation Service', () => {
     test('When navigate is called without initialization, then an error indicating so is thrown', () => {
       const uninitializedService = new NavigationService();
 
-      expect(() => uninitializedService.navigate(AppView.inbox)).toThrow(NavigationNotInitializedError);
+      expect(() => uninitializedService.navigate({ id: AppView.Inbox })).toThrow(NavigationNotInitializedError);
     });
 
     test('When navigate is called with a path, then it should call the navigate function with that path', () => {
       navigationService.init(mockNavigate as any);
 
-      navigationService.navigate(AppView.inbox);
+      navigationService.navigate({ id: AppView.Inbox });
 
-      expect(mockNavigate).toHaveBeenCalledWith(AppView.inbox, undefined);
+      expect(mockNavigate).toHaveBeenCalledWith('/inbox', undefined);
     });
 
     test('When navigate is called with a path and options, then it should call the navigate function with both', () => {
       navigationService.init(mockNavigate as any);
       const options = { state: { from: 'test' } };
 
-      navigationService.navigate(AppView.inbox, options);
+      navigationService.navigate({ id: AppView.Inbox, options });
 
-      expect(mockNavigate).toHaveBeenCalledWith(AppView.inbox, options);
+      expect(mockNavigate).toHaveBeenCalledWith('/inbox', options);
     });
   });
 
@@ -51,33 +51,43 @@ describe('Navigation Service', () => {
     test('When replace is called without initialization, then an error indicating so is thrown', () => {
       const uninitializedService = new NavigationService();
 
-      expect(() => uninitializedService.replace(AppView.inbox)).toThrow(NavigationNotInitializedError);
+      expect(() => uninitializedService.replace({ id: AppView.Inbox })).toThrow(NavigationNotInitializedError);
     });
 
     test('When replacing a path, then it should call navigate with replace option', () => {
       navigationService.init(mockNavigate as any);
 
-      navigationService.replace(AppView.inbox);
+      navigationService.replace({ id: AppView.Inbox });
 
-      expect(mockNavigate).toHaveBeenCalledWith(AppView.inbox, { replace: true });
+      expect(mockNavigate).toHaveBeenCalledWith('/inbox', { replace: true });
     });
 
     test('When replacing with additional options, then it should merge them with replace option', () => {
       navigationService.init(mockNavigate as any);
       const options = { state: { from: 'test' } };
 
-      navigationService.replace(AppView.inbox, options);
+      navigationService.replace({ id: AppView.Inbox, options });
 
-      expect(mockNavigate).toHaveBeenCalledWith(AppView.inbox, { replace: true, state: { from: 'test' } });
+      expect(mockNavigate).toHaveBeenCalledWith('/inbox', { replace: true, state: { from: 'test' } });
     });
   });
 
-  describe('Get Pathname', () => {
-    test('When getting the pathname, then it should return the current pathname', () => {
-      const pathname = navigationService.getPathname();
+  describe('Get View', () => {
+    test('When getting the view for a configured route, then it should return the route config', () => {
+      vi.spyOn(globalThis, 'location', 'get').mockReturnValue({ pathname: '/inbox' } as Location);
 
-      expect(typeof pathname).toBe('string');
-      expect(pathname).toBe(globalThis.location.pathname);
+      const view = navigationService.getView();
+
+      expect(view?.id).toBe(AppView.Inbox);
+      expect(view?.path).toBe('/inbox');
+    });
+
+    test('When getting the view for an unknown route, then it should return undefined', () => {
+      vi.spyOn(globalThis, 'location', 'get').mockReturnValue({ pathname: '/unknown' } as Location);
+
+      const view = navigationService.getView();
+
+      expect(view).toBeUndefined();
     });
   });
 });

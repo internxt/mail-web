@@ -14,12 +14,12 @@ const WelcomePage = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      NavigationService.instance.replace(AppView.inbox);
+      NavigationService.instance.replace({ id: AppView.Inbox });
     }
   }, [isAuthenticated]);
 
   const onSuccess = () => {
-    NavigationService.instance.replace(AppView.inbox);
+    NavigationService.instance.replace({ id: AppView.Inbox });
   };
 
   const { handleWebLogin, handleWebSignup } = useAuth({

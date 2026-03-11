@@ -11,6 +11,6 @@ export const logoutThunk = createAsyncThunk<void, void, { state: RootState }>(
     await AuthService.instance.logOut();
 
     dispatch(userActions.resetState());
-    NavigationService.instance.navigate(AppView.welcome);
+    NavigationService.instance.navigate({ id: AppView.Welcome });
   },
 );

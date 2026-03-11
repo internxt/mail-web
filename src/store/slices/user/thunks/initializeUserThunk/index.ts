@@ -14,6 +14,6 @@ export const initializeUserThunk = createAsyncThunk<
   if (user && isAuthenticated) {
     dispatch(setIsUserInitialized(true));
   } else {
-    NavigationService.instance.navigate(AppView.welcome);
+    NavigationService.instance.navigate({ id: AppView.Welcome });
   }
 });

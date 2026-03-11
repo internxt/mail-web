@@ -1,30 +1,42 @@
 import { type RouteObject, Navigate } from 'react-router-dom';
-import { lazy } from 'react';
-import RootLayout from '@/routes/layouts/RootLayout';
+import { Suspense, createElement } from 'react';
+import { getPublicRoutes, AppLayout, type RouteConfig, layoutComponents, getProtectedRoutesByLayout } from './paths';
+import { PublicRoute } from './guards/PublicRoute';
+import { ProtectedRoute } from './guards/ProtectedRoute';
 
-const WelcomePage = lazy(() => import('@/features/welcome'));
-const MailView = lazy(() => import('@/features/mail/MailView'));
+const toRouteObject = (route: RouteConfig): RouteObject => {
+  return {
+    path: route.path,
+    // !TODO: Add a loader here
+    element: <Suspense fallback={<div>Loading...</div>}>{createElement(route.element, route.props ?? {})}</Suspense>,
+  };
+};
+
+const buildProtectedRoutes = (): RouteObject[] => {
+  const protectedRoutes = getProtectedRoutesByLayout();
+
+  return Object.entries(protectedRoutes).flatMap(([layout, routes]) => {
+    if (!routes) return [];
+    const routeObjects = routes.map(toRouteObject);
+    const LayoutComponent = layoutComponents[layout as AppLayout];
+
+    return LayoutComponent ? [{ element: <LayoutComponent />, children: routeObjects }] : routeObjects;
+  });
+};
 
 export const routes: RouteObject[] = [
   {
-    index: true,
-    path: '/welcome',
-    element: <WelcomePage />,
+    element: <PublicRoute />,
+    children: getPublicRoutes().map(toRouteObject),
   },
+
   {
     path: '/',
-    element: <RootLayout />,
+    element: <ProtectedRoute />,
     children: [
-      {
-        index: true,
-        element: <Navigate to="/inbox" replace />,
-      },
-      { path: 'inbox', element: <MailView folder="inbox" /> },
-      { path: 'trash', element: <MailView folder="trash" /> },
-      {
-        path: '*',
-        element: <Navigate to="/inbox" replace />,
-      },
+      { index: true, element: <Navigate to="/inbox" replace /> },
+      ...buildProtectedRoutes(),
+      { path: '*', element: <Navigate to="/inbox" replace /> },
     ],
   },
 ];

@@ -62,7 +62,7 @@ export const userSlice = createSlice({
 
         state.isInitializing = false;
         // notificationsService.show({ text: 'User initialization error ' + errorMsg, type: ToastType.Warning });
-        NavigationService.instance.navigate(AppView.welcome);
+        NavigationService.instance.navigate({ id: AppView.Welcome });
       });
 
     builder
@@ -74,10 +74,5 @@ export const userSlice = createSlice({
 
 export const { initialize, resetState, setIsUserInitialized } = userSlice.actions;
 export const userActions = userSlice.actions;
-
-export const userThunks = {
-  initializeUserThunk,
-  logoutThunk,
-};
 
 export default userSlice.reducer;

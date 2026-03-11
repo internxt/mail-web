@@ -36,7 +36,7 @@ describe('Initialize User Thunk', () => {
 
     await store.dispatch(initializeUserThunk());
 
-    expect(navigateSpy).toHaveBeenCalledWith(AppView.welcome);
+    expect(navigateSpy).toHaveBeenCalledWith({ id: AppView.Welcome });
     expect(store.getState().user.isInitialized).toBeFalsy();
   });
 });
