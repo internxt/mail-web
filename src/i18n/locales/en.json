@@ -18,5 +18,14 @@
     "inbox": "Inbox",
     "sent": "Sent",
     "trash": "Trash"
+  },
+  "errors": {
+    "auth": {
+      "invalidCredentials": "Invalid credentials. Please try again.",
+      "genericError": "Unable to log in. Please try again or contact support if the problem persists.",
+      "popupBlocked": "The popup window was blocked. Please allow popups for Internxt Meet.",
+      "authCancelled": "Authentication cancelled by user.",
+      "authTimeout": "Authentication timeout. Please try again."
+    }
   }
 }

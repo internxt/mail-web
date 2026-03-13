@@ -12,6 +12,7 @@ export default defineConfig({
       include: ['src/**/*.{js,ts,jsx,tsx}'],
       exclude: ['src/**/*.test.{js,ts,jsx,tsx}'],
     },
+    setupFiles: ['src/test-utils/setup.ts'],
   },
   resolve: {
     alias: {
