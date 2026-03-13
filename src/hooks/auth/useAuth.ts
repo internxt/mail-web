@@ -6,7 +6,6 @@ import { OauthService } from '@/services/oauth/oauth.service';
 import { useAppDispatch } from '@/store/hooks';
 import { userActions } from '@/store/slices/user';
 import { ErrorService } from '@/services/error';
-import { ToastType } from '@/services/notifications';
 
 interface UseWebAuthProps {
   onSuccess?: (token: string) => void;
@@ -75,10 +74,8 @@ export function useAuth({ onSuccess, translate }: UseWebAuthProps) {
 
   const errorHandler = useCallback((err: unknown) => {
     let error = translate('errors.auth.genericError');
-    let toastType = ToastType.Error;
 
     if (err instanceof Error) {
-      toastType = ToastType.Warning;
       if (err.message.includes('popup blocker')) {
         error = translate('errors.auth.popupBlocked');
       } else if (err.message.includes('cancelled')) {
@@ -90,7 +87,7 @@ export function useAuth({ onSuccess, translate }: UseWebAuthProps) {
       }
     }
 
-    ErrorService.instance.notifyUser(error, toastType);
+    ErrorService.instance.notifyUser(error);
   }, []);
 
   return {
