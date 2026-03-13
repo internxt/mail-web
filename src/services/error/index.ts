@@ -41,12 +41,9 @@ export class ErrorService {
     return map.message ? new AppError(map.message as string, map.status as number) : new AppError('Unknown error');
   }
 
-  public notifyUser(error: unknown, errorType?: ErrorTypeToast) {
-    const { message, status, requestId } = this.castError(error);
+  public notifyUser(error: unknown, errorType: ErrorTypeToast = ToastType.Error) {
+    const { message, requestId } = this.castError(error);
 
-    const isHandledError = status && status >= 400 && status < 500;
-    const type = isHandledError ? ToastType.Warning : ToastType.Error;
-
-    notificationsService.show({ text: message, type: errorType ?? type, requestId });
+    notificationsService.show({ text: message, type: errorType, requestId });
   }
 }
