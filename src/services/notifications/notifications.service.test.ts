@@ -2,10 +2,6 @@ import { describe, test, expect, vi, beforeEach } from 'vitest';
 import toast from 'react-hot-toast';
 import notificationsService, { ToastType } from '.';
 
-vi.mock('@internxt/ui', () => ({
-  Loader: () => null,
-}));
-
 vi.mock('react-hot-toast', () => ({
   default: {
     custom: vi.fn(() => 'toast-id-123'),

@@ -9,6 +9,7 @@ import { PaymentsService } from '@/services/sdk/payments';
 import { OauthService } from '@/services/oauth/oauth.service';
 import type { LoginCredentials } from '@/types/oauth';
 import { getMockedLoginCredentials, getMockedSubscription, getMockedTier } from '@/test-utils/fixtures';
+import { ErrorService } from '@/services/error';
 
 const mockedTier = getMockedTier();
 const mockedSubscription = getMockedSubscription();
@@ -63,6 +64,7 @@ describe('Auth custom hook', () => {
         user: null,
       } as unknown as LoginCredentials);
       const store = createTestStore();
+      const notifyErrorSpy = vi.spyOn(ErrorService.instance, 'notifyUser');
 
       const { result } = renderHook(() => useAuth({ onSuccess, translate }), {
         wrapper: createWrapper(store),
@@ -70,13 +72,14 @@ describe('Auth custom hook', () => {
 
       await act(() => result.current.handleWebLogin());
 
-      expect(result.current.webAuthError).toBe('meet.auth.modal.error.invalidCredentials');
+      expect(notifyErrorSpy).toHaveBeenCalledWith('errors.auth.invalidCredentials');
       expect(onSuccess).not.toHaveBeenCalled();
     });
 
     test('When login throws popup blocker error, then it should set popup error', async () => {
       vi.spyOn(OauthService.instance, 'loginWithWeb').mockRejectedValue(new Error('popup blocker'));
       const store = createTestStore();
+      const notifyErrorSpy = vi.spyOn(ErrorService.instance, 'notifyUser');
 
       const { result } = renderHook(() => useAuth({ onSuccess, translate }), {
         wrapper: createWrapper(store),
@@ -84,13 +87,14 @@ describe('Auth custom hook', () => {
 
       await act(() => result.current.handleWebLogin());
 
-      expect(translate).toHaveBeenCalledWith('meet.auth.modal.error.popupBlocked');
-      expect(result.current.webAuthError).toBe('meet.auth.modal.error.popupBlocked');
+      expect(translate).toHaveBeenCalledWith('errors.auth.popupBlocked');
+      expect(notifyErrorSpy).toHaveBeenCalledWith('errors.auth.popupBlocked');
     });
 
     test('When login throws a non-Error, then it should set generic error', async () => {
       vi.spyOn(OauthService.instance, 'loginWithWeb').mockRejectedValue('unknown');
       const store = createTestStore();
+      const notifyErrorSpy = vi.spyOn(ErrorService.instance, 'notifyUser');
 
       const { result } = renderHook(() => useAuth({ onSuccess, translate }), {
         wrapper: createWrapper(store),
@@ -98,7 +102,7 @@ describe('Auth custom hook', () => {
 
       await act(() => result.current.handleWebLogin());
 
-      expect(result.current.webAuthError).toBe('meet.auth.modal.error.genericError');
+      expect(notifyErrorSpy).toHaveBeenCalledWith('errors.auth.genericError');
     });
   });
 
@@ -127,6 +131,7 @@ describe('Auth custom hook', () => {
         user: undefined,
       } as unknown as LoginCredentials);
       const store = createTestStore();
+      const notifyErrorSpy = vi.spyOn(ErrorService.instance, 'notifyUser');
 
       const { result } = renderHook(() => useAuth({ onSuccess, translate }), {
         wrapper: createWrapper(store),
@@ -134,7 +139,7 @@ describe('Auth custom hook', () => {
 
       await act(() => result.current.handleWebSignup());
 
-      expect(result.current.webAuthError).toBe('meet.auth.modal.error.invalidCredentials');
+      expect(notifyErrorSpy).toHaveBeenCalledWith('errors.auth.invalidCredentials');
     });
   });
 
@@ -153,23 +158,6 @@ describe('Auth custom hook', () => {
       expect(store.getState().user.user).toStrictEqual(mockedUser);
       expect(store.getState().user.userTier).toBeUndefined();
       expect(onSuccess).toHaveBeenCalledWith('test-token');
-    });
-  });
-
-  describe('Reset state', () => {
-    test('When reset is called, then it should clear the error', async () => {
-      vi.spyOn(OauthService.instance, 'loginWithWeb').mockRejectedValue(new Error('timeout'));
-      const store = createTestStore();
-
-      const { result } = renderHook(() => useAuth({ onSuccess, translate }), {
-        wrapper: createWrapper(store),
-      });
-
-      await act(() => result.current.handleWebLogin());
-      expect(result.current.webAuthError).toBe('meet.auth.modal.error.authTimeout');
-
-      act(() => result.current.resetState());
-      expect(result.current.webAuthError).toBe('');
     });
   });
 });
