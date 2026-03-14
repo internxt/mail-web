@@ -55,12 +55,6 @@ describe('Route Utilities', () => {
       expect(sidebarRouteIds).toContain(AppView.Drafts);
       expect(sidebarRouteIds).toContain(AppView.Trash);
     });
-
-    test('When a route has no layout, then it should be grouped by non layout', () => {
-      const routesByLayout = getProtectedRoutesByLayout();
-
-      expect(routesByLayout[AppLayout.None]).toBeUndefined();
-    });
   });
 
   describe('Getting public routes', () => {

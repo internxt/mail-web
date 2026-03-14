@@ -4,6 +4,7 @@ import SidebarAndHeaderLayout from '../layouts/SidebarAndHeaderLayout';
 
 export enum AppView {
   Welcome = 'welcome',
+  IdentitySetup = 'identity-setup',
   Inbox = 'inbox',
   Sent = 'sent',
   Drafts = 'drafts',
@@ -16,6 +17,7 @@ export enum AppLayout {
 }
 
 const WelcomePage = lazy(() => import('@/features/welcome'));
+const IdentitySetup = lazy(() => import('@/features/identity-setup'));
 const MailView = lazy(() => import('@/features/mail/MailView'));
 
 export const layoutComponents: Record<AppLayout, React.ComponentType<any> | null> = {
@@ -37,6 +39,12 @@ const routeConfigs: RouteConfig[] = [
     id: AppView.Welcome,
     path: '/welcome',
     element: WelcomePage,
+  },
+  {
+    id: AppView.IdentitySetup,
+    path: '/identity-setup',
+    element: IdentitySetup,
+    isProtected: true,
   },
   {
     id: AppView.Inbox,

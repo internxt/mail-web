@@ -1,4 +1,4 @@
-import NotificationToast from '@/components/Notifications/NotificationToast';
+import NotificationToast from '@/components/notifications/NotificationToast';
 import { createElement } from 'react';
 import toast from 'react-hot-toast';
 

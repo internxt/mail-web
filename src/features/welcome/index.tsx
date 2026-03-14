@@ -1,5 +1,5 @@
 import { Button } from '@internxt/ui';
-import smallLogo from '../../assets/logos/small-logo.svg';
+import SmallLogo from '../../assets/logos/Internxt/small-logo.svg?react';
 import MailAppImage from '../../assets/images/welcome/welcome-page.webp';
 import { useTranslationContext } from '@/i18n';
 import { useAuth } from '@/hooks/auth/useAuth';
@@ -10,7 +10,7 @@ const WelcomePage = () => {
   const { translate } = useTranslationContext();
 
   const onSuccess = () => {
-    NavigationService.instance.replace({ id: AppView.Inbox });
+    NavigationService.instance.replace({ id: AppView.IdentitySetup });
   };
 
   const { handleWebLogin, handleWebSignup } = useAuth({
@@ -23,7 +23,7 @@ const WelcomePage = () => {
       <div className="flex flex-col max-w-7xl mx-auto">
         <div className="flex flex-row justify-between w-full p-5">
           <div className="flex px-3 py-2 items-center gap-2 rounded-2xl border border-gray-5 bg-surface drop-shadow text-black">
-            <img src={smallLogo} alt="logo" />
+            <SmallLogo />
             <p>{translate('meet')}</p>
           </div>
           <div className="flex flex-row gap-4">

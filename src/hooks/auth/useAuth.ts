@@ -6,10 +6,11 @@ import { OauthService } from '@/services/oauth/oauth.service';
 import { useAppDispatch } from '@/store/hooks';
 import { userActions } from '@/store/slices/user';
 import { ErrorService } from '@/services/error';
+import type { Translate } from '@/i18n';
 
 interface UseWebAuthProps {
   onSuccess?: (token: string) => void;
-  translate: (key: string) => string;
+  translate: Translate;
 }
 
 export function useAuth({ onSuccess, translate }: UseWebAuthProps) {
