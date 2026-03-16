@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { matchPath } from 'react-router-dom';
+import { matchPath, useLocation } from 'react-router-dom';
 import { TrashIcon, TrayIcon, PaperPlaneTiltIcon, FileIcon } from '@phosphor-icons/react';
 import type { SidenavOption } from '@internxt/ui/dist/components/sidenav/SidenavOptions';
 import { useTranslationContext } from '@/i18n';
@@ -8,7 +8,7 @@ import { NavigationService } from '@/services/navigation';
 
 export const useSidenavNavigation = () => {
   const { translate } = useTranslationContext();
-  const pathname = globalThis.location.pathname;
+  const { pathname } = useLocation();
 
   const isActiveButton = useCallback((path: string) => !!matchPath(pathname, path), [pathname]);
 
