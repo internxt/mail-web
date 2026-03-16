@@ -8,6 +8,6 @@ describe('Transforming bytes to string', () => {
 
   test('Should transform bytes to string with options', () => {
     expect(bytesToString(1024 * 1024 * 1024, { space: true })).toBe('1.07 GB');
-    expect(bytesToString(1024 * 1024 * 1024, { nonBreakingSpace: true })).toBe('1.07GB');
+    expect(bytesToString(1024 * 1024 * 1024, { space: true, nonBreakingSpace: true })).toBe('1.07\u00A0GB');
   });
 });

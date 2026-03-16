@@ -1,4 +1,3 @@
-import { connect } from 'react-redux';
 import { useState } from 'react';
 
 import { Sidenav } from '@internxt/ui';
@@ -19,6 +18,7 @@ const SidenavWrapper = () => {
   const { userSubscription: subscription } = useAppSelector((state: RootState) => state.user);
   const { isLoading: isLoadingPlanLimit, data: planLimit = 1 } = useGetStorageLimitQuery();
   const { isLoading: isLoadingPlanUsage, data: planUsage = 0 } = useGetStorageUsageQuery();
+  const storagePercentage = planLimit > 0 ? Math.min((planUsage / planLimit) * 100, 100) : 0;
 
   const { itemsNavigation } = useSidenavNavigation();
   const { suiteArray } = useSuiteLauncher();
@@ -67,7 +67,7 @@ const SidenavWrapper = () => {
         storage={{
           usage: bytesToString(planUsage),
           limit: bytesToString(planLimit),
-          percentage: Math.min((planUsage / planLimit) * 100, 100),
+          percentage: storagePercentage,
           onUpgradeClick: () => {},
           upgradeLabel: isUpgradeAvailable() ? translate('preferences.account.plans.upgrade') : undefined,
           isLoading: isLoadingPlanUsage || isLoadingPlanLimit,
@@ -77,7 +77,4 @@ const SidenavWrapper = () => {
   );
 };
 
-export default connect((state: RootState) => ({
-  user: state.user.user,
-  userTier: state.user.userTier,
-}))(SidenavWrapper);
+export default SidenavWrapper;

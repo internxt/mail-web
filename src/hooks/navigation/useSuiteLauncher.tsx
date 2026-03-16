@@ -27,9 +27,6 @@ export const useSuiteLauncher = () => {
   }) => {
     if (suite.enabled) {
       suite.onOpenSuite();
-    } else {
-      alert(suite.upgradeTitle);
-      alert(suite.upgradeDescription);
     }
   };
 

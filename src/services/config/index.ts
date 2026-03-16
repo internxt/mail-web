@@ -9,6 +9,7 @@ import {
   type OperatingSystem,
   type PlatformMatcher,
 } from '@/types/config';
+import { ErrorService } from '../error';
 
 const configKeys: Record<keyof ConfigKeys, string> = {
   DRIVE_API_URL: 'VITE_DRIVE_API_URL',
@@ -70,20 +71,26 @@ export class ConfigService {
 
   private async getDownloadAppUrl(): Promise<string | null> {
     const INTERNXT_BASE_URL = 'https://internxt.com';
-    const fetchDownloadResponse = await fetch(`${INTERNXT_BASE_URL}/api/download`, {
-      method: 'GET',
-    });
 
-    const response = await fetchDownloadResponse.json();
+    let fetchDownloadResponse: { platforms?: Record<string, string> } = {};
+    try {
+      const response = await fetch(`${INTERNXT_BASE_URL}/api/download`, {
+        method: 'GET',
+      });
+      fetchDownloadResponse = await response.json();
+    } catch (error) {
+      const castedError = ErrorService.instance.castError(error);
+      console.warn('Error while fetching download info', castedError);
+    }
 
     switch (this.getOperatingSystem()) {
       case 'Linux':
       case 'UNIX':
-        return response.platforms.Linux ?? `${INTERNXT_BASE_URL}/downloads/drive.deb`;
+        return fetchDownloadResponse?.platforms?.Linux ?? `${INTERNXT_BASE_URL}/downloads/drive.deb`;
       case 'Windows':
-        return response.platforms.Windows ?? `${INTERNXT_BASE_URL}/downloads/drive.exe`;
+        return fetchDownloadResponse?.platforms?.Windows ?? `${INTERNXT_BASE_URL}/downloads/drive.exe`;
       case 'macOS':
-        return response.platforms.MacOS ?? `${INTERNXT_BASE_URL}/downloads/drive.dmg`;
+        return fetchDownloadResponse?.platforms?.MacOS ?? `${INTERNXT_BASE_URL}/downloads/drive.dmg`;
       default:
         return null;
     }

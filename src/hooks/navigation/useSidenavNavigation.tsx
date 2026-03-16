@@ -10,14 +10,11 @@ export const useSidenavNavigation = () => {
   const { translate } = useTranslationContext();
   const { pathname } = useLocation();
 
-  const isActiveButton = useCallback((path: string) => !!matchPath(pathname, path), [pathname]);
+  const isActiveButton = useCallback((path: string) => !!matchPath(path, pathname), [pathname]);
 
-  const onSidenavItemClick = useCallback(
-    (path: AppView) => {
-      NavigationService.instance.navigate({ id: path });
-    },
-    [NavigationService.instance],
-  );
+  const onSidenavItemClick = useCallback((path: AppView) => {
+    NavigationService.instance.navigate({ id: path });
+  }, []);
 
   const itemsNavigation: SidenavOption[] = useMemo(
     () => [
@@ -32,7 +29,7 @@ export const useSidenavNavigation = () => {
       {
         isActive: isActiveButton('/drafts'),
         label: translate('sidebar.drafts'),
-        icon: PaperPlaneTiltIcon,
+        icon: FileIcon,
         iconDataCy: 'sideNavDraftsIcon',
         isVisible: true,
         onClick: () => onSidenavItemClick(AppView.Drafts),
@@ -40,7 +37,7 @@ export const useSidenavNavigation = () => {
       {
         isActive: isActiveButton('/sent'),
         label: translate('sidebar.sent'),
-        icon: FileIcon,
+        icon: PaperPlaneTiltIcon,
         iconDataCy: 'sideNavSentIcon',
         isVisible: true,
         onClick: () => onSidenavItemClick(AppView.Sent),
