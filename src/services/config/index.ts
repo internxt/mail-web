@@ -1,14 +1,14 @@
+import type { Translate } from '@/i18n';
+import notificationsService, { ToastType } from '../notifications';
 import { VariableNotFoundError } from './config.errors';
-
-interface ConfigKeys {
-  DRIVE_API_URL: string;
-  MAIL_API_URL: string;
-  PAYMENTS_API_URL: string;
-  CRYPTO_SECRET: string;
-  MAGIC_IV: string;
-  MAGIC_SALT: string;
-  DRIVE_APP_URL: string;
-}
+import {
+  APP_VERSION_MATCHERS,
+  PLATFORM_MATCHERS,
+  UA_MATCHERS,
+  type ConfigKeys,
+  type OperatingSystem,
+  type PlatformMatcher,
+} from '@/types/config';
 
 const configKeys: Record<keyof ConfigKeys, string> = {
   DRIVE_API_URL: 'VITE_DRIVE_API_URL',
@@ -32,4 +32,60 @@ export class ConfigService {
   public isProduction = (): boolean => {
     return import.meta.env.PROD;
   };
+
+  public async downloadDesktopApp(translate: Translate) {
+    const download = await this.getDownloadAppUrl();
+    if (download) {
+      window.open(download, '_self');
+    } else {
+      notificationsService.show({
+        text: translate('errors.downloadingDesktopApp'),
+        type: ToastType.Error,
+      });
+    }
+  }
+
+  private matchPlatform(value: string, matchers: PlatformMatcher[]): OperatingSystem | null {
+    const normalized = value.toLowerCase();
+    const match = matchers.find(({ pattern }) =>
+      pattern instanceof RegExp ? pattern.test(normalized) : normalized.includes(pattern),
+    );
+    return match?.os ?? null;
+  }
+
+  private getOperatingSystem(): OperatingSystem {
+    const platform = navigator.userAgentData?.platform;
+    if (platform) {
+      const result = this.matchPlatform(platform, PLATFORM_MATCHERS);
+      if (result) return result;
+    }
+
+    const ua = navigator.userAgent ?? navigator.vendor ?? window.opera;
+    const uaResult = this.matchPlatform(ua, UA_MATCHERS);
+    if (uaResult) return uaResult;
+
+    const appVersion = navigator.appVersion ?? '';
+    return this.matchPlatform(appVersion, APP_VERSION_MATCHERS) ?? 'Unknown';
+  }
+
+  private async getDownloadAppUrl(): Promise<string | null> {
+    const INTERNXT_BASE_URL = 'https://internxt.com';
+    const fetchDownloadResponse = await fetch(`${INTERNXT_BASE_URL}/api/download`, {
+      method: 'GET',
+    });
+
+    const response = await fetchDownloadResponse.json();
+
+    switch (this.getOperatingSystem()) {
+      case 'Linux':
+      case 'UNIX':
+        return response.platforms.Linux ?? `${INTERNXT_BASE_URL}/downloads/drive.deb`;
+      case 'Windows':
+        return response.platforms.Windows ?? `${INTERNXT_BASE_URL}/downloads/drive.exe`;
+      case 'macOS':
+        return response.platforms.MacOS ?? `${INTERNXT_BASE_URL}/downloads/drive.dmg`;
+      default:
+        return null;
+    }
+  }
 }
