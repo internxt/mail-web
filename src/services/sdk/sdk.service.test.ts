@@ -22,6 +22,14 @@ vi.mock('@internxt/sdk', () => ({
         unauthorizedCallback: vi.fn(),
       })),
     },
+    Storage: {
+      client: vi.fn().mockImplementation((baseUrl, appDetails, security) => ({
+        baseUrl,
+        appDetails,
+        security,
+        unauthorizedCallback: vi.fn(),
+      })),
+    },
     Payments: {
       client: vi.fn().mockImplementation((baseUrl, appDetails, security) => ({
         baseUrl,
@@ -171,6 +179,36 @@ describe('SDK Manager', () => {
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const securityArg = (Drive.Users.client as any).mock.calls[0][2];
+      securityArg.unauthorizedCallback();
+
+      expect(LocalStorageService.instance.clearCredentials).toHaveBeenCalled();
+    });
+  });
+
+  describe('Storage client creation', () => {
+    test('When creating Storage client, then it should use token from localStorage', () => {
+      const storageClient = SdkManager.instance.getStorage();
+
+      expect(storageClient).toBeDefined();
+      expect(LocalStorageService.instance.getToken).toHaveBeenCalled();
+      expect(Drive.Storage.client).toHaveBeenCalledWith(
+        'https://api-drive.internxt.com',
+        expect.objectContaining({
+          clientName: 'mail-web',
+          clientVersion: expect.any(String),
+        }),
+        expect.objectContaining({
+          token: 'mock-token',
+          unauthorizedCallback: expect.any(Function),
+        }),
+      );
+    });
+
+    test('When Storage client receives unauthorized response, then credentials should be cleared', () => {
+      SdkManager.instance.getStorage();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const securityArg = (Drive.Storage.client as any).mock.calls[0][2];
       securityArg.unauthorizedCallback();
 
       expect(LocalStorageService.instance.clearCredentials).toHaveBeenCalled();
