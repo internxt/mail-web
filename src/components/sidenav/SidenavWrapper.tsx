@@ -40,14 +40,6 @@ const SidenavWrapper = () => {
     return subscription?.type === 'free' || isLifetimeAvailable;
   };
 
-  // const handleUpgradeClick = () => {
-  //   navigationService.openPreferencesDialog({
-  //     section: 'account',
-  //     subsection: 'plans',
-  //   });
-  //   dispatch(uiActions.setIsPreferencesDialogOpen(true));
-  // };
-
   const handleToggleCollapse = () => {
     setIsCollapsed((prev) => {
       const newValue = !prev;

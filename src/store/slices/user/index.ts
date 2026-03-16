@@ -68,7 +68,10 @@ export const userSlice = createSlice({
         const errorMsg = action.payload ? action.payload : '';
 
         state.isInitializing = false;
-        notificationsService.show({ text: 'User initialization error ' + errorMsg, type: ToastType.Warning });
+        notificationsService.show({
+          text: 'User initialization error ' + JSON.stringify(errorMsg),
+          type: ToastType.Warning,
+        });
         NavigationService.instance.navigate({ id: AppView.Welcome });
       });
 
