@@ -13,6 +13,35 @@
     },
     "description": "Encrypted email built for real privacy. Zero tracking. Full control."
   },
+  "identitySetup": {
+    "updateEmail": {
+      "title": "Set up Internxt email",
+      "description": [
+        "Hey {{name}}, to use Mail, you’ll need to create your new Internxt email address.",
+        "This email will become your new login for all Internxt services.",
+        "Your previous email {{current_email}} will be saved for account recovery."
+      ],
+      "mail": "Mail",
+      "mailType": "You can use letters, numbers and periods",
+      "action": "Save new email"
+    },
+    "confirmPassword": {
+      "goBack": "Choose email",
+      "title": "Confirm your password",
+      "description": "For security reasons, please confirm your password to activate your new login email.",
+      "confirmPassword": "Confirm password",
+      "action": "Confirm and activate"
+    },
+    "confirmChanges": {
+      "title": "Your Internxt email is ready",
+      "newEmail": "Your new email:",
+      "recoveryEmail": "Recovery email: ",
+      "description": "From now on, use your Internxt email to sign in to all Internxt services.",
+      "action": "Save new email"
+    },
+    "termsAndConditions": "Terms and Conditions",
+    "contactSupport": "Contact Support"
+  },
   "sidebar": {
     "newMessage": "New Message",
     "inbox": "Inbox",
