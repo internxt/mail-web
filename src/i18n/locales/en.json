@@ -43,8 +43,10 @@
     "contactSupport": "Contact Support"
   },
   "sidebar": {
+    "title": "Mail",
     "newMessage": "New Message",
     "inbox": "Inbox",
+    "drafts": "Drafts",
     "sent": "Sent",
     "trash": "Trash"
   },
@@ -55,6 +57,37 @@
       "popupBlocked": "The popup window was blocked. Please allow popups for Internxt Meet.",
       "authCancelled": "Authentication cancelled by user.",
       "authTimeout": "Authentication timeout. Please try again."
+    }
+  },
+  "modals": {
+    "upgradePlanDialog": {
+      "upgrade": "Upgrade",
+      "cancel": "Cancel",
+      "soonBadge": "Soon",
+      "default": {
+        "title": "Upgrade now",
+        "description": "Your current plan doesn't allow you this feature. Upgrade now to unlock all the benefits of Internxt."
+      },
+      "meet": {
+        "title": "Unlock Meet",
+        "description": "Upgrade now to host and join fully encrypted video calls — private, secure, and unlimited."
+      },
+      "mail": {
+        "title": "Unlock Mail",
+        "description": "Unlock your private email service with end-to-end encryption."
+      },
+      "vpn": {
+        "title": "Unlock VPN",
+        "description": "Upgrade to protect your traffic with private, encrypted browsing."
+      },
+      "antivirus": {
+        "title": "Unlock Antivirus",
+        "description": "Upgrade to scan, detect, and block malware in real time."
+      },
+      "cleaner": {
+        "title": "Unlock Cleaner",
+        "description": "Upgrade now to keep your files optimized and free up space."
+      }
     }
   }
 }

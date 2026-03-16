@@ -46,32 +46,39 @@ export class SdkManager {
     };
   };
 
-  getAuth() {
-    const driveApi = ConfigService.instance.getVariable('DRIVE_API_URL');
-
+  getAuth(): Auth {
     const apiSecurity = SdkManager.getApiSecurity({
       throwErrorOnMissingCredentials: false,
     });
     const appDetails = SdkManager.getAppDetails();
 
-    return Auth.client(driveApi, appDetails, apiSecurity);
+    return Auth.client(this.apiUrl, appDetails, apiSecurity);
   }
 
-  getUsers() {
-    const driveApi = ConfigService.instance.getVariable('DRIVE_API_URL');
-
+  getUsers(): Drive.Users {
     const apiSecurity = this.getNewTokenApiSecurity();
     const appDetails = SdkManager.getAppDetails();
 
-    return Drive.Users.client(driveApi, appDetails, apiSecurity);
+    return Drive.Users.client(this.apiUrl, appDetails, apiSecurity);
   }
 
-  getPayments() {
+  getStorage(): Drive.Storage {
+    const apiSecurity = this.getNewTokenApiSecurity();
+    const appDetails = SdkManager.getAppDetails();
+
+    return Drive.Storage.client(this.apiUrl, appDetails, apiSecurity);
+  }
+
+  getPayments(): Drive.Payments {
     const paymentsApi = ConfigService.instance.getVariable('PAYMENTS_API_URL');
 
     const apiSecurity = this.getNewTokenApiSecurity();
     const appDetails = SdkManager.getAppDetails();
 
     return Drive.Payments.client(paymentsApi, appDetails, apiSecurity);
+  }
+
+  get apiUrl(): string {
+    return ConfigService.instance.getVariable('DRIVE_API_URL');
   }
 }
