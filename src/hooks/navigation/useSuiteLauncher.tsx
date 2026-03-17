@@ -44,19 +44,19 @@ export const useSuiteLauncher = () => {
       title: 'Meet',
       onClick: () =>
         openSuite({
-          enabled: userFeatures?.[Service.Meet].enabled ?? false,
+          enabled: userFeatures?.[Service.Meet]?.enabled ?? false,
           onOpenSuite: () => window.open(MEET_URL, '_blank', 'noopener'),
           upgradeTitle: translate('modals.upgradePlanDialog.meet.title'),
           upgradeDescription: translate('modals.upgradePlanDialog.meet.description'),
         }),
-      isLocked: !userFeatures?.[Service.Meet].enabled,
+      isLocked: !userFeatures?.[Service.Meet]?.enabled,
     },
     {
       icon: <EnvelopeSimpleIcon />,
       title: 'Mail',
       onClick: () => {},
       availableSoon: true,
-      isLocked: !userFeatures?.[Service.Mail].enabled,
+      isLocked: !userFeatures?.[Service.Mail]?.enabled,
     },
     {
       icon: <PaperPlaneTiltIcon />,
@@ -70,7 +70,7 @@ export const useSuiteLauncher = () => {
       title: 'VPN',
       onClick: () =>
         openSuite({
-          enabled: userFeatures?.[Service.Vpn].enabled ?? false,
+          enabled: userFeatures?.[Service.Vpn]?.enabled ?? false,
           onOpenSuite: () =>
             window.open(
               'https://chromewebstore.google.com/detail/internxt-vpn-free-encrypt/dpggmcodlahmljkhlmpgpdcffdaoccni',
@@ -80,21 +80,21 @@ export const useSuiteLauncher = () => {
           upgradeTitle: translate('modals.upgradePlanDialog.vpn.title'),
           upgradeDescription: translate('modals.upgradePlanDialog.vpn.description'),
         }),
-      isLocked: !userFeatures?.[Service.Vpn].enabled,
+      isLocked: !userFeatures?.[Service.Vpn]?.enabled,
     },
     {
       icon: <ShieldIcon />,
       title: 'Antivirus',
       onClick: () =>
         openSuite({
-          enabled: userFeatures?.[Service.Antivirus].enabled ?? false,
+          enabled: userFeatures?.[Service.Antivirus]?.enabled ?? false,
           onOpenSuite: () => {
             ConfigService.instance.downloadDesktopApp(translate);
           },
           upgradeTitle: translate('modals.upgradePlanDialog.antivirus.title'),
           upgradeDescription: translate('modals.upgradePlanDialog.antivirus.description'),
         }),
-      isLocked: !userFeatures?.[Service.Antivirus].enabled,
+      isLocked: !userFeatures?.[Service.Antivirus]?.enabled,
     },
     {
       icon: <SparkleIcon />,
@@ -108,7 +108,7 @@ export const useSuiteLauncher = () => {
           upgradeTitle: translate('modals.upgradePlanDialog.cleaner.title'),
           upgradeDescription: translate('modals.upgradePlanDialog.cleaner.description'),
         }),
-      isLocked: !userFeatures?.[Service.Cleaner].enabled,
+      isLocked: !userFeatures?.[Service.Cleaner]?.enabled,
     },
   ];
 
