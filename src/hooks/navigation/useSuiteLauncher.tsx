@@ -13,6 +13,8 @@ import { useTranslationContext } from '@/i18n';
 import { useAppSelector } from '@/store/hooks';
 import { ConfigService } from '@/services/config';
 import { MEET_URL, SEND_URL } from '@/constants';
+import { NavigationService } from '@/services/navigation';
+import { AppView } from '@/routes/paths';
 
 export const useSuiteLauncher = () => {
   const { translate } = useTranslationContext();
@@ -54,7 +56,9 @@ export const useSuiteLauncher = () => {
     {
       icon: <EnvelopeSimpleIcon />,
       title: 'Mail',
-      onClick: () => {},
+      onClick: () => {
+        NavigationService.instance.navigate({ id: AppView.Inbox });
+      },
       availableSoon: true,
       isLocked: !userFeatures?.[Service.Mail]?.enabled,
     },
