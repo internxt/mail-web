@@ -1,6 +1,6 @@
 import { Checkbox, Dropdown, type MenuItemType } from '@internxt/ui';
 import SearchInput from '../searchInput';
-import { CaretDownIcon, DotsThreeVerticalIcon, FunnelSimpleIcon, XIcon } from '@phosphor-icons/react';
+import { ArchiveIcon, CaretDownIcon, DotsThreeVerticalIcon, FunnelSimpleIcon, TrashIcon } from '@phosphor-icons/react';
 import { useTranslationContext } from '@/i18n';
 
 interface HeaderProps {
@@ -41,12 +41,12 @@ const Header = ({ folderName }: HeaderProps) => {
     {
       name: translate('actions.trashAll'),
       action: () => {},
-      icon: XIcon,
+      icon: TrashIcon,
     },
     {
       name: translate('actions.archiveAll'),
       action: () => {},
-      icon: XIcon,
+      icon: ArchiveIcon,
     },
   ];
 

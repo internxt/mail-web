@@ -29,6 +29,7 @@ const SearchInput = () => {
   const { translate } = useTranslationContext();
   const searchInput = useRef<HTMLInputElement>(null);
   const [openSearchBox, setOpenSearchBox] = useState<boolean>(false);
+  const [query, setQuery] = useState<string>('');
 
   useHotkeys(
     ['Meta+F', 'Control+F'],
@@ -62,10 +63,9 @@ const SearchInput = () => {
           onKeyUpCapture={(e) => {
             if (e.key === 'Escape') {
               e.currentTarget.blur();
-            } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-              e.preventDefault();
             }
           }}
+          onChange={(e) => setQuery(e.target.value)}
           onBlurCapture={() => {
             setOpenSearchBox(false);
           }}
@@ -73,7 +73,7 @@ const SearchInput = () => {
           placeholder={translate('actions.search')}
         />
         <div className={getKeyboardShortcutClassName(openSearchBox)}>{isMacOs ? '⌘F' : 'Ctrl F'}</div>
-        <XIcon className={getClearButtonClassName('', openSearchBox)} size={20} />
+        <XIcon className={getClearButtonClassName(query, openSearchBox)} size={20} />
       </label>
     </form>
   );

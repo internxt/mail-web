@@ -62,7 +62,7 @@
     "spam": "Spam",
     "trash": "Trash",
     "tray": {
-      "isEmpty": "is empty"
+      "isEmpty": "{{folderName}} is empty"
     }
   },
   "errors": {
