@@ -6,7 +6,7 @@ import { ErrorService } from '@/services/error';
 export const storageQuery = createApi({
   reducerPath: 'storageQuery',
   baseQuery: fakeBaseQuery(),
-  tagTypes: ['Usage', 'Fetch'],
+  tagTypes: ['Usage', 'Limit'],
 
   endpoints: (builder) => ({
     getStorageUsage: builder.query<number, void>({
@@ -31,7 +31,7 @@ export const storageQuery = createApi({
           return { error: new FetchStorageLimitError(err.message, err.requestId) };
         }
       },
-      providesTags: ['Fetch'],
+      providesTags: ['Limit'],
     }),
   }),
 });

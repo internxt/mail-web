@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { Suspense } from 'react';
+import SidenavWrapper from '@/components/sidenav/SidenavWrapper';
 
 /**
  * App layout (contains the static components like the sidebar)
@@ -7,12 +8,7 @@ import { Suspense } from 'react';
 const SidebarAndHeaderLayout = () => {
   return (
     <div className="flex h-screen w-screen overflow-hidden">
-      <aside className="w-64 border-r bg-gray-50">
-        {/* TODO: Sidenav here */}
-        <nav className="p-4">
-          <h1 className="text-xl font-bold mb-4">Mail</h1>
-        </nav>
-      </aside>
+      <SidenavWrapper />
 
       <main className="flex-1 overflow-auto">
         <Suspense fallback={<LoadingFallback />}>

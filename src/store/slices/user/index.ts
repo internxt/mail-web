@@ -5,6 +5,8 @@ import type { Tier } from '@internxt/sdk/dist/drive/payments/types/tiers';
 import type { UserSettings } from '@internxt/sdk/dist/shared/types/userSettings';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { initializeUserThunk, logoutThunk } from './thunks';
+import notificationsService, { ToastType } from '@/services/notifications';
+import type { UserSubscription } from '@internxt/sdk/dist/drive/payments/types/types';
 
 export interface UserState {
   isInitializing: boolean;
@@ -12,6 +14,7 @@ export interface UserState {
   isInitialized: boolean;
   user?: UserSettings;
   userTier?: Tier;
+  userSubscription?: UserSubscription;
 }
 
 export const initialUserState: UserState = {
@@ -20,6 +23,7 @@ export const initialUserState: UserState = {
   isInitialized: false,
   user: undefined,
   userTier: undefined,
+  userSubscription: undefined,
 };
 
 export const userSlice = createSlice({
@@ -37,6 +41,9 @@ export const userSlice = createSlice({
       state.userTier = action.payload;
 
       LocalStorageService.instance.setTier(action.payload);
+    },
+    setUserSubscription: (state: UserState, action: PayloadAction<UserSubscription>) => {
+      state.userSubscription = action.payload;
     },
     setUser: (state: UserState, action: PayloadAction<UserSettings | undefined>) => {
       state.isAuthenticated = !!action.payload;
@@ -57,11 +64,14 @@ export const userSlice = createSlice({
       .addCase(initializeUserThunk.fulfilled, (state) => {
         state.isInitializing = false;
       })
-      .addCase(initializeUserThunk.rejected, (state) => {
-        // const errorMsg = action.payload ? action.payload : '';
+      .addCase(initializeUserThunk.rejected, (state, action) => {
+        const errorMsg = action.payload ? action.payload : '';
 
         state.isInitializing = false;
-        // notificationsService.show({ text: 'User initialization error ' + errorMsg, type: ToastType.Warning });
+        notificationsService.show({
+          text: 'User initialization error ' + JSON.stringify(errorMsg),
+          type: ToastType.Warning,
+        });
         NavigationService.instance.navigate({ id: AppView.Welcome });
       });
 

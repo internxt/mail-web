@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: 'es-ES'
+reviews:
+  profile: 'assertive'
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  request_changes_workflow: true
+  path_instructions:
+    - path: '**/*.ts,**/*.tsx'
+      instructions: |
+        Review the TypeScript/React code for:
+        - Possible bugs and unhandled edge cases
+        - Performance issues and unnecessary re-renders
+        - Type safety improvements
+        - Clean code principles and readability
+        - Security vulnerabilities
+    - path: '**/*.test.ts,**/*.test.tsx'
+      instructions: |
+        Review tests for:
+        - Missing edge case coverage
+        - Proper assertion usage
+        - Test isolation and mocking correctness
+  auto_review:
+    enabled: true
+    drafts: false
+  tools:
+    eslint:
+      enabled: true
+    biome:
+      enabled: true
+    github-checks:
+      enabled: true
+      timeout_ms: 90000
