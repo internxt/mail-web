@@ -1,5 +1,5 @@
 import { Checkbox, Dropdown, type MenuItemType } from '@internxt/ui';
-import { SearchComponent } from '../searchComponent';
+import SearchInput from '../searchInput';
 import { CaretDownIcon, DotsThreeVerticalIcon, FunnelSimpleIcon, XIcon } from '@phosphor-icons/react';
 import { useTranslationContext } from '@/i18n';
 
@@ -53,7 +53,7 @@ const Header = ({ folderName }: HeaderProps) => {
   return (
     <section className="flex flex-col w-full">
       <div className="py-3 flex w-full px-5">
-        <SearchComponent />
+        <SearchInput />
       </div>
       <div className="flex flex-row w-full justify-between px-5 py-3 z-10">
         <div className="flex flex-row gap-2 items-center">

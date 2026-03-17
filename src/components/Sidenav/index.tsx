@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Sidenav } from '@internxt/ui';
+import { Sidenav as SidenavComponent } from '@internxt/ui';
 import logo from '../../assets/logos/Internxt/small-logo.svg';
 import { useTranslationContext } from '@/i18n';
 import { NavigationService } from '@/services/navigation';
@@ -13,7 +13,7 @@ import { useGetStorageLimitQuery, useGetStorageUsageQuery } from '@/store/querie
 import { useAppSelector } from '@/store/hooks';
 import { bytesToString } from '@/utils/bytesToString';
 
-const SidenavComponent = () => {
+const Sidenav = () => {
   const { translate } = useTranslationContext();
   const { userSubscription: subscription } = useAppSelector((state: RootState) => state.user);
   const { isLoading: isLoadingPlanLimit, data: planLimit = 1 } = useGetStorageLimitQuery();
@@ -50,7 +50,7 @@ const SidenavComponent = () => {
 
   return (
     <div className="flex flex-col h-screen z-50">
-      <Sidenav
+      <SidenavComponent
         header={{
           logo: logo,
           title: translate('mail.title'),
@@ -77,4 +77,4 @@ const SidenavComponent = () => {
   );
 };
 
-export default SidenavComponent;
+export default Sidenav;

@@ -25,7 +25,7 @@ const getSearchBoxClassName = (openSearchBox: boolean) => {
   return `${baseClass} ${widthClass}`;
 };
 
-export const SearchComponent = () => {
+const SearchInput = () => {
   const { translate } = useTranslationContext();
   const searchInput = useRef<HTMLInputElement>(null);
   const [openSearchBox, setOpenSearchBox] = useState<boolean>(false);
@@ -78,3 +78,5 @@ export const SearchComponent = () => {
     </form>
   );
 };
+
+export default SearchInput;
