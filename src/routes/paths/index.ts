@@ -8,6 +8,7 @@ export enum AppView {
   Inbox = 'inbox',
   Sent = 'sent',
   Drafts = 'drafts',
+  Spam = 'spam',
   Trash = 'trash',
 }
 
@@ -69,6 +70,14 @@ const routeConfigs: RouteConfig[] = [
     layout: AppLayout.SidebarAndHeader,
     element: MailView,
     props: { folder: 'drafts' },
+  },
+  {
+    id: AppView.Spam,
+    path: '/spam',
+    isProtected: true,
+    layout: AppLayout.SidebarAndHeader,
+    element: MailView,
+    props: { folder: 'spam' },
   },
   {
     id: AppView.Trash,

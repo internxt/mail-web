@@ -1,5 +1,5 @@
 import { XIcon } from '@phosphor-icons/react';
-import type { Recipient } from '../mail/composeMessageDialog/types';
+import type { Recipient } from '../ComposeMessage/types';
 
 interface RecipientChipProps {
   recipient: Recipient;

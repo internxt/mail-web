@@ -13,7 +13,7 @@ import { useGetStorageLimitQuery, useGetStorageUsageQuery } from '@/store/querie
 import { useAppSelector } from '@/store/hooks';
 import { bytesToString } from '@/utils/bytesToString';
 
-const SidenavWrapper = () => {
+const SidenavComponent = () => {
   const { translate } = useTranslationContext();
   const { userSubscription: subscription } = useAppSelector((state: RootState) => state.user);
   const { isLoading: isLoadingPlanLimit, data: planLimit = 1 } = useGetStorageLimitQuery();
@@ -53,7 +53,7 @@ const SidenavWrapper = () => {
       <Sidenav
         header={{
           logo: logo,
-          title: translate('sidebar.title'),
+          title: translate('mail.title'),
           onClick: onLogoClicked,
           className: '!pt-0 pb-3',
         }}
@@ -65,8 +65,8 @@ const SidenavWrapper = () => {
         isCollapsed={isCollapsed}
         onToggleCollapse={handleToggleCollapse}
         storage={{
-          usage: bytesToString(planUsage),
-          limit: bytesToString(planLimit),
+          usage: bytesToString({ size: planUsage }),
+          limit: bytesToString({ size: planLimit }),
           percentage: storagePercentage,
           onUpgradeClick: () => {},
           upgradeLabel: isUpgradeAvailable() ? translate('preferences.account.plans.upgrade') : undefined,
@@ -77,4 +77,4 @@ const SidenavWrapper = () => {
   );
 };
 
-export default SidenavWrapper;
+export default SidenavComponent;

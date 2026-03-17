@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { matchPath, useLocation } from 'react-router-dom';
-import { TrashIcon, TrayIcon, PaperPlaneTiltIcon, FileIcon } from '@phosphor-icons/react';
+import { TrashIcon, TrayIcon, PaperPlaneTiltIcon, FileIcon, WarningOctagonIcon } from '@phosphor-icons/react';
 import type { SidenavOption } from '@internxt/ui/dist/components/sidenav/SidenavOptions';
 import { useTranslationContext } from '@/i18n';
 import { AppView } from '@/routes/paths';
@@ -20,7 +20,7 @@ export const useSidenavNavigation = () => {
     () => [
       {
         isActive: isActiveButton('/inbox'),
-        label: translate('sidebar.inbox'),
+        label: translate('mail.inbox'),
         icon: TrayIcon,
         iconDataCy: 'sideNavInboxIcon',
         isVisible: true,
@@ -28,7 +28,7 @@ export const useSidenavNavigation = () => {
       },
       {
         isActive: isActiveButton('/drafts'),
-        label: translate('sidebar.drafts'),
+        label: translate('mail.drafts'),
         icon: FileIcon,
         iconDataCy: 'sideNavDraftsIcon',
         isVisible: true,
@@ -36,15 +36,23 @@ export const useSidenavNavigation = () => {
       },
       {
         isActive: isActiveButton('/sent'),
-        label: translate('sidebar.sent'),
+        label: translate('mail.sent'),
         icon: PaperPlaneTiltIcon,
         iconDataCy: 'sideNavSentIcon',
         isVisible: true,
         onClick: () => onSidenavItemClick(AppView.Sent),
       },
       {
+        isActive: isActiveButton('/spam'),
+        label: translate('mail.spam'),
+        icon: WarningOctagonIcon,
+        iconDataCy: 'sideNavSpamIcon',
+        isVisible: true,
+        onClick: () => onSidenavItemClick(AppView.Spam),
+      },
+      {
         isActive: isActiveButton('/trash'),
-        label: translate('sidebar.trash'),
+        label: translate('mail.trash'),
         icon: TrashIcon,
         iconDataCy: 'sideNavTrashIcon',
         isVisible: true,
