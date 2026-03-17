@@ -544,10 +544,10 @@
     axios "1.13.5"
     internxt-crypto "0.0.13"
 
-"@internxt/ui@^0.1.9":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@internxt/ui/-/ui-0.1.9.tgz#7059d388916ecf4518680774c7b9abc2b0459c3e"
-  integrity sha512-ZM4AHxY4v9ZIWX8nGFFcyYyv0M21x6SvMnqCCabCJVbqaFlnZP6yPQbMM/64dd/JSXTTEBF62wc03dZJU7Zt+w==
+"@internxt/ui@=0.1.10":
+  version "0.1.10"
+  resolved "https://registry.yarnpkg.com/@internxt/ui/-/ui-0.1.10.tgz#88a709a37804fdb91850f49c109c1a67ca43c7f1"
+  integrity sha512-ELFsdNiUS9A1Fax8xNpdknNU029N80Bt6R2O7mScFJu+YtE9fu8VoZoXbhd5VO0gShbPGHfEH5xYGYS2DlKBPA==
   dependencies:
     "@internxt/css-config" "1.1.0"
     "@phosphor-icons/react" "^2.1.10"
