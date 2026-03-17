@@ -10,6 +10,7 @@ import {
   type PlatformMatcher,
 } from '@/types/config';
 import { ErrorService } from '../error';
+import { INTERNXT_BASE_URL } from '@/constants';
 
 const configKeys: Record<keyof ConfigKeys, string> = {
   DRIVE_API_URL: 'VITE_DRIVE_API_URL',
@@ -70,8 +71,6 @@ export class ConfigService {
   }
 
   private async getDownloadAppUrl(): Promise<string | null> {
-    const INTERNXT_BASE_URL = 'https://internxt.com';
-
     let fetchDownloadResponse: { platforms?: Record<string, string> } = {};
     try {
       const response = await fetch(`${INTERNXT_BASE_URL}/api/download`, {
