@@ -2,11 +2,17 @@
 language: 'en'
 reviews:
   profile: 'assertive'
-  high_level_summary: true
+  high_level_summary: false
+  changed_files_summary: true
   poem: false
-  review_status: true
-  collapse_walkthrough: false
+  review_status: false
+  collapse_walkthrough: true
   request_changes_workflow: true
+  sequence_diagrams: false
+  related_issues: false
+  related_prs: false
+  suggested_labels: false
+  assess_linked_issues: false
   path_instructions:
     - path: '**/*.ts,**/*.tsx'
       instructions: |
@@ -27,8 +33,6 @@ reviews:
     drafts: false
   tools:
     eslint:
-      enabled: true
-    biome:
       enabled: true
     github-checks:
       enabled: true
