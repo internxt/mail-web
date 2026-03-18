@@ -3,7 +3,8 @@
 @source '../src/**/*.{js,ts,jsx,tsx}';
 @source '../node_modules/@internxt/ui/dist/**/*.{js,ts,jsx,tsx}';
 
-.body {
+:root,
+#root {
   overscroll-behavior: none;
 }
 

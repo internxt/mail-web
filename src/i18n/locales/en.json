@@ -4,7 +4,18 @@
     "logIn": "Log in",
     "signUp": "Sign up",
     "logOut": "Log out",
-    "newMessage": "New Message"
+    "newMessage": "New Message",
+    "search": "Search",
+    "trashAll": "Move all to trash",
+    "archiveAll": "Move all to archive"
+  },
+  "filter": {
+    "all": "All",
+    "none": "None",
+    "read": "Read",
+    "unread": "Unread",
+    "starred": "Starred",
+    "unstarred": "Unstarred"
   },
   "welcome": {
     "title": {
@@ -42,13 +53,17 @@
     "termsAndConditions": "Terms and Conditions",
     "contactSupport": "Contact Support"
   },
-  "sidebar": {
+  "mail": {
     "title": "Mail",
     "newMessage": "New Message",
     "inbox": "Inbox",
     "drafts": "Drafts",
     "sent": "Sent",
-    "trash": "Trash"
+    "spam": "Spam",
+    "trash": "Trash",
+    "tray": {
+      "isEmpty": "{{folderName}} is empty"
+    }
   },
   "errors": {
     "auth": {

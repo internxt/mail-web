@@ -1,41 +1,27 @@
 import { useTranslationContext } from '@/i18n';
-import { AppView } from '@/routes/paths';
-import { NavigationService } from '@/services/navigation';
-import { useAppDispatch } from '@/store/hooks';
-import { logoutThunk } from '@/store/slices/user/thunks';
+import Header from './components/header';
+import { Tray } from '@internxt/ui';
+import { TrayEmptyState } from './components/trayEmptyState';
+import type { FolderType } from '@/types/mail';
 
 interface MailViewProps {
-  folder: string;
+  folder: FolderType;
 }
 
 const MailView = ({ folder }: MailViewProps) => {
   const { translate } = useTranslationContext();
-  const dispatch = useAppDispatch();
 
-  const goToInbox = () => {
-    NavigationService.instance.navigate({ id: AppView.Inbox });
-  };
-
-  const goToTrash = () => {
-    NavigationService.instance.navigate({ id: AppView.Trash });
-  };
-
-  const onLogout = async () => {
-    await dispatch(logoutThunk());
-  };
+  const folderName = translate(`mail.${folder}`);
 
   return (
-    <div>
-      <p>
-        {NavigationService.instance.getView()?.id === AppView.Inbox
-          ? translate('sidebar.inbox')
-          : translate('sidebar.trash')}
-      </p>
-      <p>Current folder: {folder}</p>
-      <div className="flex flex-row gap-2">
-        <button onClick={goToInbox}>Go To Inbox</button>
-        <button onClick={goToTrash}>Go To Trash</button>
-        <button onClick={onLogout}>Log out</button>
+    <div className="flex flex-row w-full h-full">
+      <div className="flex flex-col border-r border-gray-5 h-full">
+        <div className="flex z-10">
+          <Header folderName={folderName} />
+        </div>
+        <div className="flex-1 w-full overflow-hidden">
+          <Tray loading={true} mails={[]} emptyState={<TrayEmptyState folderName={folderName} />} />
+        </div>
       </div>
     </div>
   );

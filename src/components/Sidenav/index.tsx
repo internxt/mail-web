@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Sidenav } from '@internxt/ui';
+import { Sidenav as SidenavComponent } from '@internxt/ui';
 import logo from '../../assets/logos/Internxt/small-logo.svg';
 import { useTranslationContext } from '@/i18n';
 import { NavigationService } from '@/services/navigation';
@@ -13,7 +13,7 @@ import { useGetStorageLimitQuery, useGetStorageUsageQuery } from '@/store/querie
 import { useAppSelector } from '@/store/hooks';
 import { bytesToString } from '@/utils/bytesToString';
 
-const SidenavWrapper = () => {
+const Sidenav = () => {
   const { translate } = useTranslationContext();
   const { userSubscription: subscription } = useAppSelector((state: RootState) => state.user);
   const { isLoading: isLoadingPlanLimit, data: planLimit = 1 } = useGetStorageLimitQuery();
@@ -50,10 +50,10 @@ const SidenavWrapper = () => {
 
   return (
     <div className="flex flex-col h-screen z-50">
-      <Sidenav
+      <SidenavComponent
         header={{
           logo: logo,
-          title: translate('sidebar.title'),
+          title: translate('mail.title'),
           onClick: onLogoClicked,
           className: '!pt-0 pb-3',
         }}
@@ -65,8 +65,8 @@ const SidenavWrapper = () => {
         isCollapsed={isCollapsed}
         onToggleCollapse={handleToggleCollapse}
         storage={{
-          usage: bytesToString(planUsage),
-          limit: bytesToString(planLimit),
+          usage: bytesToString({ size: planUsage }),
+          limit: bytesToString({ size: planLimit }),
           percentage: storagePercentage,
           onUpgradeClick: () => {},
           upgradeLabel: isUpgradeAvailable() ? translate('preferences.account.plans.upgrade') : undefined,
@@ -77,4 +77,4 @@ const SidenavWrapper = () => {
   );
 };
 
-export default SidenavWrapper;
+export default Sidenav;
