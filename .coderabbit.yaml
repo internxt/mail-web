@@ -1,7 +1,6 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 language: 'en'
 reviews:
-  estimate_code_review_effort: true
   profile: 'assertive'
   high_level_summary: false
   changed_files_summary: true
@@ -9,6 +8,11 @@ reviews:
   review_status: false
   collapse_walkthrough: true
   request_changes_workflow: true
+  sequence_diagrams: false
+  related_issues: false
+  related_prs: false
+  suggested_labels: false
+  assess_linked_issues: false
   path_instructions:
     - path: '**/*.ts,**/*.tsx'
       instructions: |

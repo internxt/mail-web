@@ -44,7 +44,7 @@ npm run preview
 
 ## Project Structure
 
-```
+```text
 src/
 ├── assets/          # Static assets (images, fonts, icons)
 ├── components/      # Shared, reusable UI components
