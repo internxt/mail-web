@@ -1,8 +1,8 @@
 import { useTranslationContext } from '@/i18n';
 import type { FolderType } from '@/types/mail';
 import { getMockedMail } from '@/test-utils/fixtures';
-import PreviewMail from './components/mailPreview';
-import type { User } from './components/mailPreview/header';
+import PreviewMail from './components/mail-preview';
+import type { User } from './components/mail-preview/header';
 import TrayList from './components/tray';
 
 interface MailViewProps {

@@ -1,4 +1,4 @@
-import UserChip from '@/components/UserChip';
+import UserChip from '@/components/user-chip';
 import { DateService } from '@/services/date';
 import { Avatar } from '@internxt/ui';
 import { PaperclipIcon } from '@phosphor-icons/react';
