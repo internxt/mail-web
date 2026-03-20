@@ -1,8 +1,9 @@
 import { useTranslationContext } from '@/i18n';
-import Header from './components/header';
-import { Tray } from '@internxt/ui';
-import { TrayEmptyState } from './components/trayEmptyState';
 import type { FolderType } from '@/types/mail';
+import { getMockedMail } from '@/test-utils/fixtures';
+import PreviewMail from './components/mailPreview';
+import type { User } from './components/mailPreview/header';
+import TrayList from './components/tray';
 
 interface MailViewProps {
   folder: FolderType;
@@ -10,19 +11,20 @@ interface MailViewProps {
 
 const MailView = ({ folder }: MailViewProps) => {
   const { translate } = useTranslationContext();
+  const mockedMail = getMockedMail();
+  const from = mockedMail.from[0];
+  const to = mockedMail.to;
+  const cc = mockedMail.cc;
+  const bcc = mockedMail.bcc;
 
   const folderName = translate(`mail.${folder}`);
 
   return (
     <div className="flex flex-row w-full h-full">
-      <div className="flex flex-col border-r border-gray-5 h-full">
-        <div className="flex z-10">
-          <Header folderName={folderName} />
-        </div>
-        <div className="flex-1 w-full overflow-hidden">
-          <Tray loading={true} mails={[]} emptyState={<TrayEmptyState folderName={folderName} />} />
-        </div>
-      </div>
+      {/* Tray */}
+      <TrayList folderName={folderName} />
+      {/* Mail Preview */}
+      <PreviewMail bcc={bcc} cc={cc as User[]} from={from} to={to} mail={mockedMail} />
     </div>
   );
 };

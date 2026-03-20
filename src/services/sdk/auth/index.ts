@@ -7,6 +7,7 @@ export class AuthService {
   public logOut = async (): Promise<void> => {
     const token = LocalStorageService.instance.getToken();
     const authClient = SdkManager.instance.getAuth();
-    return authClient.logout(token ?? '');
+    await authClient.logout(token ?? '');
+    LocalStorageService.instance.clearCredentials();
   };
 }

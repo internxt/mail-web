@@ -134,3 +134,92 @@ export const getMockedLoginCredentials = () => {
     newToken: 'test-token',
   };
 };
+
+const createEmailAddress = () => ({
+  name: faker.person.fullName(),
+  email: faker.internet.email(),
+  avatar: faker.helpers.maybe(() => faker.image.avatar(), { probability: 0.5 }),
+});
+
+export const getMockedMail = () => ({
+  id: faker.string.uuid(),
+  threadId: faker.string.uuid(),
+  from: [createEmailAddress()],
+  to: [createEmailAddress()],
+  cc: faker.helpers.maybe(() => [createEmailAddress()], { probability: 0.3 }) ?? [],
+  bcc: [],
+  replyTo: [createEmailAddress()],
+  subject: faker.lorem.sentence(),
+  receivedAt: faker.date.recent().toISOString(),
+  sentAt: faker.date.recent().toISOString(),
+  preview: faker.lorem.sentences(2),
+  textBody: faker.lorem.paragraphs(2),
+  htmlBody: `<p>${faker.lorem.paragraphs(2)}</p>`,
+  isRead: faker.datatype.boolean(),
+  isFlagged: faker.datatype.boolean(),
+  hasAttachment: faker.datatype.boolean(),
+  size: faker.number.int({ min: 1024, max: 16384 }),
+});
+
+export const getMockedMails = (count = 3) => ({
+  emails: Array.from({ length: count }, () => {
+    const mail = getMockedMail();
+    return {
+      id: mail.id,
+      threadId: mail.threadId,
+      from: mail.from,
+      to: mail.to,
+      subject: mail.subject,
+      receivedAt: mail.receivedAt,
+      preview: mail.preview,
+      isRead: mail.isRead,
+      isFlagged: mail.isFlagged,
+      hasAttachment: mail.hasAttachment,
+      size: mail.size,
+    };
+  }),
+  total: faker.number.int({ min: count, max: 500 }),
+});
+
+export const getMockedMailBoxes = () => [
+  {
+    id: faker.string.uuid(),
+    name: 'Inbox',
+    type: 'inbox',
+    parentId: null,
+    totalEmails: faker.number.int({ min: 50, max: 500 }),
+    unreadEmails: faker.number.int({ min: 0, max: 20 }),
+  },
+  {
+    id: faker.string.uuid(),
+    name: 'Sent',
+    type: 'sent',
+    parentId: null,
+    totalEmails: faker.number.int({ min: 10, max: 200 }),
+    unreadEmails: 0,
+  },
+  {
+    id: faker.string.uuid(),
+    name: 'Drafts',
+    type: 'drafts',
+    parentId: null,
+    totalEmails: faker.number.int({ min: 0, max: 20 }),
+    unreadEmails: 0,
+  },
+  {
+    id: faker.string.uuid(),
+    name: 'Spam',
+    type: 'spam',
+    parentId: null,
+    totalEmails: faker.number.int({ min: 0, max: 50 }),
+    unreadEmails: faker.number.int({ min: 0, max: 50 }),
+  },
+  {
+    id: faker.string.uuid(),
+    name: 'Trash',
+    type: 'trash',
+    parentId: null,
+    totalEmails: faker.number.int({ min: 0, max: 30 }),
+    unreadEmails: 0,
+  },
+];
