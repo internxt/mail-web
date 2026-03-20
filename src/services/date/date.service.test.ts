@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { DateService } from '.';
+import 'dayjs/locale/en';
 
 const FIXED_DATE = '2024-04-10T11:32:00Z';
 const FIXED_NOW = new Date(FIXED_DATE).getTime();
@@ -8,6 +9,7 @@ describe('Date Service', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(FIXED_NOW);
+    DateService.setLocale('en');
   });
 
   afterEach(() => {

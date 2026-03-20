@@ -1,10 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, expect, test, vi } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 import { SdkManager } from '..';
 import { AuthService } from '.';
 import { LocalStorageService } from '@/services/local-storage';
 
 describe('Auth Service', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   test('When the user logs out, then the token should be cleared', async () => {
     const mockedToken = 'random-token';
     const mockedAuthClient = {

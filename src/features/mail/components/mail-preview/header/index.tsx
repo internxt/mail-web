@@ -1,4 +1,5 @@
 import UserChip from '@/components/user-chip';
+import { useTranslationContext } from '@/i18n';
 import { DateService } from '@/services/date';
 import { Avatar } from '@internxt/ui';
 import { PaperclipIcon } from '@phosphor-icons/react';
@@ -23,7 +24,7 @@ const RecipientLine = ({ label, users }: { label: string; users: User[] }) => {
 
   return (
     <span className="flex flex-row items-center gap-1 text-sm font-medium text-gray-100">
-      {label}
+      {label}:
       <span className="flex flex-row flex-wrap gap-1">
         {users.map((user, index) => (
           <UserChip key={`${user.email}-${index}`} avatar={user.avatar} name={user.name} email={user.email} />
@@ -35,6 +36,7 @@ const RecipientLine = ({ label, users }: { label: string; users: User[] }) => {
 
 const PreviewHeader = ({ sender, date, to, cc, bcc, attachmentsLength }: HeaderProps) => {
   const formattedDate = DateService.formatWithTime(date);
+  const { translate } = useTranslationContext();
 
   return (
     <div className="flex w-full flex-row items-start justify-between p-5">
@@ -43,16 +45,16 @@ const PreviewHeader = ({ sender, date, to, cc, bcc, attachmentsLength }: HeaderP
         <div className="flex flex-col gap-0.5">
           <p className="text-lg font-medium text-gray-100">{sender.name}</p>
           <div className="flex flex-col gap-2">
-            <RecipientLine label="To:" users={to} />
-            <RecipientLine label="CC:" users={cc} />
-            <RecipientLine label="BCC:" users={bcc} />
+            <RecipientLine label={translate('mail.preview.to')} users={to} />
+            <RecipientLine label={translate('mail.preview.cc')} users={cc} />
+            <RecipientLine label={translate('mail.preview.bcc')} users={bcc} />
           </div>
         </div>
       </div>
 
       <div className="flex flex-col items-end gap-3 text-sm text-gray-500">
         <span className="whitespace-nowrap text-sm text-gray-80">{formattedDate}</span>
-        {attachmentsLength && attachmentsLength > 0 ? (
+        {(attachmentsLength ?? 0) > 0 ? (
           <span className="flex flex-row items-center gap-1">
             <PaperclipIcon size={16} />
             {attachmentsLength}
