@@ -1,5 +1,5 @@
 import { UserCheap } from '@internxt/ui';
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 interface UserChipProps {
@@ -11,6 +11,7 @@ interface UserChipProps {
 const UserChip = ({ avatar, name, email }: UserChipProps) => {
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const tooltipId = useId();
 
   const handleMouseEnter = () => {
     const rect = ref.current?.getBoundingClientRect();
@@ -24,6 +25,7 @@ const UserChip = ({ avatar, name, email }: UserChipProps) => {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={() => setPosition(null)}
       role="tooltip"
+      aria-describedby={position ? tooltipId : undefined}
     >
       <span className="cursor-default rounded-md bg-gray-5 px-2 py-1 text-sm font-medium text-gray-60">
         {name.split(' ')[0]}
@@ -31,7 +33,7 @@ const UserChip = ({ avatar, name, email }: UserChipProps) => {
 
       {position &&
         createPortal(
-          <div className="fixed z-10" style={{ top: position.top, left: position.left }}>
+          <div id={tooltipId} role="tooltip" className="fixed z-10" style={{ top: position.top, left: position.left }}>
             <UserCheap avatar={avatar} fullName={name} email={email} />
           </div>,
           document.body,

@@ -4,6 +4,7 @@ import { SdkManager } from '.';
 import { ConfigService } from '../config';
 import { LocalStorageService } from '../local-storage';
 import { AuthService } from './auth';
+import { NavigationService } from '../navigation';
 
 vi.mock('./auth', () => ({
   AuthService: {
@@ -66,6 +67,7 @@ describe('SDK Manager', () => {
 
     vi.spyOn(LocalStorageService.instance, 'getToken').mockReturnValue('mock-token');
     vi.spyOn(LocalStorageService.instance, 'clearCredentials').mockReturnValue();
+    NavigationService.instance.init(vi.fn());
   });
 
   afterEach(() => {

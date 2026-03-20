@@ -1,9 +1,19 @@
-import { describe, expect, test } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { DateService } from '.';
 
 const FIXED_DATE = '2024-04-10T11:32:00Z';
+const FIXED_NOW = new Date(FIXED_DATE).getTime();
 
 describe('Date Service', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(FIXED_NOW);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   describe('formatting the date', () => {
     test('When formatting a date, then it should return the long localized format', () => {
       const result = DateService.format(FIXED_DATE);
@@ -31,13 +41,13 @@ describe('Date Service', () => {
 
   describe('From now on', () => {
     test('When getting relative time for a recent date, then it should return a relative string', () => {
-      const recent = new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString();
+      const recent = new Date(FIXED_NOW - 1000 * 60 * 60 * 2).toISOString();
       const result = DateService.fromNow(recent);
       expect(result).toStrictEqual('2 hours ago');
     });
 
     test('When getting relative time for a future date, then it should return a future string', () => {
-      const future = new Date(Date.now() + 1000 * 60 * 60 * 3).toISOString();
+      const future = new Date(FIXED_NOW + 1000 * 60 * 60 * 3).toISOString();
       const result = DateService.fromNow(future);
       expect(result).toStrictEqual('in 3 hours');
     });

@@ -4,6 +4,8 @@ import packageJson from '../../../package.json';
 import { ConfigService } from '../config';
 import { LocalStorageService } from '../local-storage';
 import { AuthService } from './auth';
+import { NavigationService } from '../navigation';
+import { AppView } from '@/routes/paths';
 
 export type SdkManagerApiSecurity = ApiSecurity & { newToken: string };
 
@@ -33,7 +35,11 @@ export class SdkManager {
       token: LocalStorageService.instance?.getToken() ?? '',
       unauthorizedCallback: () => {
         if (LocalStorageService.instance) {
-          void AuthService.instance.logOut();
+          LocalStorageService.instance.clearCredentials();
+          AuthService.instance.logOut().catch((error) => {
+            console.error(error);
+          });
+          NavigationService.instance.navigate({ id: AppView.Welcome });
         }
       },
     };

@@ -8,6 +8,5 @@ export class AuthService {
     const token = LocalStorageService.instance.getToken();
     const authClient = SdkManager.instance.getAuth();
     await authClient.logout(token ?? '');
-    LocalStorageService.instance.clearCredentials();
   };
 }

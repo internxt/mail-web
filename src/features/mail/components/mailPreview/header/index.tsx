@@ -25,8 +25,8 @@ const RecipientLine = ({ label, users }: { label: string; users: User[] }) => {
     <span className="flex flex-row items-center gap-1 text-sm font-medium text-gray-100">
       {label}
       <span className="flex flex-row flex-wrap gap-1">
-        {users.map((user) => (
-          <UserChip key={user.email} avatar={user.avatar} name={user.name} email={user.email} />
+        {users.map((user, index) => (
+          <UserChip key={`${user.email}-${index}`} avatar={user.avatar} name={user.name} email={user.email} />
         ))}
       </span>
     </span>
