@@ -3,6 +3,16 @@ import { beforeEach, describe, expect, test, vi, afterEach } from 'vitest';
 import { SdkManager } from '.';
 import { ConfigService } from '../config';
 import { LocalStorageService } from '../local-storage';
+import { AuthService } from './auth';
+import { NavigationService } from '../navigation';
+
+vi.mock('./auth', () => ({
+  AuthService: {
+    instance: {
+      logOut: vi.fn().mockResolvedValue(undefined),
+    },
+  },
+}));
 
 vi.mock('@internxt/sdk', () => ({
   Auth: {
@@ -57,6 +67,7 @@ describe('SDK Manager', () => {
 
     vi.spyOn(LocalStorageService.instance, 'getToken').mockReturnValue('mock-token');
     vi.spyOn(LocalStorageService.instance, 'clearCredentials').mockReturnValue();
+    NavigationService.instance.init(vi.fn());
   });
 
   afterEach(() => {
@@ -174,14 +185,14 @@ describe('SDK Manager', () => {
       );
     });
 
-    test('When Users client receives unauthorized response, then credentials should be cleared', () => {
+    test('When Users client receives unauthorized response, then logOut should be called', () => {
       SdkManager.instance.getUsers();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const securityArg = (Drive.Users.client as any).mock.calls[0][2];
       securityArg.unauthorizedCallback();
 
-      expect(LocalStorageService.instance.clearCredentials).toHaveBeenCalled();
+      expect(AuthService.instance.logOut).toHaveBeenCalled();
     });
   });
 
@@ -204,14 +215,14 @@ describe('SDK Manager', () => {
       );
     });
 
-    test('When Storage client receives unauthorized response, then credentials should be cleared', () => {
+    test('When Storage client receives unauthorized response, then logOut should be called', () => {
       SdkManager.instance.getStorage();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const securityArg = (Drive.Storage.client as any).mock.calls[0][2];
       securityArg.unauthorizedCallback();
 
-      expect(LocalStorageService.instance.clearCredentials).toHaveBeenCalled();
+      expect(AuthService.instance.logOut).toHaveBeenCalled();
     });
   });
 
@@ -234,14 +245,14 @@ describe('SDK Manager', () => {
       );
     });
 
-    test('When Payments client receives unauthorized response, then credentials should be cleared', () => {
+    test('When Payments client receives unauthorized response, then logOut should be called', () => {
       SdkManager.instance.getPayments();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const securityArg = (Drive.Payments.client as any).mock.calls[0][2];
       securityArg.unauthorizedCallback();
 
-      expect(LocalStorageService.instance.clearCredentials).toHaveBeenCalled();
+      expect(AuthService.instance.logOut).toHaveBeenCalled();
     });
   });
 });

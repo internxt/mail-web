@@ -17,6 +17,11 @@
     "starred": "Starred",
     "unstarred": "Unstarred"
   },
+  "labels": {
+    "To": "To",
+    "cc": "CC",
+    "bcc": "BCC"
+  },
   "welcome": {
     "title": {
       "highlighted": "Email that protects",
@@ -63,6 +68,11 @@
     "trash": "Trash",
     "tray": {
       "isEmpty": "{{folderName}} is empty"
+    },
+    "preview": {
+      "to": "To",
+      "cc": "CC",
+      "bcc": "BCC"
     }
   },
   "errors": {

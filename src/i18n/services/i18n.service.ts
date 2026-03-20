@@ -3,14 +3,21 @@ import i18next from 'i18next';
 
 import dayjs from 'dayjs';
 import en from 'dayjs/locale/en';
+import es from 'dayjs/locale/es';
+import fr from 'dayjs/locale/fr';
+import it from 'dayjs/locale/it';
 
 import enJson from '../locales/en.json';
+import { LocalStorageService } from '@/services/local-storage';
 
 const dayJsLocale: Record<string, ILocale> = {
   en,
+  es,
+  fr,
+  it,
 };
 
-const deviceLang: string = localStorage.getItem('i18nextLng') ?? navigator.language.split('-')[0];
+const deviceLang: string = LocalStorageService.instance.get('i18nextLng') ?? navigator.language.split('-')[0];
 
 dayjs.locale(dayJsLocale[deviceLang] || dayJsLocale['en']);
 

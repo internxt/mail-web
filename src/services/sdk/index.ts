@@ -3,13 +3,15 @@ import type { ApiSecurity, AppDetails } from '@internxt/sdk/dist/shared';
 import packageJson from '../../../package.json';
 import { ConfigService } from '../config';
 import { LocalStorageService } from '../local-storage';
+import { AuthService } from './auth';
+import { NavigationService } from '../navigation';
+import { AppView } from '@/routes/paths';
 
 export type SdkManagerApiSecurity = ApiSecurity & { newToken: string };
 
 export class SdkManager {
   public static readonly instance: SdkManager = new SdkManager();
   private static apiSecurity?: SdkManagerApiSecurity;
-  private readonly localStorage = LocalStorageService;
 
   public static readonly init = (apiSecurity: SdkManagerApiSecurity) => {
     SdkManager.apiSecurity = apiSecurity;
@@ -30,10 +32,14 @@ export class SdkManager {
 
   private getNewTokenApiSecurity(): ApiSecurity {
     return {
-      token: this.localStorage.instance?.getToken() ?? '',
+      token: LocalStorageService.instance?.getToken() ?? '',
       unauthorizedCallback: () => {
-        if (this.localStorage.instance) {
-          this.localStorage.instance.clearCredentials();
+        if (LocalStorageService.instance) {
+          LocalStorageService.instance.clearCredentials();
+          AuthService.instance.logOut().catch((error) => {
+            console.error(error);
+          });
+          NavigationService.instance.navigate({ id: AppView.Welcome });
         }
       },
     };
