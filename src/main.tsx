@@ -6,15 +6,18 @@ import { TranslationProvider } from './i18n/index.ts';
 import { store } from './store/index.ts';
 import { userActions } from './store/slices/user/index.ts';
 import { Provider } from 'react-redux';
+import { DialogManagerProvider } from './context/dialog-manager/DialogManager.context.tsx';
 
 store.dispatch(userActions.initialize());
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <TranslationProvider>
-      <Provider store={store}>
-        <App />
-      </Provider>
+      <DialogManagerProvider>
+        <Provider store={store}>
+          <App />
+        </Provider>
+      </DialogManagerProvider>
     </TranslationProvider>
   </StrictMode>,
 );
