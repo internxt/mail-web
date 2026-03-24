@@ -1,6 +1,7 @@
 import { useTranslationContext } from '@/i18n';
-import { Avatar, Button, Input } from '@internxt/ui';
+import { Avatar, Button } from '@internxt/ui';
 import { useState } from 'react';
+import SelectMailInput, { type Domain } from './SelectMailInput';
 
 interface UpdateEmailProps {
   onNext: (email: string) => void;
@@ -10,15 +11,18 @@ interface UpdateEmailProps {
 
 export const UpdateEmail = ({ userFullName, currentEmail, onNext }: UpdateEmailProps) => {
   const { translate, translateArray } = useTranslationContext();
-  const [email, setEmail] = useState<string>('');
+  const [username, setUsername] = useState<string>('');
+  const [domain, setDomain] = useState<Domain>('@intx.me');
 
   const descriptions = translateArray('identitySetup.updateEmail.description', {
     name: userFullName,
     current_email: currentEmail,
   });
 
+  const fullEmail = `${username}${domain}`;
+
   const handleOnClick = () => {
-    onNext(email);
+    onNext(fullEmail);
   };
 
   return (
@@ -43,7 +47,12 @@ export const UpdateEmail = ({ userFullName, currentEmail, onNext }: UpdateEmailP
 
       {/* Email input */}
       <div className="flex flex-col w-full">
-        <Input label={translate('identitySetup.updateEmail.mail')} autofocus onChange={(e) => setEmail(e)} />
+        <SelectMailInput
+          value={username}
+          onChangeValue={setUsername}
+          selectedDomain={domain}
+          onChangeDomain={setDomain}
+        />
         <p className="text-sm text-gray-50">{translate('identitySetup.updateEmail.mailType')}</p>
       </div>
 

@@ -1,5 +1,5 @@
 import { Checkbox, Dropdown, type MenuItemType } from '@internxt/ui';
-import SearchInput from '../searchInput';
+import SearchInput from '../search-input';
 import { ArchiveIcon, CaretDownIcon, DotsThreeVerticalIcon, FunnelSimpleIcon, TrashIcon } from '@phosphor-icons/react';
 import { useTranslationContext } from '@/i18n';
 
