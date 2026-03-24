@@ -1,14 +1,16 @@
 import { UserCheap } from '@internxt/ui';
-import { useId, useRef, useState } from 'react';
+import { XIcon } from '@phosphor-icons/react';
+import { useId, useRef, useState, type MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 
 interface UserChipProps {
   avatar?: string;
   name: string;
   email: string;
+  onRemove?: () => void;
 }
 
-const UserChip = ({ avatar, name, email }: UserChipProps) => {
+const UserChip = ({ avatar, name, email, onRemove }: UserChipProps) => {
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const tooltipId = useId();
@@ -16,6 +18,12 @@ const UserChip = ({ avatar, name, email }: UserChipProps) => {
   const handleMouseEnter = () => {
     const rect = ref.current?.getBoundingClientRect();
     if (rect) setPosition({ top: rect.bottom, left: rect.left });
+  };
+
+  const handleOnRemove = (e: MouseEvent<SVGSVGElement>) => {
+    e.stopPropagation();
+    setPosition(null);
+    onRemove?.();
   };
 
   return (
@@ -27,9 +35,17 @@ const UserChip = ({ avatar, name, email }: UserChipProps) => {
       role="tooltip"
       aria-describedby={position ? tooltipId : undefined}
     >
-      <span className="cursor-default rounded-md bg-gray-5 px-2 py-1 text-sm font-medium text-gray-60">
-        {name.split(' ')[0]}
-      </span>
+      <div className="flex flex-row gap-0.5 items-center px-2 py-1 rounded-md bg-gray-5 cursor-default">
+        <span className="text-sm font-medium text-gray-60">{name.split(' ')[0]}</span>
+        {onRemove && (
+          <XIcon
+            className={`flex transition-opacity duration-100 ${position ? 'opacity-100' : 'opacity-0'}`}
+            size={14}
+            onClick={handleOnRemove}
+            weight="bold"
+          />
+        )}
+      </div>
 
       {position &&
         createPortal(
