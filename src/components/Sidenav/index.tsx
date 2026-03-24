@@ -11,7 +11,7 @@ import { useSuiteLauncher } from '@/hooks/navigation/useSuiteLauncher';
 import { useSidenavNavigation } from '@/hooks/navigation/useSidenavNavigation';
 import { useGetStorageLimitQuery, useGetStorageUsageQuery } from '@/store/queries/storage/storage.query';
 import { useAppSelector } from '@/store/hooks';
-import { bytesToString } from '@/utils/bytesToString';
+import { bytesToString } from '@/utils/bytes-to-string';
 import { ActionDialog, useActionDialog } from '@/context/dialog-manager';
 
 const Sidenav = () => {
