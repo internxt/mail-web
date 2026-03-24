@@ -13,7 +13,7 @@ const Settings = () => {
   const { data: limit } = useGetStorageLimitQuery();
   const { openSection } = usePreferencesNavigation();
 
-  const percentageUsed = usage != null && limit ? Math.round((usage / limit) * 100) : 0;
+  const percentageUsed = usage != null && limit != null && limit > 0 ? Math.round((usage / limit) * 100) : 0;
 
   if (!user) return null;
 

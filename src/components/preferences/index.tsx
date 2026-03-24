@@ -18,9 +18,12 @@ export const PreferencesDialog = () => {
   const title = translate(`modals.preferences.sections.${activeSection}.title`);
 
   useEffect(() => {
-    if (isOpen) {
-      document.title = `${title} | Internxt Mail`;
-    }
+    if (!isOpen) return;
+    const previousTitle = document.title;
+    document.title = `${title} | Internxt Mail`;
+    return () => {
+      document.title = previousTitle;
+    };
   }, [isOpen, title]);
 
   const ActiveSectionComponent = SECTION_COMPONENTS[activeSection];

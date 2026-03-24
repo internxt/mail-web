@@ -17,8 +17,8 @@ const SectionItem = ({
   notificationsNumber,
   onClick,
 }: SectionItemProps) => {
-  const isClickable = !!onClick;
-  const clickableContainerClass = isClickable ? 'hover:bg-gray-1 hover:bg-gray-5' : '';
+  const isClickable = !!onClick && !isDisabled;
+  const clickableContainerClass = isClickable ? 'hover:bg-gray-5' : '';
   const activeContainerClass = isActive ? 'bg-primary' : clickableContainerClass;
   const containerClass = isDisabled ? '' : activeContainerClass;
   const clickableClass = isClickable ? 'hover:cursor-pointer' : '';
@@ -35,7 +35,7 @@ const SectionItem = ({
     <Element
       className={`flex h-10 w-full items-center justify-between rounded-lg px-3 py-2
        ${clickableClass} ${containerClass}`}
-      onClick={onClick}
+      onClick={isDisabled ? undefined : onClick}
       {...(isClickable ? { type: 'button' as const } : {})}
     >
       <div className="flex items-center">
@@ -44,7 +44,7 @@ const SectionItem = ({
         </span>
       </div>
       {notificationsNumber && notificationsNumber > 0 && (
-        <div className={`flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 ${notificationClass}`}>
+        <div className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 ${notificationClass}`}>
           <span className={`text-xs font-normal  ${notificationTextClass}`}>{notificationsNumber}</span>
         </div>
       )}

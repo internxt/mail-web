@@ -7,7 +7,7 @@ import type { ReactNode } from 'react';
 interface AccountPopoverProps {
   className?: string;
   user: UserSettings;
-  percentageUsed?: number;
+  percentageUsed: number;
   onLogout: () => void;
   openPreferences: () => void;
 }
@@ -74,13 +74,12 @@ interface ItemProps {
 
 function Item({ children, onClick }: Readonly<ItemProps>) {
   return (
-    <div
-      role="none"
+    <button
       className="flex cursor-pointer items-center px-3 py-2 text-gray-80 hover:bg-gray-1 dark:hover:bg-gray-10"
       style={{ lineHeight: 1.25 }}
       onClick={onClick}
     >
       {children}
-    </div>
+    </button>
   );
 }
