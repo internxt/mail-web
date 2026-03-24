@@ -14,5 +14,5 @@ export type DialogActionConfig = { closeAllDialogsFirst?: boolean; data?: unknow
 export type ActionDialogContextProps = {
   actionDialogs: Partial<Record<ActionDialog, ActionDialogState>>;
   openDialog: (key: ActionDialog, config?: DialogActionConfig) => void;
-  closeDialog: (key: ActionDialog, config?: DialogActionConfig) => void;
+  closeDialog: (key: ActionDialog) => void;
 };

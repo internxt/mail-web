@@ -6,7 +6,7 @@ export const DialogManagerContext = createContext<ActionDialogContextProps | und
 export const useActionDialog = () => {
   const ctx = useContext(DialogManagerContext);
   if (!ctx) {
-    throw new Error('The context is not initialized. Please it inside the provider');
+    throw new Error('The context is not initialized. Please use it inside the provider');
   }
 
   const isDialogOpen = useCallback(
@@ -18,7 +18,7 @@ export const useActionDialog = () => {
 
   const getDialogData = useCallback(
     (key: ActionDialog) => {
-      return ctx.actionDialogs[key]?.data || null;
+      return ctx.actionDialogs[key]?.data ?? null;
     },
     [ctx.actionDialogs],
   );
