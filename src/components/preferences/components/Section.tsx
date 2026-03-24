@@ -1,19 +1,15 @@
 import { type ReactNode } from 'react';
 import { CaretLeftIcon, XIcon } from '@phosphor-icons/react';
 
-const Section = ({
-  className = '',
-  children,
-  title,
-  onBackButtonClicked,
-  onClose,
-}: {
+interface SectionProps {
   className?: string;
   children: ReactNode;
   title: string;
   onBackButtonClicked?: () => void;
   onClose: () => void;
-}): JSX.Element => {
+}
+
+const Section = ({ className = '', children, title, onBackButtonClicked, onClose }: SectionProps) => {
   return (
     <div className={`relative w-full rounded-tr-2xl ${className}`}>
       <div className="absolute z-50 flex w-full items-center justify-between rounded-tr-2xl p-2.5 pl-6 before:absolute before:inset-0 before:-z-1 before:bg-surface/85 before:backdrop-blur-3xl before:transition-colors">

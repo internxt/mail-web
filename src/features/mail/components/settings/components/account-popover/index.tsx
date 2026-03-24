@@ -18,7 +18,7 @@ export default function AccountPopover({
   percentageUsed,
   onLogout,
   openPreferences,
-}: Readonly<AccountPopoverProps>): JSX.Element {
+}: Readonly<AccountPopoverProps>) {
   const { translate } = useTranslationContext();
   const name = user?.name ?? '';
   const lastName = user?.lastname ?? '';

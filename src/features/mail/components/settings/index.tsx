@@ -27,7 +27,7 @@ const Settings = () => {
 
   return (
     <div className="flex flex-row w-full gap-1 items-center justify-end p-4">
-      <Button variant="ghost" onClick={openPreferences}>
+      <Button variant="ghost" onClick={openPreferences} className="px-2!">
         <GearIcon size={24} />
       </Button>
       <AccountPopover
