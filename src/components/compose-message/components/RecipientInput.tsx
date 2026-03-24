@@ -1,6 +1,7 @@
 import { useState, type KeyboardEvent } from 'react';
 import type { Recipient } from '../types';
 import UserChip from '@/components/user-chip';
+import { DEFAULT_USER_NAME } from '@/constants';
 
 interface RecipientInputProps {
   label: string;
@@ -33,11 +34,13 @@ export const RecipientInput = ({
 }: RecipientInputProps) => {
   const [inputValue, setInputValue] = useState('');
 
+  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
       const email = inputValue.trim().replace(/,$/, '');
-      if (email) {
+      if (email && isValidEmail(email)) {
         onAddRecipient(email);
         setInputValue('');
       }
@@ -60,9 +63,9 @@ export const RecipientInput = ({
       <div className="flex-1 flex items-center gap-1 flex-wrap rounded-lg border border-gray-10 bg-surface px-3 py-1.5 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
         {recipients.map((recipient) => (
           <UserChip
-            key={recipient.email}
+            key={recipient.id}
             email={recipient.email}
-            name={recipient?.name || 'My Internxt'}
+            name={recipient?.name || DEFAULT_USER_NAME}
             avatar={recipient.avatar}
             onRemove={() => onRemoveRecipient(recipient.id)}
           />

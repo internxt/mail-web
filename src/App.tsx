@@ -15,8 +15,8 @@ NavigationService.instance.init(navigation);
 
 function App() {
   const dispatch = useAppDispatch();
-  const { isDialogOpen: isNewMessageDialogOpen } = useActionDialog();
-  const isComposeMessageDialogOpen = isNewMessageDialogOpen(ActionDialog.ComposeMessage);
+  const { isDialogOpen } = useActionDialog();
+  const isComposeMessageDialogOpen = isDialogOpen(ActionDialog.ComposeMessage);
 
   useEffect(() => {
     dispatch(initializeUserThunk());

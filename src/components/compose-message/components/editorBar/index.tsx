@@ -18,16 +18,16 @@ import { Editor } from '@tiptap/react';
 import { EditorBarButton } from './EditorBarButton';
 import { EditorBarGroup } from './EditorBarGroup';
 import type { EditorBarItem } from '../../types';
-import { COLORS, FONT_SIZES, FONTS } from './config';
 import { useEditorBar } from '../../hooks/useEditorBar';
 import { Activity } from 'react';
+import { COLORS, FONT_SIZES, FONTS } from '../../config';
 
-export interface ActionBarProps {
+export interface EditorBarProps {
   editor: Editor;
   disabled?: boolean;
 }
 
-export const EditorBar = ({ editor, disabled }: ActionBarProps) => {
+export const EditorBar = ({ editor, disabled }: EditorBarProps) => {
   const {
     showColorPicker,
     showFontPicker,
@@ -89,7 +89,7 @@ export const EditorBar = ({ editor, disabled }: ActionBarProps) => {
     },
   ] satisfies EditorBarItem[];
 
-  const textAligment = [
+  const textAlignment = [
     {
       id: 'alignLeft',
       icon: TextAlignLeftIcon,
@@ -231,7 +231,7 @@ export const EditorBar = ({ editor, disabled }: ActionBarProps) => {
       <EditorBarGroup disabled={disabled} items={textList} />
       <div className="w-px h-5 bg-gray-10" />
       {/* Text alignment */}
-      <EditorBarGroup disabled={disabled} items={textAligment} />
+      <EditorBarGroup disabled={disabled} items={textAlignment} />
       <div className="w-px h-5 bg-gray-10" />
       {/* Link, clear, image */}
       <EditorBarGroup disabled={disabled} items={messageAttachment} />

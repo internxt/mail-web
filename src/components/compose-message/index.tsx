@@ -1,5 +1,5 @@
 import { PaperclipIcon, XIcon } from '@phosphor-icons/react';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import type { Recipient } from './types';
 import { RecipientInput } from './components/RecipientInput';
 import { Button, Input } from '@internxt/ui';
@@ -8,8 +8,8 @@ import { EditorBar } from './components/editorBar';
 import { ActionDialog, useActionDialog } from '@/context/dialog-manager';
 import { useTranslationContext } from '@/i18n';
 import useComposeMessage from './hooks/useComposeMessage';
-import { useEditor, type Editor } from '@tiptap/react';
-import { EDITOR_CONFIG } from './components/editorBar/config';
+import { useEditor } from '@tiptap/react';
+import { EDITOR_CONFIG } from './config';
 
 export interface DraftMessage {
   subject?: string;
@@ -43,21 +43,19 @@ export const ComposeMessageDialog = () => {
   } = useComposeMessage();
 
   const title = draft.subject ?? translate('modals.composeMessageDialog.title');
-
-  const [readyEditor, setReadyEditor] = useState<Editor | null>(null);
-  useEditor({ ...EDITOR_CONFIG, onCreate: ({ editor }) => setReadyEditor(editor) });
+  const editor = useEditor(EDITOR_CONFIG);
 
   const onClose = useCallback(() => {
     onComposeMessageDialogClose(ActionDialog.ComposeMessage);
   }, [onComposeMessageDialogClose]);
 
   const handlePrimaryAction = useCallback(() => {
-    const html = readyEditor?.getHTML();
+    const html = editor?.getHTML();
     console.log('html', html);
     onClose();
-  }, [readyEditor, onClose]);
+  }, [editor, onClose]);
 
-  if (!readyEditor) return null;
+  if (!editor) return null;
 
   return (
     <div className="fixed inset-0 z-50">
@@ -67,6 +65,7 @@ export const ComposeMessageDialog = () => {
     `}
         onClick={onClose}
         data-testid="dialog-overlay"
+        aria-label="Close dialog"
       ></button>
 
       <div
@@ -128,10 +127,10 @@ export const ComposeMessageDialog = () => {
             <Input className="w-full" value={subjectValue} onChange={onSubjectChange} disabled={false} />
           </div>
           <div className="w-full flex border border-gray-5" />
-          <EditorBar editor={readyEditor} disabled={false} />
+          <EditorBar editor={editor} disabled={false} />
         </div>
         <div className="pt-4">
-          <RichTextEditor editor={readyEditor} />
+          <RichTextEditor editor={editor} />
         </div>
         {/* !TODO: Handle attachments */}
 
