@@ -1,6 +1,5 @@
 export enum ActionDialog {
   ComposeMessage = 'compose-message',
-  Settings = 'settings',
 }
 
 export interface ActionDialogState {

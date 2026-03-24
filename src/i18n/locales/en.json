@@ -113,6 +113,28 @@
         "title": "Unlock Cleaner",
         "description": "Upgrade now to keep your files optimized and free up space."
       }
+    },
+    "preferences": {
+      "title": "Preferences",
+      "sections": {
+        "general": {
+          "title": "General",
+          "appearance": {
+            "title": "Appearance",
+            "dark": "Dark",
+            "light": "Light",
+            "system": "System"
+          },
+          "language": {
+            "title": "Language",
+            "en": "English (English)",
+            "es": "Español (Spanish)",
+            "fr": "Français (French)",
+            "it": "Italiano (Italian)"
+          },
+          "support": "Support"
+        }
+      }
     }
   }
 }
