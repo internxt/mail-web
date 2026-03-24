@@ -27,8 +27,8 @@ export const RecipientInput = ({
   onBccClick,
   showCcButton = true,
   showBccButton = true,
-  ccButtonText = 'CC',
-  bccButtonText = 'BCC',
+  ccButtonText,
+  bccButtonText,
   disabled,
 }: RecipientInputProps) => {
   const [inputValue, setInputValue] = useState('');

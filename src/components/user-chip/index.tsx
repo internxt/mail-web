@@ -1,6 +1,6 @@
 import { UserCheap } from '@internxt/ui';
 import { XIcon } from '@phosphor-icons/react';
-import { useId, useRef, useState } from 'react';
+import { useId, useRef, useState, type MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 
 interface UserChipProps {
@@ -20,6 +20,12 @@ const UserChip = ({ avatar, name, email, onRemove }: UserChipProps) => {
     if (rect) setPosition({ top: rect.bottom, left: rect.left });
   };
 
+  const handleOnRemove = (e: MouseEvent<SVGSVGElement>) => {
+    e.stopPropagation();
+    setPosition(null);
+    onRemove?.();
+  };
+
   return (
     <div
       ref={ref}
@@ -35,7 +41,7 @@ const UserChip = ({ avatar, name, email, onRemove }: UserChipProps) => {
           <XIcon
             className={`flex transition-opacity duration-100 ${position ? 'opacity-100' : 'opacity-0'}`}
             size={14}
-            onClick={onRemove}
+            onClick={handleOnRemove}
             weight="bold"
           />
         )}

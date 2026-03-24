@@ -13,3 +13,10 @@ export interface EditorBarItem {
   onClick: () => void;
   isActive?: boolean;
 }
+
+export interface DraftMessage {
+  subject?: string;
+  to?: Recipient[];
+  cc?: Recipient[];
+  bcc?: Recipient[];
+}

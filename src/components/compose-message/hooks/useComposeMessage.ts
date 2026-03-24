@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react';
-import type { DraftMessage } from '..';
-import type { Recipient } from '../types';
+import type { DraftMessage, Recipient } from '../types';
 
 const useComposeMessage = (draft?: DraftMessage) => {
   const [subjectValue, setSubjectValue] = useState(draft?.subject ?? '');
