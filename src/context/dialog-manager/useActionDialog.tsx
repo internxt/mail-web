@@ -11,7 +11,7 @@ export const useActionDialog = () => {
 
   const isDialogOpen = useCallback(
     (key: ActionDialog) => {
-      return ctx.actionDialogs[key]?.isOpen || false;
+      return ctx.actionDialogs[key]?.isOpen ?? false;
     },
     [ctx.actionDialogs],
   );
