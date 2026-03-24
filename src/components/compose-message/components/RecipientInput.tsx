@@ -18,6 +18,13 @@ interface RecipientInputProps {
   disabled?: boolean;
 }
 
+const isValidEmail = (email: string) => {
+  const input = document.createElement('input');
+  input.type = 'email';
+  input.value = email;
+  return input.checkValidity();
+};
+
 export const RecipientInput = ({
   label,
   recipients,
@@ -34,8 +41,6 @@ export const RecipientInput = ({
 }: RecipientInputProps) => {
   const [inputValue, setInputValue] = useState('');
 
-  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
@@ -51,7 +56,7 @@ export const RecipientInput = ({
 
   const handleBlur = () => {
     const email = inputValue.trim();
-    if (email) {
+    if (email && isValidEmail(email)) {
       onAddRecipient(email);
       setInputValue('');
     }
@@ -71,7 +76,7 @@ export const RecipientInput = ({
           />
         ))}
         <input
-          type="text"
+          type="email"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
