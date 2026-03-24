@@ -1,10 +1,9 @@
+import { INTERNXT_EMAIL_DOMAINS } from '@/constants';
 import { Dropdown } from '@internxt/ui';
 import { CaretDownIcon, CaretUpIcon, CheckIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 
-const DOMAIN_OPTIONS = ['@intx.me', '@inxt.eu', '@encrypt.eu'] as const;
-
-export type Domain = (typeof DOMAIN_OPTIONS)[number];
+export type Domain = (typeof INTERNXT_EMAIL_DOMAINS)[number];
 
 interface SelectMailInputProps {
   value: string;
@@ -16,7 +15,7 @@ interface SelectMailInputProps {
 const SelectMailInput = ({ value, onChangeValue, selectedDomain, onChangeDomain }: SelectMailInputProps) => {
   const [isFocused, setIsFocused] = useState(false);
 
-  const menuItems = DOMAIN_OPTIONS.map((domain) => (
+  const menuItems = INTERNXT_EMAIL_DOMAINS.map((domain) => (
     <button
       key={domain}
       className={`flex w-full items-center gap-1 py-1 ${domain === selectedDomain ? 'font-bold' : 'font-normal'} text-sm text-gray-100 hover:bg-gray-5`}
