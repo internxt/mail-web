@@ -136,5 +136,10 @@
         }
       }
     }
+  },
+  "accountPopover": {
+    "spaceUsed": "{{space}}% space used",
+    "settings": "Settings",
+    "logout": "Log out"
   }
 }
