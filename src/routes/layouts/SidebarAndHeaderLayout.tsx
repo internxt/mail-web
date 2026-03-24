@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import { Suspense } from 'react';
 import Sidenav from '@/components/Sidenav';
+import { PreferencesDialog } from '@/components/preferences';
 
 /**
  * App layout (contains the static components like the sidebar)
@@ -15,6 +16,8 @@ const SidebarAndHeaderLayout = () => {
           <Outlet />
         </Suspense>
       </main>
+
+      <PreferencesDialog />
     </div>
   );
 };
