@@ -1,23 +1,11 @@
 import { useSearchParams } from 'react-router-dom';
 import { useCallback, useMemo } from 'react';
-import {
-  PREFERENCES_DEFAULT_SECTIONS,
-  type PreferencesActivePath,
-  type PreferencesSection,
-  type PreferencesSubsection,
-} from '@/types/preferences';
+import { PREFERENCES_SECTIONS, type PreferencesSection } from '@/types/preferences';
 
-const DEFAULT_SECTION: PreferencesActivePath = {
-  section: 'general',
-  subsection: 'general',
-};
+const DEFAULT_SECTION: PreferencesSection = 'general';
 
 const isValidSection = (value: string): value is PreferencesSection => {
-  return PREFERENCES_DEFAULT_SECTIONS.some((item) => item.section === value);
-};
-
-const isValidSubsection = (section: string, value: string): value is PreferencesSubsection => {
-  return PREFERENCES_DEFAULT_SECTIONS.some((item) => item.section === section && item.subsection === value);
+  return PREFERENCES_SECTIONS.some((item) => item.id === value);
 };
 
 export const usePreferencesNavigation = () => {
@@ -25,20 +13,19 @@ export const usePreferencesNavigation = () => {
 
   const isOpen = searchParams.get('preferences') === 'open';
 
-  const activePath: PreferencesActivePath = useMemo(() => {
+  const activeSection: PreferencesSection = useMemo(() => {
     const section = searchParams.get('section');
-    const subsection = searchParams.get('subsection');
 
-    if (section && isValidSection(section) && subsection && isValidSubsection(section, subsection)) {
-      return { section, subsection };
+    if (section && isValidSection(section)) {
+      return section;
     }
 
     return DEFAULT_SECTION;
   }, [searchParams]);
 
   const openSection = useCallback(
-    ({ section, subsection }: PreferencesActivePath) => {
-      setSearchParams({ preferences: 'open', section, subsection }, { replace: true });
+    (section: PreferencesSection) => {
+      setSearchParams({ preferences: 'open', section }, { replace: true });
     },
     [setSearchParams],
   );
@@ -47,5 +34,5 @@ export const usePreferencesNavigation = () => {
     setSearchParams({}, { replace: true });
   }, [setSearchParams]);
 
-  return { isOpen, activePath, openSection, close };
+  return { isOpen, activeSection, openSection, close };
 };

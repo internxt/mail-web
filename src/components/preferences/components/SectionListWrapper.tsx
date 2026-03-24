@@ -1,21 +1,21 @@
 import { useTranslationContext } from '@/i18n';
-import { PREFERENCES_DEFAULT_SECTIONS, type PreferencesActivePath } from '@/types/preferences';
+import { PREFERENCES_SECTIONS, type PreferencesSection } from '@/types/preferences';
 import SectionList from './SectionList';
 
 interface SectionListWrapperProps {
-  activePath: PreferencesActivePath;
-  onSelectSection: (path: PreferencesActivePath) => void;
+  activeSection: PreferencesSection;
+  onSelectSection: (section: PreferencesSection) => void;
 }
 
-const SectionListWrapper = ({ activePath, onSelectSection }: SectionListWrapperProps) => {
+const SectionListWrapper = ({ activeSection, onSelectSection }: SectionListWrapperProps) => {
   const { translate } = useTranslationContext();
 
-  const sectionItems = PREFERENCES_DEFAULT_SECTIONS.map((item) => ({
+  const sectionItems = PREFERENCES_SECTIONS.map((item) => ({
     ...item,
-    text: translate(`modals.preferences.sections.${item.subsection ?? item.section}.title`),
+    text: translate(`modals.preferences.sections.${item.id}.title`),
   }));
 
-  return <SectionList sectionItems={sectionItems} activePath={activePath} onSelectSection={onSelectSection} />;
+  return <SectionList sectionItems={sectionItems} activeSection={activeSection} onSelectSection={onSelectSection} />;
 };
 
 export default SectionListWrapper;

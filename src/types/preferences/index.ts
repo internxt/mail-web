@@ -1,20 +1,8 @@
 export type PreferencesSection = 'general';
-export type PreferencesSubsection = 'general';
 
 export interface PreferencesSectionItem {
-  section: PreferencesSection;
-  subsection: PreferencesSubsection;
-  isSubsection?: boolean;
+  id: PreferencesSection;
+  group?: string;
 }
 
-export interface PreferencesActivePath {
-  section: PreferencesSection;
-  subsection: PreferencesSubsection;
-}
-
-export const PREFERENCES_DEFAULT_SECTIONS: PreferencesSectionItem[] = [
-  {
-    section: 'general',
-    subsection: 'general',
-  },
-];
+export const PREFERENCES_SECTIONS: PreferencesSectionItem[] = [{ id: 'general' }];

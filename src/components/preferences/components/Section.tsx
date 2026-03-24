@@ -6,13 +6,13 @@ const Section = ({
   children,
   title,
   onBackButtonClicked,
-  onClosePreferences,
+  onClose,
 }: {
   className?: string;
   children: ReactNode;
   title: string;
   onBackButtonClicked?: () => void;
-  onClosePreferences: () => void;
+  onClose: () => void;
 }): JSX.Element => {
   return (
     <div className={`relative w-full rounded-tr-2xl ${className}`}>
@@ -29,7 +29,7 @@ const Section = ({
         </div>
         <button
           className="flex h-9 w-9 items-center justify-center rounded-md hover:bg-highlight/4 active:bg-highlight/8"
-          onClick={() => onClosePreferences()}
+          onClick={() => onClose()}
         >
           <XIcon size={22} />
         </button>

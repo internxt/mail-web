@@ -1,28 +1,23 @@
-import type { PreferencesActivePath, PreferencesSectionItem } from '@/types/preferences';
+import type { PreferencesSection, PreferencesSectionItem } from '@/types/preferences';
 import SectionItem from './SectionItem';
 
 interface SectionListProps {
   sectionItems: (PreferencesSectionItem & { text: string })[];
-  activePath: PreferencesActivePath;
-  onSelectSection: (path: PreferencesActivePath) => void;
+  activeSection: PreferencesSection;
+  onSelectSection: (section: PreferencesSection) => void;
 }
 
-const SectionList = ({ sectionItems, activePath, onSelectSection }: SectionListProps) => {
+const SectionList = ({ sectionItems, activeSection, onSelectSection }: SectionListProps) => {
   return (
     <div className="overflow-x-auto">
-      {sectionItems.map((item) => {
-        const isActive = item.section === activePath.section && item.subsection === activePath.subsection;
-
-        return (
-          <SectionItem
-            key={`${item.section}-${item.subsection}`}
-            text={item.text}
-            isActive={isActive}
-            isSubsection={item.isSubsection}
-            onClick={() => onSelectSection({ section: item.section, subsection: item.subsection })}
-          />
-        );
-      })}
+      {sectionItems.map((item) => (
+        <SectionItem
+          key={item.id}
+          text={item.text}
+          isActive={item.id === activeSection}
+          onClick={() => onSelectSection(item.id)}
+        />
+      ))}
     </div>
   );
 };
