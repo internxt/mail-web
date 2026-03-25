@@ -8,6 +8,9 @@ import fr from 'dayjs/locale/fr';
 import it from 'dayjs/locale/it';
 
 import enJson from '../locales/en.json';
+import esJson from '../locales/es.json';
+import frJson from '../locales/fr.json';
+import itJson from '../locales/it.json';
 import { LocalStorageService } from '@/services/local-storage';
 
 const dayJsLocale: Record<string, ILocale> = {
@@ -24,6 +27,9 @@ dayjs.locale(dayJsLocale[deviceLang] || dayJsLocale['en']);
 export default i18next.use(initReactI18next).init({
   resources: {
     en: { translation: enJson },
+    es: { translation: esJson },
+    fr: { translation: frJson },
+    it: { translation: itJson },
   },
   debug: true,
   fallbackLng: 'en',

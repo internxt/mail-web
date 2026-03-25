@@ -7,11 +7,13 @@ import { store } from './store/index.ts';
 import { userActions } from './store/slices/user/index.ts';
 import { Provider } from 'react-redux';
 import { DialogManagerProvider } from './context/dialog-manager/DialogManager.context.tsx';
+import { ThemeProvider } from './context/theme/ThemeProvider.tsx';
 
 store.dispatch(userActions.initialize());
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+        <ThemeProvider>
     <TranslationProvider>
       <DialogManagerProvider>
         <Provider store={store}>
@@ -19,5 +21,6 @@ createRoot(document.getElementById('root')!).render(
         </Provider>
       </DialogManagerProvider>
     </TranslationProvider>
+              </ThemeProvider>
   </StrictMode>,
 );
