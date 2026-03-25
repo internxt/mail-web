@@ -47,6 +47,7 @@
     "react-hot-toast": "^2.6.0",
     "react-hotkeys-hook": "^5.2.4",
     "react-i18next": "^16.5.4",
+    "react-live-chat-loader": "^2.11.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.13.1",
     "tailwindcss": "^4.2.1",

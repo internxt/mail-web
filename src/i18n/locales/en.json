@@ -142,7 +142,11 @@
             "fr": "Français (French)",
             "it": "Italiano (Italian)"
           },
-          "support": "Support"
+          "support": {
+            "title": "Support",
+            "description": "Navigate helpful articles or get assistance from our team.",
+            "cta": "Open Support Centre"
+          }
         }
       }
     }
