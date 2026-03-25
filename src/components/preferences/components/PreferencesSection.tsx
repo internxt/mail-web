@@ -9,7 +9,7 @@ interface SectionProps {
   onClose: () => void;
 }
 
-const Section = ({ className = '', children, title, onBackButtonClicked, onClose }: SectionProps) => {
+const PreferencesSection = ({ className = '', children, title, onBackButtonClicked, onClose }: SectionProps) => {
   return (
     <div className={`relative w-full rounded-tr-2xl ${className}`}>
       <div className="absolute z-50 flex w-full items-center justify-between rounded-tr-2xl p-2.5 pl-6 before:absolute before:inset-0 before:-z-1 before:bg-surface/85 before:backdrop-blur-3xl before:transition-colors">
@@ -25,7 +25,7 @@ const Section = ({ className = '', children, title, onBackButtonClicked, onClose
         </div>
         <button
           className="flex h-9 w-9 items-center justify-center rounded-md hover:bg-highlight/4 active:bg-highlight/8"
-          onClick={() => onClose()}
+          onClick={onClose}
         >
           <XIcon size={22} />
         </button>
@@ -35,4 +35,4 @@ const Section = ({ className = '', children, title, onBackButtonClicked, onClose
   );
 };
 
-export default Section;
+export default PreferencesSection;

@@ -24,7 +24,7 @@ const WelcomePage = () => {
         <div className="flex flex-row justify-between w-full p-5">
           <div className="flex px-3 py-2 items-center gap-2 rounded-2xl border border-gray-5 bg-surface drop-shadow text-black">
             <SmallLogo />
-            <p>{translate('meet')}</p>
+            <p>{translate('title')}</p>
           </div>
           <div className="flex flex-row gap-4">
             <Button variant="secondary" onClick={handleWebLogin}>

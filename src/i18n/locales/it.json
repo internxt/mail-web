@@ -1,0 +1,145 @@
+{
+  "title": "Mail",
+  "actions": {
+    "logIn": "Accedi",
+    "signUp": "Registrati",
+    "logOut": "Esci",
+    "newMessage": "Nuovo messaggio",
+    "search": "Cerca",
+    "trashAll": "Sposta tutto nel cestino",
+    "archiveAll": "Sposta tutto nell'archivio"
+  },
+  "filter": {
+    "all": "Tutti",
+    "none": "Nessuno",
+    "read": "Letto",
+    "unread": "Non letto",
+    "starred": "Speciali",
+    "unstarred": "Non speciali"
+  },
+  "labels": {
+    "To": "A",
+    "cc": "CC",
+    "bcc": "CCN"
+  },
+  "welcome": {
+    "title": {
+      "highlighted": "L'email che protegge",
+      "normal": "quello che invii"
+    },
+    "description": "Email cifrata per una vera privacy. Zero tracciamento. Controllo totale."
+  },
+  "identitySetup": {
+    "updateEmail": {
+      "title": "Configura la tua email Internxt",
+      "description": [
+        "Ciao {{name}}, per usare Mail devi creare il tuo nuovo indirizzo email Internxt.",
+        "Questa email diventerà il tuo nuovo accesso a tutti i servizi Internxt.",
+        "La tua email precedente {{current_email}} verrà salvata per il recupero dell'account."
+      ],
+      "mail": "Email",
+      "mailType": "Puoi usare lettere, numeri e punti",
+      "action": "Salva nuova email"
+    },
+    "confirmPassword": {
+      "goBack": "Scegli email",
+      "title": "Conferma la tua password",
+      "description": "Per motivi di sicurezza, conferma la tua password per attivare la nuova email di accesso.",
+      "confirmPassword": "Conferma password",
+      "action": "Conferma e attiva"
+    },
+    "confirmChanges": {
+      "title": "La tua email Internxt è pronta",
+      "newEmail": "La tua nuova email:",
+      "recoveryEmail": "Email di recupero: ",
+      "description": "D'ora in poi, usa la tua email Internxt per accedere a tutti i servizi Internxt.",
+      "action": "Salva nuova email"
+    },
+    "termsAndConditions": "Termini e condizioni",
+    "contactSupport": "Contatta il supporto"
+  },
+  "mail": {
+    "title": "Posta",
+    "newMessage": "Nuovo messaggio",
+    "inbox": "Posta in arrivo",
+    "drafts": "Bozze",
+    "sent": "Inviati",
+    "spam": "Spam",
+    "trash": "Cestino",
+    "tray": {
+      "isEmpty": "{{folderName}} è vuota"
+    },
+    "preview": {
+      "to": "A",
+      "cc": "CC",
+      "bcc": "CCN"
+    }
+  },
+  "errors": {
+    "auth": {
+      "invalidCredentials": "Credenziali non valide. Riprova.",
+      "genericError": "Impossibile accedere. Riprova o contatta il supporto se il problema persiste.",
+      "popupBlocked": "Il popup è stato bloccato. Consenti i popup per Internxt Meet.",
+      "authCancelled": "Autenticazione annullata dall'utente.",
+      "authTimeout": "Timeout di autenticazione. Riprova."
+    }
+  },
+  "modals": {
+    "upgradePlanDialog": {
+      "upgrade": "Aggiorna",
+      "cancel": "Annulla",
+      "soonBadge": "Presto",
+      "default": {
+        "title": "Aggiorna ora",
+        "description": "Il tuo piano attuale non ti consente di usare questa funzione. Aggiorna ora per sbloccare tutti i vantaggi di Internxt."
+      },
+      "meet": {
+        "title": "Sblocca Meet",
+        "description": "Aggiorna ora per ospitare e partecipare a videochiamate completamente cifrate — private, sicure e illimitate."
+      },
+      "mail": {
+        "title": "Sblocca Mail",
+        "description": "Sblocca il tuo servizio email privato con crittografia end-to-end."
+      },
+      "vpn": {
+        "title": "Sblocca VPN",
+        "description": "Aggiorna per proteggere il tuo traffico con una navigazione privata e cifrata."
+      },
+      "antivirus": {
+        "title": "Sblocca Antivirus",
+        "description": "Aggiorna per analizzare, rilevare e bloccare malware in tempo reale."
+      },
+      "cleaner": {
+        "title": "Sblocca Cleaner",
+        "description": "Aggiorna ora per ottimizzare i tuoi file e liberare spazio."
+      }
+    },
+    "preferences": {
+      "title": "Preferenze",
+      "sections": {
+        "general": {
+          "title": "Generale",
+          "appearance": {
+            "title": "Aspetto",
+            "dark": "Scuro",
+            "light": "Chiaro",
+            "system": "Sistema"
+          },
+          "language": {
+            "title": "Lingua",
+            "en": "English (Inglese)",
+            "es": "Español (Spagnolo)",
+            "fr": "Français (Francese)",
+            "it": "Italiano (Italian)"
+          },
+          "support": "Supporto"
+        }
+      }
+    }
+  },
+  "accountPopover": {
+    "spaceUsed": "{{space}}% di spazio utilizzato",
+    "settings": "Impostazioni",
+    "logout": "Esci"
+  }
+}
