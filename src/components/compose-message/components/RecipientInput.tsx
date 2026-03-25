@@ -2,7 +2,7 @@ import { useState, type KeyboardEvent } from 'react';
 import type { Recipient } from '../types';
 import UserChip from '@/components/user-chip';
 import { DEFAULT_USER_NAME } from '@/constants';
-import { isValidEmail } from '@/utils/is-valid-email';
+import isValidEmail from '@internxt/lib/dist/src/auth/isValidEmail';
 
 interface RecipientInputProps {
   label: string;
@@ -64,7 +64,7 @@ export const RecipientInput = ({
           <UserChip
             key={recipient.id}
             email={recipient.email}
-            name={recipient?.name || DEFAULT_USER_NAME}
+            name={recipient?.name ?? DEFAULT_USER_NAME}
             avatar={recipient.avatar}
             onRemove={() => onRemoveRecipient(recipient.id)}
           />
