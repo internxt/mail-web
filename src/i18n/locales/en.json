@@ -7,7 +7,9 @@
     "newMessage": "New Message",
     "search": "Search",
     "trashAll": "Move all to trash",
-    "archiveAll": "Move all to archive"
+    "archiveAll": "Move all to archive",
+    "upgrade": "Upgrade",
+    "send": "Send"
   },
   "filter": {
     "all": "All",
@@ -113,6 +115,14 @@
         "title": "Unlock Cleaner",
         "description": "Upgrade now to keep your files optimized and free up space."
       }
+    },
+    "composeMessageDialog": {
+      "title": "New Message",
+      "to": "To",
+      "cc": "Cc",
+      "bcc": "Bcc",
+      "subject": "Subject",
+      "message": "Message"
     },
     "preferences": {
       "title": "Preferences",

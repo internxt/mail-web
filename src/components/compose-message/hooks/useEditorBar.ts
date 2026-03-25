@@ -1,5 +1,6 @@
 import { useCallback, useState, useRef, useEffect, useReducer } from 'react';
 import { Editor } from '@tiptap/react';
+import { useClickOutside } from '@/hooks/useClickOutside';
 
 export const useEditorBar = (editor: Editor | null) => {
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -25,22 +26,9 @@ export const useEditorBar = (editor: Editor | null) => {
     };
   }, [editor]);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
-        setShowColorPicker(false);
-      }
-      if (fontPickerRef.current && !fontPickerRef.current.contains(event.target as Node)) {
-        setShowFontPicker(false);
-      }
-      if (sizePickerRef.current && !sizePickerRef.current.contains(event.target as Node)) {
-        setShowSizePicker(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  useClickOutside(colorPickerRef, () => setShowColorPicker(false));
+  useClickOutside(fontPickerRef, () => setShowFontPicker(false));
+  useClickOutside(sizePickerRef, () => setShowSizePicker(false));
 
   // !TODO: use custom modal to attach a URL
   const setLink = useCallback(() => {
