@@ -1,6 +1,6 @@
 import { Tray } from '@internxt/ui';
 import Header from './header';
-import { TrayEmptyState } from './trayEmptyState';
+import { TrayEmptyState } from './tray-empty-state';
 
 interface TrayListProps {
   folderName: string;
