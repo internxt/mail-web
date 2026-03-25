@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Translate, TranslateArray } from '../types';
 import { TranslationContext } from './useTranslationContext';
+import type { Translate, TranslateArray } from '@/i18n';
 
 export interface TranslationContextProps {
   translate: Translate;

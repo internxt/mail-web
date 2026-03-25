@@ -23,7 +23,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const root = rootRef.current;
-    if (!root || currentTheme === undefined) return;
+    if (!root || !currentTheme) return;
 
     const updateTheme = () => {
       const prefersDark = globalThis.matchMedia('(prefers-color-scheme: dark)').matches;

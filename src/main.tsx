@@ -6,6 +6,7 @@ import { TranslationProvider } from './i18n/index.ts';
 import { store } from './store/index.ts';
 import { userActions } from './store/slices/user/index.ts';
 import { Provider } from 'react-redux';
+import { DialogManagerProvider } from './context/dialog-manager/DialogManager.context.tsx';
 import { ThemeProvider } from './context/theme/ThemeProvider.tsx';
 import { LiveChatLoaderProvider } from 'react-live-chat-loader';
 import { ConfigService } from './services/config/index.ts';
@@ -20,9 +21,11 @@ createRoot(document.getElementById('root')!).render(
     >
       <ThemeProvider>
         <TranslationProvider>
+           <DialogManagerProvider>
           <Provider store={store}>
             <App />
           </Provider>
+              </DialogManagerProvider>
         </TranslationProvider>
       </ThemeProvider>
     </LiveChatLoaderProvider>
