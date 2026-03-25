@@ -9,7 +9,7 @@ interface SectionProps {
   onClose: () => void;
 }
 
-const ConfigSection = ({ className = '', children, title, onBackButtonClicked, onClose }: SectionProps) => {
+const PreferencesSection = ({ className = '', children, title, onBackButtonClicked, onClose }: SectionProps) => {
   return (
     <div className={`relative w-full rounded-tr-2xl ${className}`}>
       <div className="absolute z-50 flex w-full items-center justify-between rounded-tr-2xl p-2.5 pl-6 before:absolute before:inset-0 before:-z-1 before:bg-surface/85 before:backdrop-blur-3xl before:transition-colors">
@@ -35,4 +35,4 @@ const ConfigSection = ({ className = '', children, title, onBackButtonClicked, o
   );
 };
 
-export default ConfigSection;
+export default PreferencesSection;
