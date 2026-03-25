@@ -17,7 +17,7 @@ export const DialogManagerProvider: FC<{ children: ReactNode }> = ({ children })
     setActionDialogs((prevDialogs) => {
       return {
         ...prevDialogs,
-        [dialogKey]: { ...prevDialogs[dialogKey], isOpen: false, data: null },
+        [dialogKey]: { ...prevDialogs[dialogKey], key: dialogKey, isOpen: false, data: null },
       };
     });
   }, []);
