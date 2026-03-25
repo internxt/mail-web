@@ -1,0 +1,145 @@
+{
+  "title": "Mail",
+  "actions": {
+    "logIn": "Iniciar sesión",
+    "signUp": "Registrarse",
+    "logOut": "Cerrar sesión",
+    "newMessage": "Nuevo mensaje",
+    "search": "Buscar",
+    "trashAll": "Mover todo a la papelera",
+    "archiveAll": "Mover todo al archivo"
+  },
+  "filter": {
+    "all": "Todos",
+    "none": "Ninguno",
+    "read": "Leído",
+    "unread": "No leído",
+    "starred": "Destacado",
+    "unstarred": "Sin destacar"
+  },
+  "labels": {
+    "To": "Para",
+    "cc": "CC",
+    "bcc": "CCO"
+  },
+  "welcome": {
+    "title": {
+      "highlighted": "El correo que protege",
+      "normal": "lo que envías"
+    },
+    "description": "Correo cifrado creado para una privacidad real. Sin rastreo. Control total."
+  },
+  "identitySetup": {
+    "updateEmail": {
+      "title": "Configura tu correo Internxt",
+      "description": [
+        "Hola {{name}}, para usar Mail necesitas crear tu nueva dirección de correo Internxt.",
+        "Este correo será tu nuevo acceso a todos los servicios de Internxt.",
+        "Tu correo anterior {{current_email}} se guardará para la recuperación de cuenta."
+      ],
+      "mail": "Correo",
+      "mailType": "Puedes usar letras, números y puntos",
+      "action": "Guardar nuevo correo"
+    },
+    "confirmPassword": {
+      "goBack": "Elegir correo",
+      "title": "Confirma tu contraseña",
+      "description": "Por motivos de seguridad, confirma tu contraseña para activar tu nuevo correo de acceso.",
+      "confirmPassword": "Confirmar contraseña",
+      "action": "Confirmar y activar"
+    },
+    "confirmChanges": {
+      "title": "Tu correo Internxt está listo",
+      "newEmail": "Tu nuevo correo:",
+      "recoveryEmail": "Correo de recuperación: ",
+      "description": "A partir de ahora, usa tu correo Internxt para acceder a todos los servicios de Internxt.",
+      "action": "Guardar nuevo correo"
+    },
+    "termsAndConditions": "Términos y condiciones",
+    "contactSupport": "Contactar con soporte"
+  },
+  "mail": {
+    "title": "Correo",
+    "newMessage": "Nuevo mensaje",
+    "inbox": "Bandeja de entrada",
+    "drafts": "Borradores",
+    "sent": "Enviados",
+    "spam": "Spam",
+    "trash": "Papelera",
+    "tray": {
+      "isEmpty": "{{folderName}} está vacía"
+    },
+    "preview": {
+      "to": "Para",
+      "cc": "CC",
+      "bcc": "CCO"
+    }
+  },
+  "errors": {
+    "auth": {
+      "invalidCredentials": "Credenciales no válidas. Por favor, inténtalo de nuevo.",
+      "genericError": "No se puede iniciar sesión. Inténtalo de nuevo o contacta con soporte si el problema persiste.",
+      "popupBlocked": "La ventana emergente fue bloqueada. Permite ventanas emergentes para Internxt Meet.",
+      "authCancelled": "Autenticación cancelada por el usuario.",
+      "authTimeout": "Tiempo de autenticación agotado. Por favor, inténtalo de nuevo."
+    }
+  },
+  "modals": {
+    "upgradePlanDialog": {
+      "upgrade": "Mejorar plan",
+      "cancel": "Cancelar",
+      "soonBadge": "Próximamente",
+      "default": {
+        "title": "Mejora ahora",
+        "description": "Tu plan actual no te permite usar esta función. Mejora ahora para desbloquear todos los beneficios de Internxt."
+      },
+      "meet": {
+        "title": "Desbloquear Meet",
+        "description": "Mejora ahora para organizar y unirte a videollamadas totalmente cifradas — privadas, seguras e ilimitadas."
+      },
+      "mail": {
+        "title": "Desbloquear Mail",
+        "description": "Desbloquea tu servicio de correo privado con cifrado de extremo a extremo."
+      },
+      "vpn": {
+        "title": "Desbloquear VPN",
+        "description": "Mejora para proteger tu tráfico con navegación privada y cifrada."
+      },
+      "antivirus": {
+        "title": "Desbloquear Antivirus",
+        "description": "Mejora para analizar, detectar y bloquear malware en tiempo real."
+      },
+      "cleaner": {
+        "title": "Desbloquear Cleaner",
+        "description": "Mejora ahora para mantener tus archivos optimizados y liberar espacio."
+      }
+    },
+    "preferences": {
+      "title": "Preferencias",
+      "sections": {
+        "general": {
+          "title": "General",
+          "appearance": {
+            "title": "Apariencia",
+            "dark": "Oscuro",
+            "light": "Claro",
+            "system": "Sistema"
+          },
+          "language": {
+            "title": "Idioma",
+            "en": "English (Inglés)",
+            "es": "Español (Spanish)",
+            "fr": "Français (Francés)",
+            "it": "Italiano (Italiano)"
+          },
+          "support": "Soporte"
+        }
+      }
+    }
+  },
+  "accountPopover": {
+    "spaceUsed": "{{space}}% de espacio usado",
+    "settings": "Configuración",
+    "logout": "Cerrar sesión"
+  }
+}

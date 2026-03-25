@@ -25,7 +25,7 @@ const MailView = ({ folder }: MailViewProps) => {
       {/* Tray */}
       <TrayList folderName={folderName} />
       {/* Mail Preview */}
-      <div className="flex flex-col w-full gap-5">
+      <div className="flex flex-col w-full">
         <div className="flex w-full justify-end">
           <Settings />
         </div>

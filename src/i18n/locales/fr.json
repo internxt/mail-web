@@ -1,0 +1,145 @@
+{
+  "title": "Mail",
+  "actions": {
+    "logIn": "Se connecter",
+    "signUp": "S'inscrire",
+    "logOut": "Se déconnecter",
+    "newMessage": "Nouveau message",
+    "search": "Rechercher",
+    "trashAll": "Tout déplacer vers la corbeille",
+    "archiveAll": "Tout déplacer vers les archives"
+  },
+  "filter": {
+    "all": "Tous",
+    "none": "Aucun",
+    "read": "Lu",
+    "unread": "Non lu",
+    "starred": "Suivi",
+    "unstarred": "Non suivi"
+  },
+  "labels": {
+    "To": "À",
+    "cc": "CC",
+    "bcc": "CCI"
+  },
+  "welcome": {
+    "title": {
+      "highlighted": "L'e-mail qui protège",
+      "normal": "ce que vous envoyez"
+    },
+    "description": "E-mail chiffré conçu pour une vraie confidentialité. Zéro traçage. Contrôle total."
+  },
+  "identitySetup": {
+    "updateEmail": {
+      "title": "Configurer votre e-mail Internxt",
+      "description": [
+        "Bonjour {{name}}, pour utiliser Mail, vous devez créer votre nouvelle adresse e-mail Internxt.",
+        "Cet e-mail deviendra votre nouvel identifiant pour tous les services Internxt.",
+        "Votre e-mail précédent {{current_email}} sera conservé pour la récupération du compte."
+      ],
+      "mail": "E-mail",
+      "mailType": "Vous pouvez utiliser des lettres, des chiffres et des points",
+      "action": "Enregistrer le nouvel e-mail"
+    },
+    "confirmPassword": {
+      "goBack": "Choisir un e-mail",
+      "title": "Confirmez votre mot de passe",
+      "description": "Pour des raisons de sécurité, veuillez confirmer votre mot de passe pour activer votre nouvel e-mail de connexion.",
+      "confirmPassword": "Confirmer le mot de passe",
+      "action": "Confirmer et activer"
+    },
+    "confirmChanges": {
+      "title": "Votre e-mail Internxt est prêt",
+      "newEmail": "Votre nouvel e-mail :",
+      "recoveryEmail": "E-mail de récupération : ",
+      "description": "Désormais, utilisez votre e-mail Internxt pour vous connecter à tous les services Internxt.",
+      "action": "Enregistrer le nouvel e-mail"
+    },
+    "termsAndConditions": "Conditions générales",
+    "contactSupport": "Contacter le support"
+  },
+  "mail": {
+    "title": "Courrier",
+    "newMessage": "Nouveau message",
+    "inbox": "Boîte de réception",
+    "drafts": "Brouillons",
+    "sent": "Envoyés",
+    "spam": "Spam",
+    "trash": "Corbeille",
+    "tray": {
+      "isEmpty": "{{folderName}} est vide"
+    },
+    "preview": {
+      "to": "À",
+      "cc": "CC",
+      "bcc": "CCI"
+    }
+  },
+  "errors": {
+    "auth": {
+      "invalidCredentials": "Identifiants invalides. Veuillez réessayer.",
+      "genericError": "Impossible de se connecter. Veuillez réessayer ou contacter le support si le problème persiste.",
+      "popupBlocked": "La fenêtre contextuelle a été bloquée. Veuillez autoriser les fenêtres contextuelles pour Internxt Meet.",
+      "authCancelled": "Authentification annulée par l'utilisateur.",
+      "authTimeout": "Délai d'authentification dépassé. Veuillez réessayer."
+    }
+  },
+  "modals": {
+    "upgradePlanDialog": {
+      "upgrade": "Mettre à niveau",
+      "cancel": "Annuler",
+      "soonBadge": "Bientôt",
+      "default": {
+        "title": "Mettre à niveau maintenant",
+        "description": "Votre plan actuel ne vous permet pas d'utiliser cette fonctionnalité. Mettez à niveau pour débloquer tous les avantages d'Internxt."
+      },
+      "meet": {
+        "title": "Débloquer Meet",
+        "description": "Mettez à niveau pour organiser et rejoindre des appels vidéo entièrement chiffrés — privés, sécurisés et illimités."
+      },
+      "mail": {
+        "title": "Débloquer Mail",
+        "description": "Débloquez votre service de messagerie privée avec chiffrement de bout en bout."
+      },
+      "vpn": {
+        "title": "Débloquer VPN",
+        "description": "Mettez à niveau pour protéger votre trafic avec une navigation privée et chiffrée."
+      },
+      "antivirus": {
+        "title": "Débloquer Antivirus",
+        "description": "Mettez à niveau pour analyser, détecter et bloquer les logiciels malveillants en temps réel."
+      },
+      "cleaner": {
+        "title": "Débloquer Cleaner",
+        "description": "Mettez à niveau pour optimiser vos fichiers et libérer de l'espace."
+      }
+    },
+    "preferences": {
+      "title": "Préférences",
+      "sections": {
+        "general": {
+          "title": "Général",
+          "appearance": {
+            "title": "Apparence",
+            "dark": "Sombre",
+            "light": "Clair",
+            "system": "Système"
+          },
+          "language": {
+            "title": "Langue",
+            "en": "English (Anglais)",
+            "es": "Español (Espagnol)",
+            "fr": "Français (French)",
+            "it": "Italiano (Italien)"
+          },
+          "support": "Support"
+        }
+      }
+    }
+  },
+  "accountPopover": {
+    "spaceUsed": "{{space}}% d'espace utilisé",
+    "settings": "Paramètres",
+    "logout": "Se déconnecter"
+  }
+}
