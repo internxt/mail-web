@@ -36,4 +36,5 @@ export interface ConfigKeys {
   MAGIC_IV: string;
   MAGIC_SALT: string;
   DRIVE_APP_URL: string;
+  INTERCOM_PROVIDER_KEY: string;
 }

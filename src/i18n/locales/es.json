@@ -132,7 +132,11 @@
             "fr": "Français (Francés)",
             "it": "Italiano (Italiano)"
           },
-          "support": "Soporte"
+          "support": {
+            "title": "Soporte",
+            "description": "Consulta artículos de ayuda u obtén asistencia de nuestro equipo.",
+            "cta": "Abrir Centro de Soporte"
+          }
         }
       }
     }

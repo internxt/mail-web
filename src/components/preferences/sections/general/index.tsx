@@ -2,6 +2,7 @@ import { useTranslationContext } from '@/i18n';
 import PreferencesSection from '../../components/PreferencesSection';
 import Appearance from './components/appearance';
 import Language from './components/language';
+import Support from './components/support';
 
 const GeneralSection = ({ onClose }: { onClose: () => void }) => {
   const { translate } = useTranslationContext();
@@ -11,9 +12,9 @@ const GeneralSection = ({ onClose }: { onClose: () => void }) => {
       title={translate('modals.preferences.sections.general.title')}
       onClose={onClose}
     >
-      {/* TODO: Add language and support components */}
       <Appearance />
       <Language />
+      <Support />
     </PreferencesSection>
   );
 };
