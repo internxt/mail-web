@@ -12,7 +12,7 @@ interface UpdateEmailProps {
 export const UpdateEmail = ({ userFullName, currentEmail, onNext }: UpdateEmailProps) => {
   const { translate, translateArray } = useTranslationContext();
   const [username, setUsername] = useState<string>('');
-  const [domain, setDomain] = useState<Domain>('@intx.me');
+  const [domain, setDomain] = useState<Domain>('@inxt.me');
 
   const descriptions = translateArray('identitySetup.updateEmail.description', {
     name: userFullName,
