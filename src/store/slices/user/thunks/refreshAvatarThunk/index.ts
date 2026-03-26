@@ -7,10 +7,10 @@ import { userActions } from '../..';
 export const refreshAvatarThunk = createAsyncThunk<UserSettings | undefined, void, { state: RootState }>(
   'user/refreshAvatar',
   async (_, { getState, dispatch }) => {
-    const userAvatar = await UserService.instance.refreshUserAvatar();
     const user = getState().user.user;
+    if (!user) return undefined;
 
-    if (!user || !userAvatar) return undefined;
+    const userAvatar = await UserService.instance.refreshUserAvatar();
 
     dispatch(
       userActions.setUser({
