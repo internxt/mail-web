@@ -3,7 +3,7 @@ import { routes } from './routes';
 import { NavigationService } from './services/navigation';
 import { Activity, useEffect } from 'react';
 import { useAppDispatch } from './store/hooks';
-import { initializeUserThunk } from './store/slices/user/thunks';
+import { initializeUserThunk, refreshAvatarThunk } from './store/slices/user/thunks';
 import { Toaster } from 'react-hot-toast';
 import { ActionDialog, useActionDialog } from './context/dialog-manager';
 import { ComposeMessageDialog } from './components/compose-message';
@@ -19,7 +19,9 @@ function App() {
   const isComposeMessageDialogOpen = isDialogOpen(ActionDialog.ComposeMessage);
 
   useEffect(() => {
-    dispatch(initializeUserThunk());
+    dispatch(initializeUserThunk())
+      .unwrap()
+      .then(() => dispatch(refreshAvatarThunk()));
   }, []);
 
   return (

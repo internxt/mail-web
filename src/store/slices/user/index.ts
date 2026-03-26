@@ -30,7 +30,7 @@ export const userSlice = createSlice({
   name: 'user',
   initialState: initialUserState,
   reducers: {
-    initialize: (state: UserState) => {
+    hydrate: (state: UserState) => {
       state.user = LocalStorageService.instance.getUser() || undefined;
       state.isAuthenticated = !!state.user;
     },
@@ -65,7 +65,7 @@ export const userSlice = createSlice({
         state.isInitializing = false;
       })
       .addCase(initializeUserThunk.rejected, (state, action) => {
-        const errorMsg = action.payload ? action.payload : '';
+        const errorMsg = action.error.message ? action.error.message : '';
 
         state.isInitializing = false;
         notificationsService.show({
@@ -82,7 +82,7 @@ export const userSlice = createSlice({
   },
 });
 
-export const { initialize, resetState, setIsUserInitialized } = userSlice.actions;
+export const { hydrate, resetState, setIsUserInitialized } = userSlice.actions;
 export const userActions = userSlice.actions;
 
 export default userSlice.reducer;

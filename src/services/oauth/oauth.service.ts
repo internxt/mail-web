@@ -14,7 +14,7 @@ import {
   MissingAuthParamsToken,
   OpenAuthPopupError,
   WebAuthProcessingError,
-} from './errors/oauth.errors';
+} from '@/errors';
 import type { UserSettings } from '@internxt/sdk/dist/shared/types/userSettings';
 import { LocalStorageService } from '../local-storage';
 

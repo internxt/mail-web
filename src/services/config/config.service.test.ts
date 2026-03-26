@@ -1,5 +1,5 @@
 import { describe, expect, vi, beforeEach, test, afterEach } from 'vitest';
-import { VariableNotFoundError } from './config.errors';
+import { VariableNotFoundError } from '@/errors';
 import notificationsService, { ToastType } from '../notifications';
 
 import { ConfigService } from '.';

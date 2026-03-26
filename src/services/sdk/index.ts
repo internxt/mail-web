@@ -1,4 +1,4 @@
-import { Auth, Drive } from '@internxt/sdk';
+import { Auth, Drive, Mail } from '@internxt/sdk';
 import type { ApiSecurity, AppDetails } from '@internxt/sdk/dist/shared';
 import packageJson from '../../../package.json';
 import { ConfigService } from '../config';
@@ -58,33 +58,46 @@ export class SdkManager {
     });
     const appDetails = SdkManager.getAppDetails();
 
-    return Auth.client(this.apiUrl, appDetails, apiSecurity);
+    return Auth.client(this.driveApiUrl, appDetails, apiSecurity);
   }
 
   getUsers(): Drive.Users {
     const apiSecurity = this.getNewTokenApiSecurity();
     const appDetails = SdkManager.getAppDetails();
 
-    return Drive.Users.client(this.apiUrl, appDetails, apiSecurity);
+    return Drive.Users.client(this.driveApiUrl, appDetails, apiSecurity);
   }
 
   getStorage(): Drive.Storage {
     const apiSecurity = this.getNewTokenApiSecurity();
     const appDetails = SdkManager.getAppDetails();
 
-    return Drive.Storage.client(this.apiUrl, appDetails, apiSecurity);
+    return Drive.Storage.client(this.driveApiUrl, appDetails, apiSecurity);
   }
 
   getPayments(): Drive.Payments {
-    const paymentsApi = ConfigService.instance.getVariable('PAYMENTS_API_URL');
-
     const apiSecurity = this.getNewTokenApiSecurity();
     const appDetails = SdkManager.getAppDetails();
 
-    return Drive.Payments.client(paymentsApi, appDetails, apiSecurity);
+    return Drive.Payments.client(this.paymentsApiUrl, appDetails, apiSecurity);
   }
 
-  get apiUrl(): string {
+  getMail(): Mail {
+    const apiSecurity = this.getNewTokenApiSecurity();
+    const appDetails = SdkManager.getAppDetails();
+
+    return Mail.client(this.mailApiUrl, appDetails, apiSecurity);
+  }
+
+  get driveApiUrl(): string {
     return ConfigService.instance.getVariable('DRIVE_API_URL');
+  }
+
+  get mailApiUrl(): string {
+    return ConfigService.instance.getVariable('MAIL_API_URL');
+  }
+
+  get paymentsApiUrl(): string {
+    return ConfigService.instance.getVariable('PAYMENTS_API_URL');
   }
 }

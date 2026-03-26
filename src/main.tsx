@@ -11,7 +11,7 @@ import { ThemeProvider } from './context/theme/ThemeProvider.tsx';
 import { LiveChatLoaderProvider } from 'react-live-chat-loader';
 import { ConfigService } from './services/config/index.ts';
 
-store.dispatch(userActions.initialize());
+store.dispatch(userActions.hydrate());
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -21,11 +21,11 @@ createRoot(document.getElementById('root')!).render(
     >
       <ThemeProvider>
         <TranslationProvider>
-           <DialogManagerProvider>
-          <Provider store={store}>
-            <App />
-          </Provider>
-              </DialogManagerProvider>
+          <DialogManagerProvider>
+            <Provider store={store}>
+              <App />
+            </Provider>
+          </DialogManagerProvider>
         </TranslationProvider>
       </ThemeProvider>
     </LiveChatLoaderProvider>

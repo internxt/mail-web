@@ -1,6 +1,6 @@
 import type { Translate } from '@/i18n';
 import notificationsService, { ToastType } from '../notifications';
-import { VariableNotFoundError } from './config.errors';
+import { VariableNotFoundError } from '@/errors';
 import {
   APP_VERSION_MATCHERS,
   PLATFORM_MATCHERS,

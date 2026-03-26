@@ -5,7 +5,7 @@ import { OauthService } from './oauth.service';
 import { UserService } from '../user/user.service';
 import { LocalStorageService } from '../local-storage';
 import { WEB_AUTH_CONFIG, WEB_AUTH_MESSAGE_TYPES, type WebAuthMessage, type WebAuthParams } from '@/types/oauth';
-import { AuthCancelledByUserError, MissingAuthParamsToken, WebAuthProcessingError } from './errors/oauth.errors';
+import { AuthCancelledByUserError, MissingAuthParamsToken, WebAuthProcessingError } from '@/errors';
 import { getMockedUser } from '@/test-utils/fixtures';
 
 vi.mock('../config', () => ({

@@ -1,0 +1,39 @@
+import type { EmailListResponse, ListEmailsQuery, MailboxResponse, UpdateEmailRequest } from '@internxt/sdk';
+import { SdkManager } from '..';
+
+export class MailService {
+  public static readonly instance: MailService = new MailService();
+
+  get client() {
+    return SdkManager.instance.getMail();
+  }
+
+  /**
+   * Returns a list of all mailboxes and their properties.
+   *
+   * @returns A promise that resolves with an array of MailboxResponse objects.
+   */
+  async getMailboxesInfo(): Promise<MailboxResponse[]> {
+    return this.client.getMailboxes();
+  }
+
+  /**
+   * Returns a list of emails in the given folder.
+   *
+   * @param {ListEmailsQuery} query - The query parameters
+   * @returns A promise that resolves with an EmailListResponse object
+   */
+  async listFolder(query?: ListEmailsQuery): Promise<EmailListResponse> {
+    return this.client.listEmails(query);
+  }
+
+  /**
+   * Updates the status of a specific email.
+   * @param {string} emailId - The ID of the email to update
+   * @param {UpdateEmailRequest} status - The new status of the email
+   * @returns A promise that resolves when the update operation is complete
+   */
+  async updateEmailStatus(emailId: string, status: UpdateEmailRequest): Promise<void> {
+    return this.client.updateEmail(emailId, status);
+  }
+}

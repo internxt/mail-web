@@ -5,7 +5,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { storageQuery } from './storage.query';
 import { StorageService } from '@/services/sdk/storage';
 import { ErrorService } from '@/services/error';
-import { FetchStorageLimitError, FetchStorageUsageError } from '../errors/storage.errors';
+import { FetchStorageLimitError, FetchStorageUsageError } from '@/errors';
 
 vi.mock('@/services/error', () => ({
   ErrorService: {

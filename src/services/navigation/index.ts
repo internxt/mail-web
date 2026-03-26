@@ -1,6 +1,6 @@
 import { getRouteConfig, getViewByPath, type AppView } from '@/routes/paths';
 import type { NavigateFunction, RouterNavigateOptions } from 'react-router-dom';
-import { NavigationNotInitializedError } from './navigation.errors';
+import { NavigationNotInitializedError } from '@/errors';
 
 export class NavigationService {
   static readonly instance = new NavigationService();
