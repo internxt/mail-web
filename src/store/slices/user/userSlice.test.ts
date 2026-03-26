@@ -24,7 +24,7 @@ describe('User slice', () => {
     test('When the user is saved in the local storage, then it should be authenticated', () => {
       vi.spyOn(LocalStorageService.instance, 'getUser').mockReturnValue(mockedUser);
 
-      const state = userReducer(initialUserState, userActions.initialize());
+      const state = userReducer(initialUserState, userActions.hydrate());
 
       expect(state.user).toStrictEqual(mockedUser);
       expect(state.isAuthenticated).toBeTruthy();
@@ -33,7 +33,7 @@ describe('User slice', () => {
     test('When the user is not saved in the local storage, then it should not be authenticated', () => {
       vi.spyOn(LocalStorageService.instance, 'getUser').mockReturnValue(null);
 
-      const state = userReducer(initialUserState, userActions.initialize());
+      const state = userReducer(initialUserState, userActions.hydrate());
 
       expect(state.user).toBeUndefined();
       expect(state.isAuthenticated).toBeFalsy();

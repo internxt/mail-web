@@ -1,6 +1,6 @@
 import { StorageService } from '@/services/sdk/storage';
 import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react';
-import { FetchStorageLimitError, FetchStorageUsageError } from '../errors/storage.errors';
+import { FetchStorageLimitError, FetchStorageUsageError } from '@/errors';
 import { ErrorService } from '@/services/error';
 
 export const storageQuery = createApi({

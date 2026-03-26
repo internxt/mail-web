@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, expect, test, vi, beforeEach } from 'vitest';
 import { NavigationService } from './index';
-import { NavigationNotInitializedError } from './navigation.errors';
+import { NavigationNotInitializedError } from '@/errors';
 import { AppView } from '@/routes/paths';
 import type { NavigateFunction } from 'react-router-dom';
 

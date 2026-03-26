@@ -24,9 +24,7 @@ export class AuthTimeoutError extends Error {
 
 export class OpenAuthPopupError extends Error {
   constructor() {
-    super(
-      'Failed to open authentication popup. Please check your popup blocker settings.',
-    );
+    super('Failed to open authentication popup. Please check your popup blocker settings.');
 
     Object.setPrototypeOf(this, OpenAuthPopupError.prototype);
   }
@@ -34,9 +32,7 @@ export class OpenAuthPopupError extends Error {
 
 export class WebAuthProcessingError extends Error {
   constructor(cause?: Error) {
-    super(
-      `Web authentication processing failed: ${cause instanceof Error ? cause.message : 'Unknown error'}`,
-    );
+    super(`Web authentication processing failed: ${cause instanceof Error ? cause.message : 'Unknown error'}`);
 
     Object.setPrototypeOf(this, WebAuthProcessingError.prototype);
   }

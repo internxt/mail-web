@@ -1,4 +1,4 @@
-import { Auth, Drive } from '@internxt/sdk';
+import { Auth, Drive, Mail } from '@internxt/sdk';
 import { beforeEach, describe, expect, test, vi, afterEach } from 'vitest';
 import { SdkManager } from '.';
 import { ConfigService } from '../config';
@@ -49,7 +49,21 @@ vi.mock('@internxt/sdk', () => ({
       })),
     },
   },
+  Mail: {
+    client: vi.fn().mockImplementation((baseUrl, appDetails, security) => ({
+      baseUrl,
+      appDetails,
+      security,
+      unauthorizedCallback: vi.fn(),
+    })),
+  },
 }));
+
+const config: Record<string, string> = {
+  DRIVE_API_URL: 'https://api-drive.internxt.com',
+  PAYMENTS_API_URL: 'https://api-payments.internxt.com',
+  MAIL_API_URL: 'https://api-mail.internxt.com',
+};
 
 describe('SDK Manager', () => {
   beforeEach(() => {
@@ -58,10 +72,6 @@ describe('SDK Manager', () => {
     vi.clearAllMocks();
 
     vi.spyOn(ConfigService.instance, 'getVariable').mockImplementation((key: string) => {
-      const config: Record<string, string> = {
-        DRIVE_API_URL: 'https://api-drive.internxt.com',
-        PAYMENTS_API_URL: 'https://api-payments.internxt.com',
-      };
       return config[key] || '';
     });
 
@@ -143,7 +153,7 @@ describe('SDK Manager', () => {
 
       expect(authClient).toBeDefined();
       expect(Auth.client).toHaveBeenCalledWith(
-        'https://api-drive.internxt.com',
+        config.DRIVE_API_URL,
         expect.objectContaining({
           clientName: 'mail-web',
           clientVersion: expect.any(String),
@@ -157,7 +167,7 @@ describe('SDK Manager', () => {
 
       expect(authClient).toBeDefined();
       expect(Auth.client).toHaveBeenCalledWith(
-        'https://api-drive.internxt.com',
+        config.DRIVE_API_URL,
         expect.objectContaining({
           clientName: 'mail-web',
         }),
@@ -173,7 +183,7 @@ describe('SDK Manager', () => {
       expect(usersClient).toBeDefined();
       expect(LocalStorageService.instance.getToken).toHaveBeenCalled();
       expect(Drive.Users.client).toHaveBeenCalledWith(
-        'https://api-drive.internxt.com',
+        config.DRIVE_API_URL,
         expect.objectContaining({
           clientName: 'mail-web',
           clientVersion: expect.any(String),
@@ -203,7 +213,7 @@ describe('SDK Manager', () => {
       expect(storageClient).toBeDefined();
       expect(LocalStorageService.instance.getToken).toHaveBeenCalled();
       expect(Drive.Storage.client).toHaveBeenCalledWith(
-        'https://api-drive.internxt.com',
+        config.DRIVE_API_URL,
         expect.objectContaining({
           clientName: 'mail-web',
           clientVersion: expect.any(String),
@@ -233,7 +243,7 @@ describe('SDK Manager', () => {
       expect(paymentsClient).toBeDefined();
       expect(LocalStorageService.instance.getToken).toHaveBeenCalled();
       expect(Drive.Payments.client).toHaveBeenCalledWith(
-        'https://api-payments.internxt.com',
+        config.PAYMENTS_API_URL,
         expect.objectContaining({
           clientName: 'mail-web',
           clientVersion: expect.any(String),
@@ -250,6 +260,36 @@ describe('SDK Manager', () => {
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const securityArg = (Drive.Payments.client as any).mock.calls[0][2];
+      securityArg.unauthorizedCallback();
+
+      expect(AuthService.instance.logOut).toHaveBeenCalled();
+    });
+  });
+
+  describe('Mail client creation', () => {
+    test('When creating Payments client, then it should use correct API URL and token', () => {
+      const paymentsClient = SdkManager.instance.getMail();
+
+      expect(paymentsClient).toBeDefined();
+      expect(LocalStorageService.instance.getToken).toHaveBeenCalled();
+      expect(Mail.client).toHaveBeenCalledWith(
+        config.MAIL_API_URL,
+        expect.objectContaining({
+          clientName: 'mail-web',
+          clientVersion: expect.any(String),
+        }),
+        expect.objectContaining({
+          token: 'mock-token',
+          unauthorizedCallback: expect.any(Function),
+        }),
+      );
+    });
+
+    test('When Payments client receives unauthorized response, then logOut should be called', () => {
+      SdkManager.instance.getMail();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const securityArg = (Mail.client as any).mock.calls[0][2];
       securityArg.unauthorizedCallback();
 
       expect(AuthService.instance.logOut).toHaveBeenCalled();
