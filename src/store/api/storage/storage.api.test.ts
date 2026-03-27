@@ -1,5 +1,3 @@
-// store/queries/__tests__/storage.query.test.ts
-
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { configureStore } from '@reduxjs/toolkit';
 import { storageApi } from '.';
