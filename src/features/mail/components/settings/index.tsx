@@ -1,6 +1,6 @@
 import { usePreferencesNavigation } from '@/hooks/preferences/usePreferencesNavigation';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { useGetStorageLimitQuery, useGetStorageUsageQuery } from '@/store/queries/storage/storage.query';
+import { useGetStorageLimitQuery, useGetStorageUsageQuery } from '@/store/api/storage';
 import { Button } from '@internxt/ui';
 import { GearIcon } from '@phosphor-icons/react';
 import AccountPopover from './components/account-popover';

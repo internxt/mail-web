@@ -5,10 +5,24 @@ import type { SidenavOption } from '@internxt/ui/dist/components/sidenav/Sidenav
 import { useTranslationContext } from '@/i18n';
 import { AppView } from '@/routes/paths';
 import { NavigationService } from '@/services/navigation';
+import { useGetMailboxesInfoQuery } from '@/store/api/mail';
+import type { MailboxResponse } from '@internxt/sdk';
 
 export const useSidenavNavigation = () => {
   const { translate } = useTranslationContext();
   const { pathname } = useLocation();
+  const { data: mailboxes } = useGetMailboxesInfoQuery(undefined, {
+    pollingInterval: 30000,
+  });
+
+  const unreadByMailbox = useMemo(
+    () =>
+      Object.fromEntries(mailboxes?.map((m) => [m.type, m.unreadEmails]) ?? []) as Record<
+        Exclude<MailboxResponse['type'], null>,
+        number | undefined
+      >,
+    [mailboxes],
+  );
 
   const isActiveButton = useCallback((path: string) => !!matchPath(path, pathname), [pathname]);
 
@@ -24,6 +38,7 @@ export const useSidenavNavigation = () => {
         icon: TrayIcon,
         iconDataCy: 'sideNavInboxIcon',
         isVisible: true,
+        notifications: unreadByMailbox['inbox'],
         onClick: () => onSidenavItemClick(AppView.Inbox),
       },
       {
@@ -32,6 +47,7 @@ export const useSidenavNavigation = () => {
         icon: FileIcon,
         iconDataCy: 'sideNavDraftsIcon',
         isVisible: true,
+        notifications: unreadByMailbox['drafts'],
         onClick: () => onSidenavItemClick(AppView.Drafts),
       },
       {
@@ -40,6 +56,7 @@ export const useSidenavNavigation = () => {
         icon: PaperPlaneTiltIcon,
         iconDataCy: 'sideNavSentIcon',
         isVisible: true,
+        notifications: unreadByMailbox['sent'],
         onClick: () => onSidenavItemClick(AppView.Sent),
       },
       {
@@ -48,6 +65,7 @@ export const useSidenavNavigation = () => {
         icon: WarningOctagonIcon,
         iconDataCy: 'sideNavSpamIcon',
         isVisible: true,
+        notifications: unreadByMailbox['spam'],
         onClick: () => onSidenavItemClick(AppView.Spam),
       },
       {
@@ -56,10 +74,11 @@ export const useSidenavNavigation = () => {
         icon: TrashIcon,
         iconDataCy: 'sideNavTrashIcon',
         isVisible: true,
+        notifications: unreadByMailbox['trash'],
         onClick: () => onSidenavItemClick(AppView.Trash),
       },
     ],
-    [translate, onSidenavItemClick, isActiveButton],
+    [unreadByMailbox, translate, onSidenavItemClick, isActiveButton],
   );
 
   return { itemsNavigation };
