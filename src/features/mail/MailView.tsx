@@ -7,6 +7,7 @@ import Settings from './components/settings';
 import { useGetListFolderQuery, useGetMailMessageQuery, useMarkAsReadMutation } from '@/store/queries/mail/mail.query';
 import { DateService } from '@/services/date';
 import { DEFAULT_FOLDER_LIMIT } from '@/constants';
+import { ErrorService } from '@/services/error';
 
 interface MailViewProps {
   folder: FolderType;
@@ -40,10 +41,15 @@ const MailView = ({ folder }: MailViewProps) => {
 
     if (isRead) return;
 
-    await markAsRead({
-      emailId: id,
-      query,
-    });
+    try {
+      await markAsRead({
+        emailId: id,
+        query,
+      });
+    } catch (error) {
+      const err = ErrorService.instance.castError(error);
+      console.error(`Error while marking as read the email ${id}: `, err);
+    }
   };
 
   return (

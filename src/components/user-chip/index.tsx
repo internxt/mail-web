@@ -14,7 +14,8 @@ const UserChip = ({ avatar, name, email, onRemove }: UserChipProps) => {
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const tooltipId = useId();
-  const userName = name.split(' ')[0] || email.split('@')[0];
+  const normalizedName = name.trim();
+  const userName = normalizedName ? normalizedName.split(/\s+/)[0] : email.split('@')[0];
 
   const handleMouseEnter = () => {
     const rect = ref.current?.getBoundingClientRect();

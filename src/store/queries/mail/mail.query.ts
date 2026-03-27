@@ -57,14 +57,19 @@ export const mailQuery = createApi({
         }
       },
       async onQueryStarted({ emailId, query }, { dispatch, queryFulfilled }) {
+        let shouldUpdateUnreadCount = false;
+
         const patchEmailList = dispatch(
           mailQuery.util.updateQueryData('getListFolder', query, (draft) => {
             const mail = draft.emails.find((m) => m.id === emailId);
             if (mail && !mail.isRead) {
               mail.isRead = true;
+              shouldUpdateUnreadCount = true;
             }
           }),
         );
+
+        if (!shouldUpdateUnreadCount) return;
 
         const patchMailboxes = dispatch(
           mailQuery.util.updateQueryData('getMailboxesInfo', undefined, (draft) => {

@@ -1,5 +1,3 @@
-// store/queries/__tests__/storage.query.test.ts
-
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { ErrorService } from '@/services/error';
 import { FetchListFolderError, FetchMailboxesInfoError, FetchMessageError, UpdateMailError } from '@/errors';

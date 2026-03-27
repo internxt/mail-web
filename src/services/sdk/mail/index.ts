@@ -33,6 +33,12 @@ export class MailService {
     return this.client.listEmails(query);
   }
 
+  /**
+   * Returns a specific email by its ID.
+   *
+   * @param {string} emailId - The ID of the email to fetch
+   * @returns A promise that resolves with an EmailResponse object
+   */
   async getMessage(emailId: string): Promise<EmailResponse> {
     return this.client.getEmail(emailId);
   }

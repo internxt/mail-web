@@ -24,7 +24,7 @@ function App() {
   };
 
   useEffect(() => {
-    initializeUser();
+    void initializeUser();
   }, []);
 
   return (
