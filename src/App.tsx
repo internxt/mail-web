@@ -18,10 +18,13 @@ function App() {
   const { isDialogOpen } = useActionDialog();
   const isComposeMessageDialogOpen = isDialogOpen(ActionDialog.ComposeMessage);
 
+  const initializeUser = async () => {
+    await dispatch(initializeUserThunk()).unwrap();
+    await dispatch(refreshAvatarThunk()).unwrap();
+  };
+
   useEffect(() => {
-    dispatch(initializeUserThunk())
-      .unwrap()
-      .then(() => dispatch(refreshAvatarThunk()));
+    initializeUser();
   }, []);
 
   return (

@@ -41,6 +41,26 @@ describe('Date Service', () => {
     });
   });
 
+  describe('Formatting the mail list item timestamp', () => {
+    test('When the date is today, then it should return only the time in 24h format', () => {
+      const sameDay = new Date(FIXED_NOW - 1000 * 60 * 30).toISOString();
+      const result = DateService.formatMailTimestamp(sameDay);
+      expect(result).toBe('11:02');
+    });
+
+    test('When the date is this year but not today, then it should return month, day and time', () => {
+      const sameYear = '2024-03-15T15:48:00Z';
+      const result = DateService.formatMailTimestamp(sameYear);
+      expect(result).toBe('Mar 15, 15:48');
+    });
+
+    test('When the date is from a different year, then it should include the year', () => {
+      const differentYear = '2023-04-10T15:48:00Z';
+      const result = DateService.formatMailTimestamp(differentYear);
+      expect(result).toBe('Apr 10, 2023, 15:48');
+    });
+  });
+
   describe('From now on', () => {
     test('When getting relative time for a recent date, then it should return a relative string', () => {
       const recent = new Date(FIXED_NOW - 1000 * 60 * 60 * 2).toISOString();

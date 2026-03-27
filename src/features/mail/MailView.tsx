@@ -1,10 +1,12 @@
+import { useState } from 'react';
 import { useTranslationContext } from '@/i18n';
 import type { FolderType } from '@/types/mail';
-import { getMockedMail } from '@/test-utils/fixtures';
 import PreviewMail from './components/mail-preview';
-import type { User } from './components/mail-preview/header';
 import TrayList from './components/tray';
 import Settings from './components/settings';
+import { useGetListFolderQuery, useGetMailMessageQuery, useMarkAsReadMutation } from '@/store/queries/mail/mail.query';
+import { DateService } from '@/services/date';
+import { DEFAULT_FOLDER_LIMIT } from '@/constants';
 
 interface MailViewProps {
   folder: FolderType;
@@ -12,24 +14,66 @@ interface MailViewProps {
 
 const MailView = ({ folder }: MailViewProps) => {
   const { translate } = useTranslationContext();
-  const mockedMail = getMockedMail();
-  const from = mockedMail.from[0];
-  const to = mockedMail.to;
-  const cc = mockedMail.cc;
-  const bcc = mockedMail.bcc;
+  const [activeMailId, setActiveMailId] = useState<string | undefined>(undefined);
+  const query = {
+    mailbox: folder,
+    limit: DEFAULT_FOLDER_LIMIT,
+    position: 0,
+  };
+
+  const { data: listFolder, isLoading: isLoadingListFolder } = useGetListFolderQuery(query, {
+    pollingInterval: 30000,
+    skip: !folder,
+  });
+  const { data: activeMail } = useGetMailMessageQuery({ emailId: activeMailId! }, { skip: !activeMailId });
+  const [markAsRead] = useMarkAsReadMutation();
 
   const folderName = translate(`mail.${folder}`);
+
+  const from = activeMail?.from[0];
+  const to = activeMail?.to ?? [];
+  const cc = activeMail?.cc ?? [];
+  const bcc = activeMail?.bcc ?? [];
+
+  const onSelectEmail = async (id: string, isRead?: boolean) => {
+    setActiveMailId(id);
+
+    if (isRead) return;
+
+    await markAsRead({
+      emailId: id,
+      query,
+    });
+  };
 
   return (
     <div className="flex flex-row w-full h-full">
       {/* Tray */}
-      <TrayList folderName={folderName} />
+      <TrayList
+        folderName={folderName}
+        listFolder={listFolder?.emails}
+        isLoadingListFolder={isLoadingListFolder}
+        activeMailId={activeMailId}
+        onMailSelected={onSelectEmail}
+      />
       {/* Mail Preview */}
       <div className="flex flex-col w-full">
         <div className="flex w-full justify-end">
           <Settings />
         </div>
-        <PreviewMail bcc={bcc} cc={cc as User[]} from={from} to={to} mail={mockedMail} />
+        {activeMail && from ? (
+          <PreviewMail
+            from={{ name: from.name ?? '', email: from.email }}
+            to={to.map((u) => ({ name: u.name ?? '', email: u.email }))}
+            cc={cc.map((u) => ({ name: u.name ?? '', email: u.email }))}
+            bcc={bcc.map((u) => ({ name: u.name ?? '', email: u.email }))}
+            mail={{
+              subject: activeMail.subject,
+              receivedAt: DateService.formatWithTime(activeMail.receivedAt),
+              htmlBody: (activeMail.htmlBody as string | null) ?? '',
+            }}
+          />
+        ) : null}
       </div>
     </div>
   );

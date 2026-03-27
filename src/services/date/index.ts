@@ -22,6 +22,27 @@ export class DateService {
     return dayjs(date).format('LL, h:mm A');
   }
 
+  /**
+   * Smart timestamp for mail tray:
+   * - Same day → "20:35"
+   * - Same year → "Apr 10, 15:48"
+   * - Different year → "Apr 10, 2025, 15:48"
+   */
+  public static formatMailTimestamp(date: DateInput): string {
+    const d = dayjs(date);
+    const now = dayjs();
+
+    if (d.isSame(now, 'day')) {
+      return d.format('HH:mm');
+    }
+
+    if (d.isSame(now, 'year')) {
+      return d.format('MMM D, HH:mm');
+    }
+
+    return d.format('MMM D, YYYY, HH:mm');
+  }
+
   /** "2 hours ago", "in 3 days" */
   public static fromNow(date: DateInput): string {
     return dayjs(date).fromNow();
