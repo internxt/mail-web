@@ -1,15 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
 import userReducer from './slices/user';
-import { storageQuery } from './queries/storage/storage.query';
-import { mailQuery } from './queries/mail/mail.query';
+import { api } from './api/base';
 
 export const store = configureStore({
   reducer: {
     user: userReducer,
-    [storageQuery.reducerPath]: storageQuery.reducer,
-    [mailQuery.reducerPath]: mailQuery.reducer,
+    [api.reducerPath]: api.reducer,
   },
-  middleware: (getDefault) => getDefault().concat(storageQuery.middleware).concat(mailQuery.middleware),
+  middleware: (getDefault) => getDefault().concat(api.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

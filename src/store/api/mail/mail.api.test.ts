@@ -3,7 +3,7 @@ import { ErrorService } from '@/services/error';
 import { FetchListFolderError, FetchMailboxesInfoError, FetchMessageError, UpdateMailError } from '@/errors';
 import { MailService } from '@/services/sdk/mail';
 import { getMockedMail, getMockedMailBoxes, getMockedMails } from '@/test-utils/fixtures';
-import { mailQuery } from './mail.query';
+import { mailApi } from '.';
 import { DEFAULT_FOLDER_LIMIT } from '@/constants';
 import type { ListEmailsQuery } from '@internxt/sdk';
 import { createTestStore } from '@/test-utils/createTestStore';
@@ -28,7 +28,7 @@ describe('Mail Query', () => {
       vi.spyOn(MailService.instance, 'getMailboxesInfo').mockResolvedValue(mockedMailboxes);
 
       const store = createTestStore();
-      const result = await store.dispatch(mailQuery.endpoints.getMailboxesInfo.initiate());
+      const result = await store.dispatch(mailApi.endpoints.getMailboxesInfo.initiate());
 
       expect(result.data).toStrictEqual(mockedMailboxes);
     });
@@ -38,7 +38,7 @@ describe('Mail Query', () => {
       const castErrorSpy = vi.spyOn(ErrorService.instance, 'castError');
 
       const store = createTestStore();
-      const result = await store.dispatch(mailQuery.endpoints.getMailboxesInfo.initiate());
+      const result = await store.dispatch(mailApi.endpoints.getMailboxesInfo.initiate());
 
       expect(castErrorSpy).toHaveBeenCalledOnce();
       expect(result.error).toBeInstanceOf(FetchMailboxesInfoError);
@@ -57,7 +57,7 @@ describe('Mail Query', () => {
       const getListFolder = vi.spyOn(MailService.instance, 'listFolder').mockResolvedValue(listFolder);
 
       const store = createTestStore();
-      const result = await store.dispatch(mailQuery.endpoints.getListFolder.initiate(query as ListEmailsQuery));
+      const result = await store.dispatch(mailApi.endpoints.getListFolder.initiate(query as ListEmailsQuery));
 
       expect(result.data).toStrictEqual(listFolder);
       expect(getListFolder).toHaveBeenCalledWith(query);
@@ -68,7 +68,7 @@ describe('Mail Query', () => {
       const castErrorSpy = vi.spyOn(ErrorService.instance, 'castError');
 
       const store = createTestStore();
-      const result = await store.dispatch(mailQuery.endpoints.getListFolder.initiate(query as ListEmailsQuery));
+      const result = await store.dispatch(mailApi.endpoints.getListFolder.initiate(query as ListEmailsQuery));
 
       expect(castErrorSpy).toHaveBeenCalledOnce();
       expect(result.error).toBeInstanceOf(FetchListFolderError);
@@ -81,7 +81,7 @@ describe('Mail Query', () => {
       const getLimitSpy = vi.spyOn(MailService.instance, 'getMessage').mockResolvedValue(mockedMail);
 
       const store = createTestStore();
-      const result = await store.dispatch(mailQuery.endpoints.getMailMessage.initiate({ emailId: mockedMail.id }));
+      const result = await store.dispatch(mailApi.endpoints.getMailMessage.initiate({ emailId: mockedMail.id }));
 
       expect(result.data).toStrictEqual(mockedMail);
       expect(getLimitSpy).toHaveBeenCalledWith(mockedMail.id);
@@ -93,7 +93,7 @@ describe('Mail Query', () => {
       const castErrorSpy = vi.spyOn(ErrorService.instance, 'castError');
 
       const store = createTestStore();
-      const result = await store.dispatch(mailQuery.endpoints.getMailMessage.initiate({ emailId: mockedMail.id }));
+      const result = await store.dispatch(mailApi.endpoints.getMailMessage.initiate({ emailId: mockedMail.id }));
 
       expect(castErrorSpy).toHaveBeenCalledOnce();
       expect(result.error).toBeInstanceOf(FetchMessageError);
@@ -116,8 +116,8 @@ describe('Mail Query', () => {
       );
 
       const store = createTestStore();
-      await store.dispatch(mailQuery.endpoints.getListFolder.initiate(mailboxQuery));
-      await store.dispatch(mailQuery.endpoints.getMailboxesInfo.initiate());
+      await store.dispatch(mailApi.endpoints.getListFolder.initiate(mailboxQuery));
+      await store.dispatch(mailApi.endpoints.getMailboxesInfo.initiate());
 
       return { store, unreadEmail };
     };
@@ -125,8 +125,8 @@ describe('Mail Query', () => {
     const getCacheState = (store: ReturnType<typeof createTestStore>) => {
       const rootState = store.getState() as unknown as RootState;
       return {
-        listState: mailQuery.endpoints.getListFolder.select(mailboxQuery)(rootState),
-        mailboxState: mailQuery.endpoints.getMailboxesInfo.select()(rootState),
+        listState: mailApi.endpoints.getListFolder.select(mailboxQuery)(rootState),
+        mailboxState: mailApi.endpoints.getMailboxesInfo.select()(rootState),
       };
     };
 
@@ -135,7 +135,7 @@ describe('Mail Query', () => {
 
       const store = createTestStore();
       const result = await store.dispatch(
-        mailQuery.endpoints.markAsRead.initiate({ emailId: 'email-1', query: mailboxQuery }),
+        mailApi.endpoints.markAsRead.initiate({ emailId: 'email-1', query: mailboxQuery }),
       );
 
       expect(result.data).toBeNull();
@@ -146,7 +146,7 @@ describe('Mail Query', () => {
       vi.spyOn(MailService.instance, 'updateEmailStatus').mockResolvedValue();
       const { store, unreadEmail } = await setupOptimisticStore();
 
-      await store.dispatch(mailQuery.endpoints.markAsRead.initiate({ emailId: unreadEmail.id, query: mailboxQuery }));
+      await store.dispatch(mailApi.endpoints.markAsRead.initiate({ emailId: unreadEmail.id, query: mailboxQuery }));
 
       const { listState, mailboxState } = getCacheState(store);
       expect(listState.data?.emails.find((m) => m.id === unreadEmail.id)?.isRead).toBeTruthy();
@@ -157,7 +157,7 @@ describe('Mail Query', () => {
       vi.spyOn(MailService.instance, 'updateEmailStatus').mockRejectedValue(new Error('Server error'));
       const { store, unreadEmail } = await setupOptimisticStore();
 
-      await store.dispatch(mailQuery.endpoints.markAsRead.initiate({ emailId: unreadEmail.id, query: mailboxQuery }));
+      await store.dispatch(mailApi.endpoints.markAsRead.initiate({ emailId: unreadEmail.id, query: mailboxQuery }));
 
       const { listState, mailboxState } = getCacheState(store);
       expect(listState.data?.emails.find((m) => m.id === unreadEmail.id)?.isRead).toBeFalsy();
@@ -170,7 +170,7 @@ describe('Mail Query', () => {
 
       const store = createTestStore();
       const result = await store.dispatch(
-        mailQuery.endpoints.markAsRead.initiate({ emailId: 'email-1', query: mailboxQuery }),
+        mailApi.endpoints.markAsRead.initiate({ emailId: 'email-1', query: mailboxQuery }),
       );
 
       expect(castErrorSpy).toHaveBeenCalledOnce();

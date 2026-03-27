@@ -2,7 +2,7 @@
 
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { configureStore } from '@reduxjs/toolkit';
-import { storageQuery } from './storage.query';
+import { storageApi } from '.';
 import { StorageService } from '@/services/sdk/storage';
 import { ErrorService } from '@/services/error';
 import { FetchStorageLimitError, FetchStorageUsageError } from '@/errors';
@@ -17,8 +17,8 @@ vi.mock('@/services/error', () => ({
 
 const createTestStore = () =>
   configureStore({
-    reducer: { [storageQuery.reducerPath]: storageQuery.reducer },
-    middleware: (getDefault) => getDefault().concat(storageQuery.middleware),
+    reducer: { [storageApi.reducerPath]: storageApi.reducer },
+    middleware: (getDefault) => getDefault().concat(storageApi.middleware),
   });
 
 describe('Storage Query', () => {
@@ -36,7 +36,7 @@ describe('Storage Query', () => {
       const getUsageSpy = vi.spyOn(StorageService.instance, 'getUsage').mockResolvedValue(userUsage);
 
       const store = createTestStore();
-      const result = await store.dispatch(storageQuery.endpoints.getStorageUsage.initiate());
+      const result = await store.dispatch(storageApi.endpoints.getStorageUsage.initiate());
 
       expect(result.data).toStrictEqual(userUsage.total);
       expect(getUsageSpy).toHaveBeenCalledOnce();
@@ -47,7 +47,7 @@ describe('Storage Query', () => {
       const castErrorSpy = vi.spyOn(ErrorService.instance, 'castError');
 
       const store = createTestStore();
-      const result = await store.dispatch(storageQuery.endpoints.getStorageUsage.initiate());
+      const result = await store.dispatch(storageApi.endpoints.getStorageUsage.initiate());
 
       expect(result.error).toBeInstanceOf(FetchStorageUsageError);
       expect(castErrorSpy).toHaveBeenCalledOnce();
@@ -60,7 +60,7 @@ describe('Storage Query', () => {
       const getLimitSpy = vi.spyOn(StorageService.instance, 'getLimit').mockResolvedValue(maxSpaceBytes);
 
       const store = createTestStore();
-      const result = await store.dispatch(storageQuery.endpoints.getStorageLimit.initiate());
+      const result = await store.dispatch(storageApi.endpoints.getStorageLimit.initiate());
 
       expect(result.data).toStrictEqual(maxSpaceBytes);
       expect(getLimitSpy).toHaveBeenCalledOnce();
@@ -71,7 +71,7 @@ describe('Storage Query', () => {
       const castErrorSpy = vi.spyOn(ErrorService.instance, 'castError');
 
       const store = createTestStore();
-      const result = await store.dispatch(storageQuery.endpoints.getStorageLimit.initiate());
+      const result = await store.dispatch(storageApi.endpoints.getStorageLimit.initiate());
 
       expect(result.error).toBeInstanceOf(FetchStorageLimitError);
       expect(castErrorSpy).toHaveBeenCalledOnce();

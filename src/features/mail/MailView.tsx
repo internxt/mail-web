@@ -4,7 +4,7 @@ import type { FolderType } from '@/types/mail';
 import PreviewMail from './components/mail-preview';
 import TrayList from './components/tray';
 import Settings from './components/settings';
-import { useGetListFolderQuery, useGetMailMessageQuery, useMarkAsReadMutation } from '@/store/queries/mail/mail.query';
+import { useGetListFolderQuery, useGetMailMessageQuery, useMarkAsReadMutation } from '@/store/api/mail';
 import { DateService } from '@/services/date';
 import { DEFAULT_FOLDER_LIMIT } from '@/constants';
 import { ErrorService } from '@/services/error';

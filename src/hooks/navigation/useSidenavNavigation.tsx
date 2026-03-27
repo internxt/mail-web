@@ -5,7 +5,7 @@ import type { SidenavOption } from '@internxt/ui/dist/components/sidenav/Sidenav
 import { useTranslationContext } from '@/i18n';
 import { AppView } from '@/routes/paths';
 import { NavigationService } from '@/services/navigation';
-import { useGetMailboxesInfoQuery } from '@/store/queries/mail/mail.query';
+import { useGetMailboxesInfoQuery } from '@/store/api/mail';
 import type { MailboxResponse } from '@internxt/sdk';
 
 export const useSidenavNavigation = () => {

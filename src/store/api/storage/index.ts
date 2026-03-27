@@ -1,13 +1,9 @@
 import { StorageService } from '@/services/sdk/storage';
-import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react';
 import { FetchStorageLimitError, FetchStorageUsageError } from '@/errors';
 import { ErrorService } from '@/services/error';
+import { api } from '../base';
 
-export const storageQuery = createApi({
-  reducerPath: 'storageQuery',
-  baseQuery: fakeBaseQuery(),
-  tagTypes: ['Usage', 'Limit'],
-
+export const storageApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getStorageUsage: builder.query<number, void>({
       async queryFn() {
@@ -19,7 +15,7 @@ export const storageQuery = createApi({
           return { error: new FetchStorageUsageError(err.message, err.requestId) };
         }
       },
-      providesTags: ['Usage'],
+      providesTags: ['StorageUsage'],
     }),
     getStorageLimit: builder.query<number, void>({
       async queryFn() {
@@ -31,9 +27,9 @@ export const storageQuery = createApi({
           return { error: new FetchStorageLimitError(err.message, err.requestId) };
         }
       },
-      providesTags: ['Limit'],
+      providesTags: ['StorageLimit'],
     }),
   }),
 });
 
-export const { useGetStorageLimitQuery, useGetStorageUsageQuery } = storageQuery;
+export const { useGetStorageLimitQuery, useGetStorageUsageQuery } = storageApi;

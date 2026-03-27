@@ -1,14 +1,10 @@
-import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react';
+import { api } from '../base';
 import { FetchMailboxesInfoError, FetchMessageError, FetchListFolderError, UpdateMailError } from '@/errors';
 import { ErrorService } from '@/services/error';
 import { MailService } from '@/services/sdk/mail';
 import type { EmailListResponse, EmailResponse, ListEmailsQuery, MailboxResponse } from '@internxt/sdk';
 
-export const mailQuery = createApi({
-  reducerPath: 'mailQuery',
-  baseQuery: fakeBaseQuery(),
-  tagTypes: ['Mailbox', 'ListFolder', 'MailMessage'],
-
+export const mailApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getMailboxesInfo: builder.query<MailboxResponse[], void>({
       async queryFn() {
@@ -60,7 +56,7 @@ export const mailQuery = createApi({
         let shouldUpdateUnreadCount = false;
 
         const patchEmailList = dispatch(
-          mailQuery.util.updateQueryData('getListFolder', query, (draft) => {
+          mailApi.util.updateQueryData('getListFolder', query, (draft) => {
             const mail = draft.emails.find((m) => m.id === emailId);
             if (mail && !mail.isRead) {
               mail.isRead = true;
@@ -72,7 +68,7 @@ export const mailQuery = createApi({
         if (!shouldUpdateUnreadCount) return;
 
         const patchMailboxes = dispatch(
-          mailQuery.util.updateQueryData('getMailboxesInfo', undefined, (draft) => {
+          mailApi.util.updateQueryData('getMailboxesInfo', undefined, (draft) => {
             const entry = draft.find((m) => m.type === query?.mailbox);
             if (entry) entry.unreadEmails = Math.max(0, entry.unreadEmails - 1);
           }),
@@ -90,4 +86,4 @@ export const mailQuery = createApi({
 });
 
 export const { useGetMailboxesInfoQuery, useGetListFolderQuery, useGetMailMessageQuery, useMarkAsReadMutation } =
-  mailQuery;
+  mailApi;
