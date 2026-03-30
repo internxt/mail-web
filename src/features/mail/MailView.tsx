@@ -4,10 +4,10 @@ import type { FolderType } from '@/types/mail';
 import PreviewMail from './components/mail-preview';
 import TrayList from './components/tray';
 import Settings from './components/settings';
-import { useGetListFolderQuery, useGetMailMessageQuery, useMarkAsReadMutation } from '@/store/api/mail';
+import { useGetMailMessageQuery, useMarkAsReadMutation } from '@/store/api/mail';
 import { DateService } from '@/services/date';
-import { DEFAULT_FOLDER_LIMIT } from '@/constants';
 import { ErrorService } from '@/services/error';
+import useListFolderPaginated from '@/hooks/mail/useListFolderPaginated';
 
 interface MailViewProps {
   folder: FolderType;
@@ -16,16 +16,8 @@ interface MailViewProps {
 const MailView = ({ folder }: MailViewProps) => {
   const { translate } = useTranslationContext();
   const [activeMailId, setActiveMailId] = useState<string | undefined>(undefined);
-  const query = {
-    mailbox: folder,
-    limit: DEFAULT_FOLDER_LIMIT,
-    position: 0,
-  };
 
-  const { data: listFolder, isLoading: isLoadingListFolder } = useGetListFolderQuery(query, {
-    pollingInterval: 30000,
-    skip: !folder,
-  });
+  const { isLoadingListFolder, listFolder, hasMore: hasMoreItems, onLoadMore } = useListFolderPaginated(folder);
   const { data: activeMail } = useGetMailMessageQuery({ emailId: activeMailId! }, { skip: !activeMailId });
   const [markAsRead] = useMarkAsReadMutation();
 
@@ -44,7 +36,7 @@ const MailView = ({ folder }: MailViewProps) => {
     try {
       await markAsRead({
         emailId: id,
-        query,
+        mailbox: folder,
       });
     } catch (error) {
       const err = ErrorService.instance.castError(error);
@@ -61,6 +53,8 @@ const MailView = ({ folder }: MailViewProps) => {
         isLoadingListFolder={isLoadingListFolder}
         activeMailId={activeMailId}
         onMailSelected={onSelectEmail}
+        loadMore={onLoadMore}
+        hasMoreItems={hasMoreItems}
       />
       {/* Mail Preview */}
       <div className="flex flex-col w-full">

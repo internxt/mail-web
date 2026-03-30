@@ -73,6 +73,46 @@ describe('Mail Query', () => {
       expect(castErrorSpy).toHaveBeenCalledOnce();
       expect(result.error).toBeInstanceOf(FetchListFolderError);
     });
+
+    test('When a second batch of emails is loaded, then it is appended to the existing ones', async () => {
+      const page1 = getMockedMails(DEFAULT_FOLDER_LIMIT);
+      const page2 = getMockedMails(DEFAULT_FOLDER_LIMIT);
+      page1.total = DEFAULT_FOLDER_LIMIT * 2;
+      page2.total = DEFAULT_FOLDER_LIMIT * 2;
+
+      vi.spyOn(MailService.instance, 'listFolder').mockResolvedValueOnce(page1).mockResolvedValueOnce(page2);
+
+      const store = createTestStore();
+      await store.dispatch(mailApi.endpoints.getListFolder.initiate(query as ListEmailsQuery));
+      await store.dispatch(
+        mailApi.endpoints.getListFolder.initiate({ ...query, position: DEFAULT_FOLDER_LIMIT } as ListEmailsQuery),
+      );
+
+      const state = store.getState() as unknown as RootState;
+      const cache = mailApi.endpoints.getListFolder.select(query as ListEmailsQuery)(state);
+
+      expect(cache.data?.emails).toHaveLength(DEFAULT_FOLDER_LIMIT * 2);
+      expect(cache.data?.emails).toEqual([...page1.emails, ...page2.emails]);
+    });
+
+    test('When the folder is reloaded from the beginning, then the existing emails are replaced not accumulated', async () => {
+      const firstLoad = getMockedMails(DEFAULT_FOLDER_LIMIT);
+      const reload = getMockedMails(DEFAULT_FOLDER_LIMIT);
+      firstLoad.total = DEFAULT_FOLDER_LIMIT;
+      reload.total = DEFAULT_FOLDER_LIMIT;
+
+      vi.spyOn(MailService.instance, 'listFolder').mockResolvedValueOnce(firstLoad).mockResolvedValueOnce(reload);
+
+      const store = createTestStore();
+      await store.dispatch(mailApi.endpoints.getListFolder.initiate(query as ListEmailsQuery));
+      await store.dispatch(mailApi.endpoints.getListFolder.initiate(query as ListEmailsQuery, { forceRefetch: true }));
+
+      const state = store.getState() as unknown as RootState;
+      const cache = mailApi.endpoints.getListFolder.select(query as ListEmailsQuery)(state);
+
+      expect(cache.data?.emails).toHaveLength(DEFAULT_FOLDER_LIMIT);
+      expect(cache.data?.emails).toEqual(reload.emails);
+    });
   });
 
   describe('Get Mail Preview', () => {
@@ -135,7 +175,7 @@ describe('Mail Query', () => {
 
       const store = createTestStore();
       const result = await store.dispatch(
-        mailApi.endpoints.markAsRead.initiate({ emailId: 'email-1', query: mailboxQuery }),
+        mailApi.endpoints.markAsRead.initiate({ emailId: 'email-1', mailbox: mailboxQuery?.mailbox as string }),
       );
 
       expect(result.data).toBeNull();
@@ -146,7 +186,9 @@ describe('Mail Query', () => {
       vi.spyOn(MailService.instance, 'updateEmailStatus').mockResolvedValue();
       const { store, unreadEmail } = await setupOptimisticStore();
 
-      await store.dispatch(mailApi.endpoints.markAsRead.initiate({ emailId: unreadEmail.id, query: mailboxQuery }));
+      await store.dispatch(
+        mailApi.endpoints.markAsRead.initiate({ emailId: unreadEmail.id, mailbox: mailboxQuery?.mailbox as string }),
+      );
 
       const { listState, mailboxState } = getCacheState(store);
       expect(listState.data?.emails.find((m) => m.id === unreadEmail.id)?.isRead).toBeTruthy();
@@ -157,7 +199,9 @@ describe('Mail Query', () => {
       vi.spyOn(MailService.instance, 'updateEmailStatus').mockRejectedValue(new Error('Server error'));
       const { store, unreadEmail } = await setupOptimisticStore();
 
-      await store.dispatch(mailApi.endpoints.markAsRead.initiate({ emailId: unreadEmail.id, query: mailboxQuery }));
+      await store.dispatch(
+        mailApi.endpoints.markAsRead.initiate({ emailId: unreadEmail.id, mailbox: mailboxQuery?.mailbox as string }),
+      );
 
       const { listState, mailboxState } = getCacheState(store);
       expect(listState.data?.emails.find((m) => m.id === unreadEmail.id)?.isRead).toBeFalsy();
@@ -170,7 +214,7 @@ describe('Mail Query', () => {
 
       const store = createTestStore();
       const result = await store.dispatch(
-        mailApi.endpoints.markAsRead.initiate({ emailId: 'email-1', query: mailboxQuery }),
+        mailApi.endpoints.markAsRead.initiate({ emailId: 'email-1', mailbox: mailboxQuery?.mailbox as string }),
       );
 
       expect(castErrorSpy).toHaveBeenCalledOnce();
