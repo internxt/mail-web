@@ -4,6 +4,7 @@ import type { Tier } from '@internxt/sdk/dist/drive/payments/types/tiers';
 import type { UserSubscription } from '@internxt/sdk/dist/drive/payments/types/types';
 import type { AppSumoDetails } from '@internxt/sdk/dist/shared/types/appsumo';
 import { faker } from '@faker-js/faker';
+import type { EmailListResponse, EmailResponse, MailboxResponse } from '@internxt/sdk';
 
 export const getMockedUser = (params?: Partial<LoginCredentials['user']>): LoginCredentials['user'] => {
   return {
@@ -141,7 +142,7 @@ const createEmailAddress = () => ({
   avatar: faker.helpers.maybe(() => faker.image.avatar(), { probability: 0.5 }),
 });
 
-export const getMockedMail = () => ({
+export const getMockedMail = (): EmailResponse => ({
   id: faker.string.uuid(),
   threadId: faker.string.uuid(),
   from: [createEmailAddress()],
@@ -151,17 +152,17 @@ export const getMockedMail = () => ({
   replyTo: [createEmailAddress()],
   subject: faker.lorem.sentence(),
   receivedAt: faker.date.recent().toISOString(),
-  sentAt: faker.date.recent().toISOString(),
+  sentAt: faker.date.recent().toISOString() as unknown as null,
   preview: faker.lorem.sentences(2),
-  textBody: faker.lorem.paragraphs(2),
-  htmlBody: `<p>${faker.lorem.paragraphs(2)}</p>`,
+  textBody: faker.lorem.paragraphs(2) as unknown as null,
+  htmlBody: `<p>${faker.lorem.paragraphs(2)}</p>` as unknown as null,
   isRead: faker.datatype.boolean(),
   isFlagged: faker.datatype.boolean(),
   hasAttachment: faker.datatype.boolean(),
   size: faker.number.int({ min: 1024, max: 16384 }),
 });
 
-export const getMockedMails = (count = 3) => ({
+export const getMockedMails = (count = 3): EmailListResponse => ({
   emails: Array.from({ length: count }, () => {
     const mail = getMockedMail();
     return {
@@ -181,7 +182,7 @@ export const getMockedMails = (count = 3) => ({
   total: faker.number.int({ min: count, max: 500 }),
 });
 
-export const getMockedMailBoxes = () => [
+export const getMockedMailBoxes = (): MailboxResponse[] => [
   {
     id: faker.string.uuid(),
     name: 'Inbox',

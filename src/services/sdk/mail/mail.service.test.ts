@@ -2,7 +2,7 @@
 import { beforeEach, afterEach, describe, expect, test, vi } from 'vitest';
 import { SdkManager } from '..';
 import { MailService } from '.';
-import { getMockedMails, getMockedMailBoxes } from '@/test-utils/fixtures';
+import { getMockedMails, getMockedMailBoxes, getMockedMail } from '@/test-utils/fixtures';
 
 describe('Mail Service', () => {
   beforeEach(() => {
@@ -107,6 +107,33 @@ describe('Mail Service', () => {
       await expect(MailService.instance.updateEmailStatus('email-123', { isRead: true })).rejects.toThrow(
         unexpectedError,
       );
+    });
+  });
+
+  describe('Get mail message', () => {
+    test('When getting a mail message, then the client should be called with the correct params', async () => {
+      const mockedMessage = getMockedMail();
+
+      const mockMailClient = {
+        getEmail: vi.fn().mockResolvedValue(mockedMessage),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      const result = await MailService.instance.getMessage(mockedMessage.id);
+
+      expect(result).toStrictEqual(mockedMessage);
+      expect(mockMailClient.getEmail).toHaveBeenCalledWith(mockedMessage.id);
+    });
+
+    test('When getting a mail message fails, then an error should be thrown', async () => {
+      const unexpectedError = new Error('Unexpected error');
+
+      const mockMailClient = {
+        getEmail: vi.fn().mockRejectedValue(unexpectedError),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      await expect(MailService.instance.getMessage('email-123')).rejects.toThrow(unexpectedError);
     });
   });
 });

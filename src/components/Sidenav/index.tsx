@@ -9,7 +9,7 @@ import type { RootState } from '@/store';
 import { HUNDRED_TB } from '@/constants';
 import { useSuiteLauncher } from '@/hooks/navigation/useSuiteLauncher';
 import { useSidenavNavigation } from '@/hooks/navigation/useSidenavNavigation';
-import { useGetStorageLimitQuery, useGetStorageUsageQuery } from '@/store/queries/storage/storage.query';
+import { useGetStorageLimitQuery, useGetStorageUsageQuery } from '@/store/api/storage';
 import { useAppSelector } from '@/store/hooks';
 import { bytesToString } from '@/utils/bytes-to-string';
 import { ActionDialog, useActionDialog } from '@/context/dialog-manager';
