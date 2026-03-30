@@ -12,13 +12,13 @@ interface AccountPopoverProps {
   openPreferences: () => void;
 }
 
-export default function AccountPopover({
+const AccountPopover = ({
   className = '',
   user,
   percentageUsed,
   onLogout,
   openPreferences,
-}: Readonly<AccountPopoverProps>) {
+}: Readonly<AccountPopoverProps>) => {
   const { translate } = useTranslationContext();
   const name = user?.name ?? '';
   const lastName = user?.lastname ?? '';
@@ -46,16 +46,13 @@ export default function AccountPopover({
         <p className="text-sm text-gray-50">{translate('accountPopover.spaceUsed', { space: percentageUsed })}</p>
       </div>
       {separator}
-      <button
-        className="flex w-full cursor-pointer items-center px-3 py-2 text-gray-80 no-underline hover:bg-gray-1 hover:text-gray-80 dark:hover:bg-gray-10"
-        onClick={openPreferences}
-      >
+      <Item onClick={openPreferences}>
         <GearIcon size={20} />
         <p className="ml-3">{translate('accountPopover.settings')}</p>
-      </button>
+      </Item>
       <Item onClick={onLogout}>
         <SignOutIcon size={20} />
-        <p className="ml-3 truncate" data-test="logout">
+        <p className="ml-3" data-test="logout">
           {translate('accountPopover.logout')}
         </p>
       </Item>
@@ -65,21 +62,22 @@ export default function AccountPopover({
   return (
     <Popover className={className} childrenButton={avatarWrapper} panel={() => panel} data-test="app-header-dropdown" />
   );
-}
+};
+
+export default AccountPopover;
 
 interface ItemProps {
   children: ReactNode;
   onClick: () => void;
 }
 
-function Item({ children, onClick }: Readonly<ItemProps>) {
+const Item = ({ children, onClick }: Readonly<ItemProps>) => {
   return (
     <button
-      className="flex cursor-pointer items-center px-3 py-2 text-gray-80 hover:bg-gray-1 dark:hover:bg-gray-10"
-      style={{ lineHeight: 1.25 }}
       onClick={onClick}
+      className="flex w-full cursor-pointer items-center px-3 py-2 text-gray-80 no-underline hover:bg-gray-1 hover:text-gray-80 dark:hover:bg-gray-10"
     >
       {children}
     </button>
   );
-}
+};
