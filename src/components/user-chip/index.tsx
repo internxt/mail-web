@@ -16,6 +16,7 @@ const UserChip = ({ avatar, name, email, onRemove }: UserChipProps) => {
   const tooltipId = useId();
   const normalizedName = name.trim();
   const userName = normalizedName ? normalizedName.split(/\s+/)[0] : email.split('@')[0];
+  const fullUserName = name ?? email;
 
   const handleMouseEnter = () => {
     const rect = ref.current?.getBoundingClientRect();
@@ -53,7 +54,7 @@ const UserChip = ({ avatar, name, email, onRemove }: UserChipProps) => {
       {position &&
         createPortal(
           <div id={tooltipId} role="tooltip" className="fixed z-10" style={{ top: position.top, left: position.left }}>
-            <UserCheap avatar={avatar} fullName={name || email} email={email} />
+            <UserCheap avatar={avatar} fullName={fullUserName} email={email} />
           </div>,
           document.body,
         )}
