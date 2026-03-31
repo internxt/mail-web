@@ -31,8 +31,8 @@ describe('List Folder Paginated - custom hook', () => {
     waitFor(() => {
       expect(result.current.isLoadingListFolder).toBe(true);
 
-      expect(result.current.listFolder?.emails).toHaveLength(DEFAULT_FOLDER_LIMIT);
-      expect(result.current.hasMore).toBeTruthy();
+      expect(result.current.listFolderEmails).toHaveLength(DEFAULT_FOLDER_LIMIT);
+      expect(result.current.hasMoreEmails).toBeTruthy();
     });
   });
 
@@ -46,7 +46,7 @@ describe('List Folder Paginated - custom hook', () => {
       wrapper: createWrapper(store),
     });
 
-    expect(result.current.hasMore).toBeFalsy();
+    expect(result.current.hasMoreEmails).toBeFalsy();
   });
 
   test('When the user scrolls to the end of the list, then the next batch of emails is loaded and appended', async () => {
@@ -67,9 +67,9 @@ describe('List Folder Paginated - custom hook', () => {
     });
 
     waitFor(() => {
-      expect(result.current.listFolder?.emails).toHaveLength(DEFAULT_FOLDER_LIMIT * 2);
-      expect(result.current.listFolder?.emails).toStrictEqual([...page1.emails, ...page2.emails]);
-      expect(result.current.hasMore).toBeFalsy();
+      expect(result.current.listFolderEmails).toHaveLength(DEFAULT_FOLDER_LIMIT * 2);
+      expect(result.current.listFolderEmails).toStrictEqual([...page1.emails, ...page2.emails]);
+      expect(result.current.hasMoreEmails).toBeFalsy();
     });
   });
 
@@ -105,14 +105,14 @@ describe('List Folder Paginated - custom hook', () => {
     });
 
     waitFor(() => {
-      expect(result.current.listFolder?.emails).toStrictEqual(inboxEmails.emails);
+      expect(result.current.listFolderEmails).toStrictEqual(inboxEmails.emails);
     });
 
     rerender({ mailbox: 'sent' });
 
     waitFor(() => {
-      expect(result.current.listFolder?.emails).toStrictEqual(sentEmails.emails);
-      expect(result.current.listFolder?.emails).toHaveLength(DEFAULT_FOLDER_LIMIT);
+      expect(result.current.listFolderEmails).toStrictEqual(sentEmails.emails);
+      expect(result.current.listFolderEmails).toHaveLength(DEFAULT_FOLDER_LIMIT);
     });
   });
 });

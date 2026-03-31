@@ -3,9 +3,8 @@ import type { ApiSecurity, AppDetails } from '@internxt/sdk/dist/shared';
 import packageJson from '../../../package.json';
 import { ConfigService } from '../config';
 import { LocalStorageService } from '../local-storage';
-import { AuthService } from './auth';
-import { NavigationService } from '../navigation';
-import { AppView } from '@/routes/paths';
+import { store } from '@/store';
+import { logoutThunk } from '@/store/slices/user/thunks';
 
 export type SdkManagerApiSecurity = ApiSecurity & { newToken: string };
 
@@ -33,14 +32,8 @@ export class SdkManager {
   private getNewTokenApiSecurity(): ApiSecurity {
     return {
       token: LocalStorageService.instance?.getToken() ?? '',
-      unauthorizedCallback: () => {
-        if (LocalStorageService.instance) {
-          LocalStorageService.instance.clearCredentials();
-          AuthService.instance.logOut().catch((error) => {
-            console.error(error);
-          });
-          NavigationService.instance.navigate({ id: AppView.Welcome });
-        }
+      unauthorizedCallback: async () => {
+        await store.dispatch(logoutThunk());
       },
     };
   }

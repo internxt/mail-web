@@ -17,7 +17,7 @@ const MailView = ({ folder }: MailViewProps) => {
   const { translate } = useTranslationContext();
   const [activeMailId, setActiveMailId] = useState<string | undefined>(undefined);
 
-  const { isLoadingListFolder, listFolder, hasMore: hasMoreItems, onLoadMore } = useListFolderPaginated(folder);
+  const { isLoadingListFolder, listFolderEmails, hasMoreEmails, onLoadMore } = useListFolderPaginated(folder);
   const { data: activeMail } = useGetMailMessageQuery({ emailId: activeMailId! }, { skip: !activeMailId });
   const [markAsRead] = useMarkAsReadMutation();
 
@@ -49,12 +49,12 @@ const MailView = ({ folder }: MailViewProps) => {
       {/* Tray */}
       <TrayList
         folderName={folderName}
-        listFolder={listFolder?.emails}
+        listFolder={listFolderEmails}
         isLoadingListFolder={isLoadingListFolder}
         activeMailId={activeMailId}
         onMailSelected={onSelectEmail}
         loadMore={onLoadMore}
-        hasMoreItems={hasMoreItems}
+        hasMoreItems={hasMoreEmails}
       />
       {/* Mail Preview */}
       <div className="flex flex-col w-full">
