@@ -27,6 +27,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    preserveSymlinks: true,
   },
   optimizeDeps: {
     include: ['@internxt/sdk'],

@@ -1,15 +1,10 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 import { DEFAULT_FOLDER_LIMIT } from '@/constants';
 import { useGetListFolderQuery } from '@/store/api/mail';
 import type { FolderType } from '@/types/mail';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 const useListFolderPaginated = (mailbox: FolderType) => {
-  const [position, setPosition] = useState(0);
-
-  useEffect(() => {
-    setPosition(0);
-  }, [mailbox]);
+  const [anchorId, setAnchorId] = useState<string | undefined>(undefined);
 
   const {
     data: listFolder,
@@ -19,7 +14,7 @@ const useListFolderPaginated = (mailbox: FolderType) => {
     {
       mailbox,
       limit: DEFAULT_FOLDER_LIMIT,
-      position,
+      anchorId,
     },
     {
       pollingInterval: 30000,
@@ -27,18 +22,17 @@ const useListFolderPaginated = (mailbox: FolderType) => {
     },
   );
 
-  const hasMore = (listFolder?.emails.length ?? 0) < (listFolder?.total ?? 0);
-
   const onLoadMore = () => {
-    if (isFetching || !hasMore) return;
-    setPosition((prev) => prev + DEFAULT_FOLDER_LIMIT);
+    if (isFetching || !listFolder?.hasMoreMails) return;
+
+    setAnchorId(listFolder?.nextAnchor);
   };
 
   return {
-    listFolder,
+    listFolderEmails: listFolder?.emails,
     isLoadingListFolder,
     onLoadMore,
-    hasMore,
+    hasMoreEmails: listFolder?.hasMoreMails,
   };
 };
 

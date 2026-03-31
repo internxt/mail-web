@@ -3,8 +3,14 @@ import { beforeEach, describe, expect, test, vi, afterEach } from 'vitest';
 import { SdkManager } from '.';
 import { ConfigService } from '../config';
 import { LocalStorageService } from '../local-storage';
-import { AuthService } from './auth';
 import { NavigationService } from '../navigation';
+import { store } from '@/store';
+
+vi.mock('@/store', () => ({
+  store: {
+    dispatch: vi.fn(),
+  },
+}));
 
 vi.mock('./auth', () => ({
   AuthService: {
@@ -202,7 +208,7 @@ describe('SDK Manager', () => {
       const securityArg = (Drive.Users.client as any).mock.calls[0][2];
       securityArg.unauthorizedCallback();
 
-      expect(AuthService.instance.logOut).toHaveBeenCalled();
+      expect(store.dispatch).toHaveBeenCalled();
     });
   });
 
@@ -232,7 +238,7 @@ describe('SDK Manager', () => {
       const securityArg = (Drive.Storage.client as any).mock.calls[0][2];
       securityArg.unauthorizedCallback();
 
-      expect(AuthService.instance.logOut).toHaveBeenCalled();
+      expect(store.dispatch).toHaveBeenCalled();
     });
   });
 
@@ -262,7 +268,7 @@ describe('SDK Manager', () => {
       const securityArg = (Drive.Payments.client as any).mock.calls[0][2];
       securityArg.unauthorizedCallback();
 
-      expect(AuthService.instance.logOut).toHaveBeenCalled();
+      expect(store.dispatch).toHaveBeenCalled();
     });
   });
 
@@ -292,7 +298,7 @@ describe('SDK Manager', () => {
       const securityArg = (Mail.client as any).mock.calls[0][2];
       securityArg.unauthorizedCallback();
 
-      expect(AuthService.instance.logOut).toHaveBeenCalled();
+      expect(store.dispatch).toHaveBeenCalled();
     });
   });
 });
