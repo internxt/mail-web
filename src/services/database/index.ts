@@ -12,7 +12,7 @@ export class DatabaseService {
   }
 
   private getDbName(): string {
-    return `ES:${this.userId}:DB`;
+    return `DB:${this.userId}`;
   }
 
   private getDb(): IDBPDatabase {
