@@ -10,3 +10,8 @@ export const DEFAULT_USER_NAME = 'My Internxt';
 export const INTERNXT_EMAIL_DOMAINS = ['@inxt.me', '@inxt.eu', '@encrypt.eu'] as const;
 
 export const DEFAULT_FOLDER_LIMIT = 15;
+
+export const INDEXED_DB_VERSION = 1;
+export const STORED_EMAILS_DB_LABEL = 'emails';
+export const STORED_EMAILS_CONTEXT_INDEX =
+  'CRYPTO library 2025-07-30 17:20:00 key for protecting current emails indices';
