@@ -1,5 +1,5 @@
 import { DatabaseService } from '..';
-import { CryptoMiddleware } from './crypto-middleware';
+import { CryptoEmail } from './crypto';
 import type { StoredEmail, EmailFilters, User } from '../types';
 
 export class EmailRepository {
@@ -10,14 +10,14 @@ export class EmailRepository {
     return EmailRepository._instance;
   }
 
-  static create(db: DatabaseService, crypto: CryptoMiddleware): EmailRepository {
+  static create(db: DatabaseService, crypto: CryptoEmail): EmailRepository {
     EmailRepository._instance = new EmailRepository(db, crypto);
     return EmailRepository._instance;
   }
 
   private constructor(
     private readonly db: DatabaseService,
-    private readonly crypto: CryptoMiddleware,
+    private readonly crypto: CryptoEmail,
   ) {}
 
   async add(email: StoredEmail): Promise<void> {

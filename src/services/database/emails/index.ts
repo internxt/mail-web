@@ -2,8 +2,8 @@ import { LocalStorageService } from '@/services/local-storage';
 import { DatabaseService } from '..';
 import { EMAIL_DB_CONFIG } from '../config';
 import { deriveDatabaseKey, mnemonicToBytes } from 'internxt-crypto';
-import { EmailRepository } from './email-repository';
-import { CryptoMiddleware } from './crypto-middleware';
+import { EmailRepository } from './email.repository';
+import { CryptoEmail } from './crypto';
 
 export class EmailDatabase {
   private static databaseInstance: DatabaseService | null = null;
@@ -16,7 +16,7 @@ export class EmailDatabase {
     await EmailDatabase.databaseInstance.open();
 
     const indexKey = await deriveDatabaseKey(mnemonicToBytes(mnemonic));
-    const crypto = new CryptoMiddleware(indexKey);
+    const crypto = new CryptoEmail(indexKey);
     EmailRepository.create(EmailDatabase.databaseInstance, crypto);
   }
 
