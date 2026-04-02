@@ -1,5 +1,3 @@
-import type { FolderType } from '@/types/mail';
-
 export type AttachmentType =
   | 'folder'
   | 'pdf'
@@ -23,7 +21,7 @@ export interface User {
 }
 
 export interface EmailParams {
-  folder?: FolderType;
+  folderId?: string;
   isRead: boolean;
   receivedAt: string;
   from: User[];

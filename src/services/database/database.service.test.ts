@@ -19,7 +19,7 @@ const createEmail = (overrides: Partial<StoredEmail> = {}): StoredEmail => ({
   id: crypto.randomUUID(),
   mail: { subject: 'Test subject', body: 'Test body' },
   params: {
-    folder: 'inbox',
+    folderId: 'd',
     isRead: false,
     receivedAt: Date.now().toString(),
     from: [{ email: 'sender@test.com', name: 'Sender' }],
@@ -43,7 +43,7 @@ const createEmailWithDate = (daysAgo: number, overrides: Partial<StoredEmail> = 
   });
 };
 
-describe('DatabaseService', () => {
+describe('Database Service', () => {
   let db: DatabaseService;
 
   beforeEach(async () => {
