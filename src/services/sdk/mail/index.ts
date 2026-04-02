@@ -34,6 +34,16 @@ export class MailService {
   }
 
   /**
+   * Returns a list of all emails in all folders, filtered by the given query.
+   *
+   * @param {Omit<ListEmailsQuery, 'mailbox'>} query - The query parameters
+   * @returns A promise that resolves with an EmailListResponse object
+   */
+  async getAllEmails(query?: Omit<ListEmailsQuery, 'mailbox'>): Promise<EmailListResponse> {
+    return this.client.getAllEmails(query);
+  }
+
+  /**
    * Returns a specific email by its ID.
    *
    * @param {string} emailId - The ID of the email to fetch

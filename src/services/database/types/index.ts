@@ -21,7 +21,7 @@ export interface User {
 }
 
 export interface EmailParams {
-  folderId?: string;
+  folderId?: string[];
   isRead: boolean;
   receivedAt: string;
   from: User[];
