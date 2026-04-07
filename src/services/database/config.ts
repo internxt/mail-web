@@ -9,6 +9,6 @@ export const EMAIL_DB_CONFIG: DatabaseConfig = {
     { name: 'byFrom', keyPath: 'params.from' },
     { name: 'byTo', keyPath: 'params.to' },
     { name: 'byAttachmentType', keyPath: 'params.attachmentTypes', options: { multiEntry: true } },
-    { name: 'byFolder', keyPath: 'params.folder' },
+    { name: 'byFolder', keyPath: 'params.folderId' },
   ],
 };
