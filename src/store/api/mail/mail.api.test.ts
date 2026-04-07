@@ -85,7 +85,7 @@ describe('Mail Query', () => {
       const store = createTestStore();
       await store.dispatch(mailApi.endpoints.getListFolder.initiate(query as ListEmailsQuery));
       await store.dispatch(
-        mailApi.endpoints.getListFolder.initiate({ ...query, position: DEFAULT_FOLDER_LIMIT } as ListEmailsQuery),
+        mailApi.endpoints.getListFolder.initiate({ ...query, anchorId: 'anchor-page-2' } as ListEmailsQuery),
       );
 
       const state = store.getState() as unknown as RootState;
@@ -111,7 +111,7 @@ describe('Mail Query', () => {
       const cache = mailApi.endpoints.getListFolder.select(query as ListEmailsQuery)(state);
 
       expect(cache.data?.emails).toHaveLength(DEFAULT_FOLDER_LIMIT);
-      expect(cache.data?.emails).toEqual(reload.emails);
+      expect(cache.data?.emails).toStrictEqual(reload.emails);
     });
   });
 
@@ -141,7 +141,7 @@ describe('Mail Query', () => {
   });
 
   describe('Mark Mail As Read', () => {
-    const mailboxQuery = { mailbox: 'inbox', limit: DEFAULT_FOLDER_LIMIT, position: 0 } as ListEmailsQuery;
+    const mailboxQuery = { mailbox: 'inbox', limit: DEFAULT_FOLDER_LIMIT } as ListEmailsQuery;
 
     const setupOptimisticStore = async () => {
       const mockedMails = getMockedMails();

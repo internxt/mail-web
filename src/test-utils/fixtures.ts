@@ -144,6 +144,7 @@ const createEmailAddress = () => ({
 
 export const getMockedMail = (): EmailResponse => ({
   id: faker.string.uuid(),
+  mailboxIds: [faker.string.alphanumeric(1), faker.string.alphanumeric(1)],
   threadId: faker.string.uuid(),
   from: [createEmailAddress()],
   to: [createEmailAddress()],
@@ -167,6 +168,7 @@ export const getMockedMails = (count = 3): EmailListResponse => ({
     const mail = getMockedMail();
     return {
       id: mail.id,
+      mailboxIds: mail.mailboxIds,
       threadId: mail.threadId,
       from: mail.from,
       to: mail.to,
@@ -180,6 +182,8 @@ export const getMockedMails = (count = 3): EmailListResponse => ({
     };
   }),
   total: faker.number.int({ min: count, max: 500 }),
+  hasMoreMails: faker.datatype.boolean(),
+  nextAnchor: faker.string.uuid(),
 });
 
 export const getMockedMailBoxes = (): MailboxResponse[] => [

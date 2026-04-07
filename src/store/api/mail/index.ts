@@ -22,18 +22,17 @@ export const mailApi = api.injectEndpoints({
     getListFolder: builder.query<EmailListResponse, ListEmailsQuery>({
       serializeQueryArgs: ({ queryArgs }) => ({ mailbox: queryArgs?.mailbox }),
       merge: (currentCache, newItems, { arg }) => {
-        const currentPosition = arg?.position ?? 0;
-
-        // This prevents the concatenation of the existent cached emails with the new ones (repeated emails)
-        if (currentPosition === 0) {
-          currentCache.emails = newItems.emails;
-        } else {
+        // No anchorId means first page — replace instead of accumulate
+        if (arg?.anchorId) {
           currentCache.emails.push(...newItems.emails);
+        } else {
+          currentCache.emails = newItems.emails;
         }
-        currentCache.total = newItems.total;
+        currentCache.hasMoreMails = newItems.hasMoreMails;
+        currentCache.nextAnchor = newItems.nextAnchor;
       },
       forceRefetch: ({ currentArg, previousArg }) =>
-        currentArg?.mailbox !== previousArg?.mailbox || currentArg?.position !== previousArg?.position,
+        currentArg?.mailbox !== previousArg?.mailbox || currentArg?.anchorId !== previousArg?.anchorId,
       async queryFn(query) {
         try {
           const mailList = await MailService.instance.listFolder(query);
