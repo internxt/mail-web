@@ -12,7 +12,7 @@ const createEmail = (overrides: Partial<StoredEmail> = {}): StoredEmail => ({
   id: crypto.randomUUID(),
   mail: { subject: 'Test subject', body: 'Test body' },
   params: {
-    folderId: 'd',
+    folderId: ['d'],
     isRead: false,
     receivedAt: Date.now().toString(),
     from: [{ email: 'sender@test.com', name: 'Sender' }],
