@@ -2,18 +2,11 @@ import 'fake-indexeddb/auto';
 import { describe, test, expect, beforeEach, afterEach } from 'vitest';
 import { DatabaseService } from './index';
 import type { StoredEmail, DatabaseConfig } from './types';
+import { EMAIL_DB_CONFIG } from './config';
 
 const TEST_USER_ID = 'user-123';
 
-const TEST_CONFIG: DatabaseConfig = {
-  store: 'emails',
-  version: 1,
-  indexes: [
-    { name: 'byTime', keyPath: 'params.receivedAt' },
-    { name: 'byRead', keyPath: 'params.isRead' },
-    { name: 'byFrom', keyPath: 'params.from' },
-  ],
-};
+const TEST_CONFIG: DatabaseConfig = EMAIL_DB_CONFIG;
 
 const createEmail = (overrides: Partial<StoredEmail> = {}): StoredEmail => ({
   id: crypto.randomUUID(),
