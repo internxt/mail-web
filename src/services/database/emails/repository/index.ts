@@ -1,21 +1,9 @@
-import { DatabaseService } from '..';
-import { CryptoEmail } from './crypto';
-import type { StoredEmail, EmailFilters, User } from '../types';
+import { DatabaseService } from '../..';
+import { CryptoEmail } from '../crypto';
+import type { StoredEmail, EmailFilters, User } from '../../types';
 
 export class EmailRepository {
-  private static _instance: EmailRepository | null = null;
-
-  static getInstance(): EmailRepository {
-    if (!EmailRepository._instance) throw new Error('EmailRepository not initialized');
-    return EmailRepository._instance;
-  }
-
-  static create(db: DatabaseService, crypto: CryptoEmail): EmailRepository {
-    EmailRepository._instance = new EmailRepository(db, crypto);
-    return EmailRepository._instance;
-  }
-
-  private constructor(
+  constructor(
     private readonly db: DatabaseService,
     private readonly crypto: CryptoEmail,
   ) {}

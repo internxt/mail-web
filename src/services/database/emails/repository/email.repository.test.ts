@@ -1,7 +1,8 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest';
-import { EmailRepository } from './email.repository';
-import { CryptoEmail } from './crypto';
-import type { StoredEmail } from '../types';
+import { EmailRepository } from './';
+import { CryptoEmail } from '../crypto';
+import type { StoredEmail } from '../../types';
+import type { DatabaseService } from '../..';
 
 vi.stubGlobal('IDBKeyRange', {
   bound: (lower: unknown, upper: unknown) => ({ lower, upper }),
@@ -42,8 +43,7 @@ describe('Email Repository', () => {
 
   beforeEach(() => {
     db = makeMockDb();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    repo = EmailRepository.create(db as any, crypto);
+    repo = new EmailRepository(db as unknown as DatabaseService, crypto);
   });
 
   describe('Add email', () => {

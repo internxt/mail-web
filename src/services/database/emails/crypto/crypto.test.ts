@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { CryptoEmail } from './crypto';
+import { CryptoEmail } from './';
 
 describe('Crypto for emails', () => {
   describe('Encrypt emails', () => {

@@ -1,5 +1,5 @@
 import { decryptEmailBody, encryptEmailBodyWithKey } from 'internxt-crypto';
-import type { Email } from '../types';
+import type { Email } from '../../types';
 
 export class CryptoEmail {
   private readonly key: Uint8Array;
