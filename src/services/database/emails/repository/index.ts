@@ -1,6 +1,10 @@
-import { DatabaseService } from '../..';
-import { CryptoEmail } from '../crypto';
-import type { StoredEmail, EmailFilters, User } from '../../types';
+import type { DatabaseService } from '../../';
+import type { CryptoEmail } from '../crypto';
+import { type StoredEmail, type EmailFilters, type User, EMAIL_DB_INDEXES_KEYS } from '../../types';
+
+const STORE = 'emails';
+const TIME_INDEX = EMAIL_DB_INDEXES_KEYS.byTime;
+const FOLDER_INDEX = EMAIL_DB_INDEXES_KEYS.byFolder;
 
 export class EmailRepository {
   constructor(
@@ -10,7 +14,7 @@ export class EmailRepository {
 
   async add(email: StoredEmail): Promise<void> {
     const encryptedMail = await this.crypto.encrypt(email.mail);
-    await this.db.put({ ...email, mail: encryptedMail });
+    await this.db.put(STORE, { ...email, mail: encryptedMail });
   }
 
   async addMany(emails: StoredEmail[]): Promise<void> {
@@ -20,51 +24,56 @@ export class EmailRepository {
         mail: await this.crypto.encrypt(e.mail),
       })),
     );
-    await this.db.putMany(encrypted);
+    await this.db.putMany(STORE, encrypted);
   }
 
   async getById(id: string): Promise<StoredEmail> {
-    const record = await this.db.get(id);
-    if (!record) throw new Error(`Email ${id} not found`);
+    const record = await this.db.get<StoredEmail>(STORE, id);
+    if (!record) throw new EmailNotFoundError(id);
     return this.decryptRecord(record);
   }
 
-  async getByFolder(folderId: string, limit?: number): Promise<StoredEmail[]> {
-    const records = await this.db.getByFolder(folderId, limit);
-    return this.decryptMany(records);
-  }
-
-  async getLatestInFolder(folderId: string): Promise<StoredEmail | undefined> {
-    const records = await this.db.getByFolder(folderId, 1);
-    if (!records.length) return undefined;
-    return this.decryptRecord(records[0]);
-  }
-
   async getAll(): Promise<StoredEmail[]> {
-    const records = await this.db.getAll();
+    const records = await this.db.getAll<StoredEmail>(STORE);
     return this.decryptMany(records);
   }
 
   async remove(id: string): Promise<void> {
-    await this.db.remove(id);
+    await this.db.remove(STORE, id);
   }
 
   async count(): Promise<number> {
-    return this.db.count();
+    return this.db.count(STORE);
   }
 
   async enforceMax(max: number): Promise<void> {
-    const current = await this.db.count();
+    const current = await this.db.count(STORE);
     if (current > max) {
-      await this.db.deleteOldest(current - max);
+      await this.db.deleteOldest(STORE, TIME_INDEX, current - max);
     }
+  }
+
+  async getByFolder(folderId: string, limit?: number): Promise<StoredEmail[]> {
+    const records = await this.db.getByIndex<StoredEmail>(STORE, FOLDER_INDEX, folderId);
+
+    records.sort((a, b) => {
+      return new Date(b.params.receivedAt).getTime() - new Date(a.params.receivedAt).getTime();
+    });
+
+    const sliced = limit ? records.slice(0, limit) : records;
+    return this.decryptMany(sliced);
+  }
+
+  async getLatestInFolder(folderId: string): Promise<StoredEmail | undefined> {
+    const records = await this.getByFolder(folderId, 1);
+    return records[0];
   }
 
   async getBatch(
     batchSize: number,
     startCursor?: IDBValidKey,
   ): Promise<{ emails: StoredEmail[]; nextCursor?: IDBValidKey }> {
-    const { items, nextCursor } = await this.db.getBatch(batchSize, startCursor);
+    const { items, nextCursor } = await this.db.getBatch<StoredEmail>(STORE, TIME_INDEX, batchSize, startCursor);
     const emails = await this.decryptMany(items);
     return { emails, nextCursor };
   }
@@ -76,16 +85,16 @@ export class EmailRepository {
   }
 
   private async getBaseResults(filters: EmailFilters): Promise<StoredEmail[]> {
-    if (filters.from) return this.db.getByIndex('byFrom', filters.from);
-    if (filters.to) return this.db.getByIndex('byTo', filters.to);
-    if (filters.attachmentType) return this.db.getByIndex('byAttachmentType', filters.attachmentType);
-
+    if (filters.from) return this.db.getByIndex<StoredEmail>(STORE, EMAIL_DB_INDEXES_KEYS.byFrom, filters.from);
+    if (filters.to) return this.db.getByIndex<StoredEmail>(STORE, EMAIL_DB_INDEXES_KEYS.byTo, filters.to);
+    if (filters.attachmentType) {
+      return this.db.getByIndex<StoredEmail>(STORE, EMAIL_DB_INDEXES_KEYS.byAttachmentType, filters.attachmentType);
+    }
     if (filters.dateRange) {
       const range = IDBKeyRange.bound(filters.dateRange.after, filters.dateRange.before);
-      return this.db.getByRange('byTime', range);
+      return this.db.getByRange<StoredEmail>(STORE, TIME_INDEX, range);
     }
-
-    return this.db.getAll();
+    return this.db.getAll<StoredEmail>(STORE);
   }
 
   private matchesFilters(email: StoredEmail, filters: EmailFilters): boolean {
@@ -94,19 +103,15 @@ export class EmailRepository {
     if (filters.isRead !== undefined) {
       checks.push(() => email.params.isRead === filters.isRead);
     }
-
     if (filters.from) {
       checks.push(() => this.userMatchesQuery(email.params.from, filters.from!));
     }
-
     if (filters.to) {
       checks.push(() => this.userMatchesQuery(email.params.to, filters.to!));
     }
-
     if (filters.dateRange) {
       checks.push(() => this.dateInRange(email.params.receivedAt, filters.dateRange!));
     }
-
     if (filters.attachmentType) {
       checks.push(() => email.params.attachmentTypes?.includes(filters.attachmentType!) ?? false);
     }
@@ -121,8 +126,8 @@ export class EmailRepository {
     );
   }
 
-  private dateInRange(createdAt: string, range: { after: number; before: number }): boolean {
-    const timestamp = new Date(createdAt).getTime();
+  private dateInRange(receivedAt: string, range: { after: number; before: number }): boolean {
+    const timestamp = new Date(receivedAt).getTime();
     return timestamp >= range.after && timestamp <= range.before;
   }
 
@@ -133,5 +138,13 @@ export class EmailRepository {
 
   private async decryptMany(records: StoredEmail[]): Promise<StoredEmail[]> {
     return Promise.all(records.map((r) => this.decryptRecord(r)));
+  }
+}
+
+export class EmailNotFoundError extends Error {
+  constructor(emailId: string) {
+    super(`Email ${emailId} not found`);
+    this.name = 'EmailNotFoundError';
+    Object.setPrototypeOf(this, EmailNotFoundError.prototype);
   }
 }

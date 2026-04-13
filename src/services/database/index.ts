@@ -1,18 +1,14 @@
 import { openDB, deleteDB, type IDBPDatabase } from 'idb';
-import type { StoredEmail, DatabaseConfig } from './types';
+import type { DatabaseConfig } from './types';
 
 export class DatabaseService {
   private db: IDBPDatabase | null = null;
-  private readonly userId: string;
+  private readonly dbName: string;
   private readonly config: DatabaseConfig;
 
-  constructor(userId: string, config: DatabaseConfig) {
-    this.userId = userId;
+  constructor(dbName: string, config: DatabaseConfig) {
+    this.dbName = dbName;
     this.config = config;
-  }
-
-  private getDbName(): string {
-    return `DB:${this.userId}`;
   }
 
   private getDb(): IDBPDatabase {
@@ -21,15 +17,17 @@ export class DatabaseService {
   }
 
   async open(): Promise<void> {
-    const { store, version, indexes } = this.config;
+    const { version, stores } = this.config;
 
-    this.db = await openDB(this.getDbName(), version, {
+    this.db = await openDB(this.dbName, version, {
       upgrade(db) {
-        if (!db.objectStoreNames.contains(store)) {
-          const objectStore = db.createObjectStore(store, { keyPath: 'id' });
+        for (const store of stores) {
+          if (!db.objectStoreNames.contains(store.name)) {
+            const objectStore = db.createObjectStore(store.name, { keyPath: store.keyPath });
 
-          for (const index of indexes) {
-            objectStore.createIndex(index.name, index.keyPath, index.options);
+            for (const index of store.indexes) {
+              objectStore.createIndex(index.name, index.keyPath, index.options);
+            }
           }
         }
       },
@@ -43,65 +41,54 @@ export class DatabaseService {
 
   async destroy(): Promise<void> {
     this.close();
-    await deleteDB(this.getDbName());
+    await deleteDB(this.dbName);
   }
 
-  async put(record: StoredEmail): Promise<IDBValidKey> {
-    return this.getDb().put(this.config.store, record);
+  async get<T>(store: string, id: IDBValidKey): Promise<T | undefined> {
+    return this.getDb().get(store, id) as Promise<T | undefined>;
   }
 
-  async putMany(records: StoredEmail[]): Promise<void> {
-    const tx = this.getDb().transaction(this.config.store, 'readwrite');
+  async getAll<T>(store: string): Promise<T[]> {
+    return this.getDb().getAll(store) as Promise<T[]>;
+  }
+
+  async put<T>(store: string, record: T): Promise<IDBValidKey> {
+    return this.getDb().put(store, record);
+  }
+
+  async putMany<T>(store: string, records: T[]): Promise<void> {
+    const tx = this.getDb().transaction(store, 'readwrite');
     await Promise.all([...records.map((r) => tx.store.put(r)), tx.done]);
   }
 
-  async get(id: string): Promise<StoredEmail | undefined> {
-    return this.getDb().get(this.config.store, id);
+  async remove(store: string, id: IDBValidKey): Promise<void> {
+    await this.getDb().delete(store, id);
   }
 
-  async getAll(): Promise<StoredEmail[]> {
-    return this.getDb().getAll(this.config.store);
+  async count(store: string): Promise<number> {
+    return this.getDb().count(store);
   }
 
-  async getByIndex(indexName: string, value: IDBValidKey): Promise<StoredEmail[]> {
-    const tx = this.getDb().transaction(this.config.store, 'readonly');
-    return tx.store.index(indexName).getAll(value) as Promise<StoredEmail[]>;
+  async getByIndex<T>(store: string, indexName: string, value: IDBValidKey): Promise<T[]> {
+    const tx = this.getDb().transaction(store, 'readonly');
+    return tx.store.index(indexName).getAll(value) as Promise<T[]>;
   }
 
-  async getByRange(indexName: string, range: IDBKeyRange): Promise<StoredEmail[]> {
-    const tx = this.getDb().transaction(this.config.store, 'readonly');
-    return tx.store.index(indexName).getAll(range) as Promise<StoredEmail[]>;
+  async getByRange<T>(store: string, indexName: string, range: IDBKeyRange): Promise<T[]> {
+    const tx = this.getDb().transaction(store, 'readonly');
+    return tx.store.index(indexName).getAll(range) as Promise<T[]>;
   }
 
-  async getByFolder(folderId: string, limit?: number): Promise<StoredEmail[]> {
-    const tx = this.getDb().transaction(this.config.store, 'readonly');
-    const results = await tx.store.index('byFolder').getAll(folderId);
-
-    results.sort((a, b) => {
-      const dateA = Number((a as StoredEmail).params.receivedAt);
-      const dateB = Number((b as StoredEmail).params.receivedAt);
-      return dateB - dateA;
-    });
-
-    return limit ? (results.slice(0, limit) as StoredEmail[]) : (results as StoredEmail[]);
-  }
-
-  async remove(id: string): Promise<void> {
-    await this.getDb().delete(this.config.store, id);
-  }
-
-  async count(): Promise<number> {
-    return this.getDb().count(this.config.store);
-  }
-
-  async getBatch(
+  async getBatch<T>(
+    store: string,
+    indexName: string,
     batchSize: number,
     startCursor?: IDBValidKey,
-  ): Promise<{ items: StoredEmail[]; nextCursor?: IDBValidKey }> {
-    const tx = this.getDb().transaction(this.config.store, 'readonly');
-    const index = tx.store.index('byTime');
+  ): Promise<{ items: T[]; nextCursor?: IDBValidKey }> {
+    const tx = this.getDb().transaction(store, 'readonly');
+    const index = tx.store.index(indexName);
 
-    const items: StoredEmail[] = [];
+    const items: T[] = [];
     let cursor = startCursor
       ? await index.openCursor(IDBKeyRange.upperBound(startCursor, true), 'prev')
       : await index.openCursor(null, 'prev');
@@ -109,7 +96,7 @@ export class DatabaseService {
     let nextCursor: IDBValidKey | undefined;
 
     while (cursor && items.length < batchSize) {
-      items.push(cursor.value as StoredEmail);
+      items.push(cursor.value as T);
       nextCursor = cursor.key;
       cursor = await cursor.continue();
     }
@@ -120,9 +107,9 @@ export class DatabaseService {
     };
   }
 
-  async deleteOldest(count: number): Promise<void> {
-    const tx = this.getDb().transaction(this.config.store, 'readwrite');
-    const index = tx.store.index('byTime');
+  async deleteOldest(store: string, indexName: string, count: number): Promise<void> {
+    const tx = this.getDb().transaction(store, 'readwrite');
+    const index = tx.store.index(indexName);
     let cursor = await index.openCursor();
     let deleted = 0;
 
