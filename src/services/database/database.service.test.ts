@@ -1,28 +1,13 @@
 import 'fake-indexeddb/auto';
 import { describe, test, expect, beforeEach, afterEach } from 'vitest';
-import type { DatabaseConfig } from './types';
 import { DatabaseService } from '.';
-
-const TEST_CONFIG: DatabaseConfig = {
-  version: 1,
-  stores: [
-    {
-      name: 'emails',
-      keyPath: 'id',
-      indexes: [
-        { name: 'byTime', keyPath: 'params.receivedAt' },
-        { name: 'byRead', keyPath: 'params.isRead' },
-        { name: 'byFolder', keyPath: 'params.folderId' },
-      ],
-    },
-  ],
-};
+import { MAIL_DB_CONFIG } from './config';
 
 const STORE = 'emails';
 
 interface TestRecord {
   id: string;
-  params: { receivedAt: string; isRead: boolean; folderId: string };
+  params: { receivedAt: string; isRead: boolean; folderId: string[] };
 }
 
 const createRecord = (overrides: Partial<TestRecord> = {}): TestRecord => ({
@@ -30,7 +15,7 @@ const createRecord = (overrides: Partial<TestRecord> = {}): TestRecord => ({
   params: {
     receivedAt: Date.now().toString(),
     isRead: false,
-    folderId: 'inbox',
+    folderId: ['inbox'],
     ...overrides.params,
   },
   ...overrides,
@@ -53,13 +38,13 @@ describe('Database Service', () => {
   let db: DatabaseService;
 
   beforeEach(async () => {
-    db = new DatabaseService(`test-db-${crypto.randomUUID()}`, TEST_CONFIG);
+    db = new DatabaseService(`test-db-${crypto.randomUUID()}`, MAIL_DB_CONFIG);
     await db.open();
   });
 
   afterEach(async () => {
     try {
-      await db.destroy();
+      db.close();
     } catch {
       // The DB is already closed
     }
@@ -74,17 +59,6 @@ describe('Database Service', () => {
     test('When operating on a closed database, then it should reject with an error', async () => {
       db.close();
       await expect(db.put(STORE, createRecord())).rejects.toThrow('Database not opened');
-    });
-
-    test('When destroying the database, then all data should be removed', async () => {
-      await db.put(STORE, createRecord());
-      await db.destroy();
-
-      db = new DatabaseService(`test-db-${crypto.randomUUID()}`, TEST_CONFIG);
-      await db.open();
-
-      const count = await db.count(STORE);
-      expect(count).toBe(0);
     });
   });
 
@@ -138,11 +112,11 @@ describe('Database Service', () => {
 
   describe('Get by index', () => {
     test('When getting by index, then it should return matching records', async () => {
-      const inbox = createRecord({ params: { ...createRecord().params, folderId: 'inbox' } });
-      const sent = createRecord({ params: { ...createRecord().params, folderId: 'sent' } });
+      const inbox = createRecord({ params: { ...createRecord().params, folderId: ['inbox'] } });
+      const sent = createRecord({ params: { ...createRecord().params, folderId: ['sent'] } });
       await db.putMany(STORE, [inbox, sent]);
 
-      const results = await db.getByIndex<TestRecord>(STORE, 'byFolder', 'inbox');
+      const results = await db.getByIndex<TestRecord>(STORE, 'byFolderId', 'inbox');
       expect(results).toHaveLength(1);
       expect(results[0].id).toBe(inbox.id);
     });
@@ -150,7 +124,7 @@ describe('Database Service', () => {
     test('When getting by index with no matches, then it should return an empty array', async () => {
       await db.put(STORE, createRecord());
 
-      const results = await db.getByIndex(STORE, 'byFolder', 'trash');
+      const results = await db.getByIndex(STORE, 'byFolderId', 'trash');
       expect(results).toHaveLength(0);
     });
   });

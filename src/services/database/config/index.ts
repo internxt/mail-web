@@ -14,7 +14,15 @@ const mailStore = {
       keyPath: generateEmailParamPath('attachmentTypes'),
       options: { multiEntry: true },
     },
-    { name: EMAIL_DB_INDEXES_KEYS.byFolder, keyPath: generateEmailParamPath('folderId') },
+    {
+      name: EMAIL_DB_INDEXES_KEYS.byFolderId,
+      keyPath: generateEmailParamPath('folderId'),
+      options: { multiEntry: true },
+    },
+    {
+      name: EMAIL_DB_INDEXES_KEYS.byFolderIdAndTime,
+      keyPath: [generateEmailParamPath('folderId'), generateEmailParamPath('receivedAt')],
+    },
   ],
 };
 

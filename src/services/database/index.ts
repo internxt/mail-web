@@ -1,7 +1,7 @@
-import { openDB, deleteDB, type IDBPDatabase } from 'idb';
-import type { DatabaseConfig } from './types';
+import { openDB, type IDBPDatabase } from 'idb';
+import type { Database, DatabaseConfig } from './types';
 
-export class DatabaseService {
+export class DatabaseService implements Database {
   private db: IDBPDatabase | null = null;
   private readonly dbName: string;
   private readonly config: DatabaseConfig;
@@ -37,11 +37,6 @@ export class DatabaseService {
   close(): void {
     this.getDb().close();
     this.db = null;
-  }
-
-  async destroy(): Promise<void> {
-    this.close();
-    await deleteDB(this.dbName);
   }
 
   async get<T>(store: string, id: IDBValidKey): Promise<T | undefined> {
@@ -98,6 +93,37 @@ export class DatabaseService {
     while (cursor && items.length < batchSize) {
       items.push(cursor.value as T);
       nextCursor = cursor.key;
+      cursor = await cursor.continue();
+    }
+
+    return {
+      items,
+      nextCursor: items.length === batchSize ? nextCursor : undefined,
+    };
+  }
+
+  async getBatchByFolder<T>(
+    store: string,
+    indexName: string,
+    folderId: string,
+    batchSize: number,
+    startCursor?: IDBValidKey,
+  ): Promise<{ items: T[]; nextCursor?: IDBValidKey }> {
+    const tx = this.getDb().transaction(store, 'readonly');
+    const index = tx.store.index(indexName);
+
+    // Compound index [folderId, receivedAt]: bound to [folderId, ''] → [folderId, '\uffff']
+    // to scope the cursor to a single folder, newest first ('prev')
+    const lowerBound: IDBValidKey = startCursor ? [folderId, startCursor] : [folderId, '\uffff'];
+    const range = IDBKeyRange.bound([folderId, ''], lowerBound, false, !!startCursor);
+
+    const items: T[] = [];
+    let cursor = await index.openCursor(range, 'prev');
+    let nextCursor: IDBValidKey | undefined;
+
+    while (cursor && items.length < batchSize) {
+      items.push(cursor.value as T);
+      nextCursor = (cursor.key as IDBValidKey[])[1];
       cursor = await cursor.continue();
     }
 

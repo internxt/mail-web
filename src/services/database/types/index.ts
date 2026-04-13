@@ -70,22 +70,32 @@ export const EMAIL_DB_INDEXES_KEYS = {
   byFrom: 'byFrom',
   byTo: 'byTo',
   byAttachmentType: 'byAttachmentType',
-  byFolder: 'byFolderId',
+  byFolderId: 'byFolderId',
+  byFolderIdAndTime: 'byFolderIdAndTime',
 };
 
 export type Database = {
-  put: (record: StoredEmail) => Promise<IDBValidKey>;
-  putMany: (records: StoredEmail[]) => Promise<void>;
-  get: (id: string) => Promise<StoredEmail | undefined>;
-  getAll: () => Promise<StoredEmail[]>;
-  getByIndex: (indexName: string, value: IDBValidKey) => Promise<StoredEmail[]>;
-  getByRange: (indexName: string, range: IDBKeyRange) => Promise<StoredEmail[]>;
-  getByFolder: (folderId: string, limit?: number) => Promise<StoredEmail[]>;
-  remove: (id: string) => Promise<void>;
-  count: () => Promise<number>;
-  getBatch: (
+  open: () => Promise<void>;
+  close: () => void;
+  getAll: <T>(storeName: string) => Promise<T[]>;
+  getByIndex: <T>(storeName: string, indexName: string, key: string | string[]) => Promise<T[]>;
+  getByRange: <T>(storeName: string, indexName: string, range: IDBKeyRange) => Promise<T[]>;
+  put: <T>(storeName: string, record: T) => Promise<IDBValidKey>;
+  putMany: <T>(storeName: string, records: T[]) => Promise<void>;
+  remove: (storeName: string, key: string | string[]) => Promise<void>;
+  count: (storeName: string) => Promise<number>;
+  deleteOldest: (storeName: string, indexName: string, count: number) => Promise<void>;
+  getBatch: <T>(
+    storeName: string,
+    indexName: string,
+    batchSize: number,
+    startCursor?: string | string[],
+  ) => Promise<{ items: T[]; nextCursor?: IDBValidKey }>;
+  getBatchByFolder: <T>(
+    storeName: string,
+    indexName: string,
+    folderId: string,
     batchSize: number,
     startCursor?: IDBValidKey,
-  ) => Promise<{ items: StoredEmail[]; nextCursor?: IDBValidKey }>;
-  deleteOldest: (count: number) => Promise<void>;
+  ) => Promise<{ items: T[]; nextCursor?: IDBValidKey }>;
 };
