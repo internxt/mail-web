@@ -7,14 +7,14 @@ const STORE = 'emails';
 
 interface TestRecord {
   id: string;
-  params: { receivedAt: string; isRead: boolean };
+  params: { receivedAt: string; isReadFlag: boolean };
 }
 
 const createRecord = (overrides: Partial<TestRecord> = {}): TestRecord => ({
   id: crypto.randomUUID(),
   params: {
     receivedAt: Date.now().toString(),
-    isRead: false,
+    isReadFlag: false,
     ...overrides.params,
   },
   ...overrides,
@@ -74,11 +74,11 @@ describe('Database Service', () => {
       const record = createRecord();
       await db.put(STORE, record);
 
-      const updated = { ...record, params: { ...record.params, isRead: true } };
+      const updated = { ...record, params: { ...record.params, isReadFlag: true } };
       await db.put(STORE, updated);
 
       const result = await db.get<TestRecord>(STORE, record.id);
-      expect(result?.params.isRead).toBe(true);
+      expect(result?.params.isReadFlag).toBe(true);
     });
 
     test('When putting many records, then all should be retrievable', async () => {
@@ -112,12 +112,12 @@ describe('Database Service', () => {
   describe('Get by index', () => {
     interface TestRecordWithFrom {
       id: string;
-      params: { receivedAt: string; isRead: boolean; from: string[] };
+      params: { receivedAt: string; isReadFlag: boolean; fromEmails: string[] };
     }
 
     const createRecordWithFrom = (from: string[]): TestRecordWithFrom => ({
       id: crypto.randomUUID(),
-      params: { receivedAt: Date.now().toString(), isRead: false, from },
+      params: { receivedAt: Date.now().toString(), isReadFlag: false, fromEmails: from },
     });
 
     test('When getting by index with a matching value, then it should return matching records', async () => {

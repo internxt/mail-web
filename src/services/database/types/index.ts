@@ -17,10 +17,10 @@ export interface User {
 
 export interface EmailParams {
   folderId: string;
-  isRead: boolean;
+  isReadFlag: 0 | 1;
   receivedAt: string;
-  from: User[];
-  to: User[];
+  fromEmails: string[];
+  toEmails: string[];
   hasAttachment: boolean;
   attachmentTypes?: AttachmentType[];
 }
@@ -54,6 +54,7 @@ export interface DatabaseConfig {
 export interface Database {
   open: () => Promise<void>;
   close: () => void;
+  get: <T>(storeName: string, key: IDBValidKey) => Promise<T | undefined>;
   getAll: <T>(storeName: string) => Promise<T[]>;
   getByIndex: <T>(storeName: string, indexName: string, key: IDBValidKey) => Promise<T[]>;
   getByRange: <T>(storeName: string, indexName: string, range: IDBKeyRange) => Promise<T[]>;
@@ -66,6 +67,6 @@ export interface Database {
     storeName: string,
     indexName: string,
     batchSize: number,
-    startCursor?: string | string[],
+    startCursor?: IDBValidKey,
   ) => Promise<{ items: T[]; nextCursor?: IDBValidKey }>;
 }

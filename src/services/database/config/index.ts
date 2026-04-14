@@ -6,9 +6,13 @@ const mailStore = {
   keyPath: 'id',
   indexes: [
     { name: EMAIL_DB_INDEXES_KEYS.byTime, keyPath: generateEmailParamPath('receivedAt') },
-    { name: EMAIL_DB_INDEXES_KEYS.byRead, keyPath: generateEmailParamPath('isRead') },
-    { name: EMAIL_DB_INDEXES_KEYS.byFrom, keyPath: generateEmailParamPath('from'), options: { multiEntry: true } },
-    { name: EMAIL_DB_INDEXES_KEYS.byTo, keyPath: generateEmailParamPath('to'), options: { multiEntry: true } },
+    { name: EMAIL_DB_INDEXES_KEYS.byRead, keyPath: generateEmailParamPath('isReadFlag') },
+    {
+      name: EMAIL_DB_INDEXES_KEYS.byFrom,
+      keyPath: generateEmailParamPath('fromEmails'),
+      options: { multiEntry: true },
+    },
+    { name: EMAIL_DB_INDEXES_KEYS.byTo, keyPath: generateEmailParamPath('toEmails'), options: { multiEntry: true } },
     {
       name: EMAIL_DB_INDEXES_KEYS.byAttachmentType,
       keyPath: generateEmailParamPath('attachmentTypes'),
