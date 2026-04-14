@@ -9,11 +9,6 @@ export type AttachmentType =
   | 'powerpoint'
   | 'excel';
 
-export interface Email {
-  subject: string;
-  body: string;
-}
-
 export interface User {
   email?: string;
   name?: string;
@@ -21,30 +16,13 @@ export interface User {
 }
 
 export interface EmailParams {
-  folderId?: string;
-  isRead: boolean;
+  folderId: string;
+  isReadFlag: 0 | 1;
   receivedAt: string;
-  from: User[];
-  to: User[];
+  fromEmails: string[];
+  toEmails: string[];
   hasAttachment: boolean;
   attachmentTypes?: AttachmentType[];
-}
-
-export interface StoredEmail {
-  id: string;
-  mail: Email;
-  params: EmailParams;
-}
-
-export interface EmailFilters {
-  from?: string;
-  to?: string;
-  isRead?: boolean;
-  dateRange?: {
-    after: number;
-    before: number;
-  };
-  attachmentType?: AttachmentType;
 }
 
 export interface IndexConfig {
@@ -53,8 +31,42 @@ export interface IndexConfig {
   options?: IDBIndexParameters;
 }
 
-export interface DatabaseConfig {
-  store: string;
-  version: number;
+export interface StoreConfig {
+  name: string;
+  keyPath: string;
   indexes: IndexConfig[];
+}
+
+export const EMAIL_DB_INDEXES_KEYS = {
+  byTime: 'byTime',
+  byRead: 'byRead',
+  byFrom: 'byFrom',
+  byTo: 'byTo',
+  byAttachmentType: 'byAttachmentType',
+  byFolderIdAndTime: 'byFolderIdAndTime',
+} as const;
+
+export interface DatabaseConfig {
+  version: number;
+  stores: StoreConfig[];
+}
+
+export interface Database {
+  open: () => Promise<void>;
+  close: () => void;
+  get: <T>(storeName: string, key: IDBValidKey) => Promise<T | undefined>;
+  getAll: <T>(storeName: string) => Promise<T[]>;
+  getByIndex: <T>(storeName: string, indexName: string, key: IDBValidKey) => Promise<T[]>;
+  getByRange: <T>(storeName: string, indexName: string, range: IDBKeyRange) => Promise<T[]>;
+  put: <T>(storeName: string, record: T) => Promise<IDBValidKey>;
+  putMany: <T>(storeName: string, records: T[]) => Promise<void>;
+  remove: (storeName: string, key: IDBValidKey) => Promise<void>;
+  count: (storeName: string) => Promise<number>;
+  deleteOldest: (storeName: string, indexName: string, count: number) => Promise<void>;
+  getBatch: <T>(
+    storeName: string,
+    indexName: string,
+    batchSize: number,
+    startCursor?: IDBValidKey,
+  ) => Promise<{ items: T[]; nextCursor?: IDBValidKey }>;
 }
