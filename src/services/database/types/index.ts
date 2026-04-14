@@ -16,6 +16,7 @@ export interface User {
 }
 
 export interface EmailParams {
+  folderId: string;
   isRead: boolean;
   receivedAt: string;
   from: User[];
@@ -43,7 +44,7 @@ export const EMAIL_DB_INDEXES_KEYS = {
   byTo: 'byTo',
   byAttachmentType: 'byAttachmentType',
   byFolderIdAndTime: 'byFolderIdAndTime',
-};
+} as const;
 
 export interface DatabaseConfig {
   version: number;
@@ -54,11 +55,11 @@ export interface Database {
   open: () => Promise<void>;
   close: () => void;
   getAll: <T>(storeName: string) => Promise<T[]>;
-  getByIndex: <T>(storeName: string, indexName: string, key: string | string[]) => Promise<T[]>;
+  getByIndex: <T>(storeName: string, indexName: string, key: IDBValidKey) => Promise<T[]>;
   getByRange: <T>(storeName: string, indexName: string, range: IDBKeyRange) => Promise<T[]>;
   put: <T>(storeName: string, record: T) => Promise<IDBValidKey>;
   putMany: <T>(storeName: string, records: T[]) => Promise<void>;
-  remove: (storeName: string, key: string | string[]) => Promise<void>;
+  remove: (storeName: string, key: IDBValidKey) => Promise<void>;
   count: (storeName: string) => Promise<number>;
   deleteOldest: (storeName: string, indexName: string, count: number) => Promise<void>;
   getBatch: <T>(
@@ -66,12 +67,5 @@ export interface Database {
     indexName: string,
     batchSize: number,
     startCursor?: string | string[],
-  ) => Promise<{ items: T[]; nextCursor?: IDBValidKey }>;
-  getBatchByFolder: <T>(
-    storeName: string,
-    indexName: string,
-    folderId: string,
-    batchSize: number,
-    startCursor?: IDBValidKey,
   ) => Promise<{ items: T[]; nextCursor?: IDBValidKey }>;
 }

@@ -109,6 +109,42 @@ describe('Database Service', () => {
     });
   });
 
+  describe('Get by index', () => {
+    interface TestRecordWithFrom {
+      id: string;
+      params: { receivedAt: string; isRead: boolean; from: string[] };
+    }
+
+    const createRecordWithFrom = (from: string[]): TestRecordWithFrom => ({
+      id: crypto.randomUUID(),
+      params: { receivedAt: Date.now().toString(), isRead: false, from },
+    });
+
+    test('When getting by index with a matching value, then it should return matching records', async () => {
+      const sender = 'sender@test.com';
+      const match1 = createRecordWithFrom([sender]);
+      const match2 = createRecordWithFrom([sender]);
+      const other = createRecordWithFrom(['other@test.com']);
+      await db.putMany(STORE, [match1, match2, other]);
+
+      const results = await db.getByIndex<TestRecordWithFrom>(STORE, 'byFrom', sender);
+      expect(results).toHaveLength(2);
+      expect(results.map((r) => r.id)).toEqual(expect.arrayContaining([match1.id, match2.id]));
+    });
+
+    test('When getting by index with no matching value, then it should return an empty array', async () => {
+      await db.putMany(STORE, [createRecordWithFrom(['sender@test.com'])]);
+
+      const results = await db.getByIndex<TestRecordWithFrom>(STORE, 'byFrom', 'unknown@test.com');
+      expect(results).toHaveLength(0);
+    });
+
+    test('When getting by index from an empty store, then it should return an empty array', async () => {
+      const results = await db.getByIndex(STORE, 'byFrom', 'sender@test.com');
+      expect(results).toHaveLength(0);
+    });
+  });
+
   describe('Get by range', () => {
     test('When getting by date range, then it should return records within the range', async () => {
       const old = createRecordWithDate(30);

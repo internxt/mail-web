@@ -1,4 +1,4 @@
-import { openDB, type IDBPDatabase, type IDBPObjectStore } from 'idb';
+import { openDB, type IDBPDatabase } from 'idb';
 import type { Database, DatabaseConfig } from './types';
 
 export class DatabaseService implements Database {
@@ -22,19 +22,9 @@ export class DatabaseService implements Database {
     this.db = await openDB(this.dbName, version, {
       upgrade(db, _oldVersion, _newVersion, tx) {
         for (const store of stores) {
-          let objectStore: IDBPObjectStore<unknown, ArrayLike<string>, string, 'versionchange'> | null = null;
-
-          if (!db.objectStoreNames.contains(store.name)) {
-            objectStore = db.createObjectStore(store.name, {
-              keyPath: store.keyPath,
-            });
-          } else {
-            if (tx.objectStoreNames.contains(store.name)) {
-              objectStore = tx.objectStore(store.name);
-            } else {
-              continue;
-            }
-          }
+          const objectStore = db.objectStoreNames.contains(store.name)
+            ? tx.objectStore(store.name)
+            : db.createObjectStore(store.name, { keyPath: store.keyPath });
 
           for (const index of store.indexes) {
             if (!objectStore.indexNames.contains(index.name)) {
@@ -86,6 +76,18 @@ export class DatabaseService implements Database {
     return tx.store.index(indexName).getAll(range) as Promise<T[]>;
   }
 
+  /**
+   * Gets a batch of items from the given store and index.
+   * The batch is limited by the given batchSize.
+   * If a startCursor is given, then the batch will start from the item with the given key.
+   * If the batch size is reached, then the nextCursor will be the key of the item after the last item in the batch.
+   * If the batch size is not reached, then the nextCursor will be undefined.
+   * @param store The name of the store.
+   * @param indexName The name of the index.
+   * @param batchSize The maximum number of items in the batch.
+   * @param startCursor The key of the item to start the batch from.
+   * @returns A promise that resolves with an object containing the items in the batch and the nextCursor.
+   */
   async getBatch<T>(
     store: string,
     indexName: string,
@@ -105,37 +107,6 @@ export class DatabaseService implements Database {
     while (cursor && items.length < batchSize) {
       items.push(cursor.value as T);
       nextCursor = cursor.key;
-      cursor = await cursor.continue();
-    }
-
-    return {
-      items,
-      nextCursor: items.length === batchSize ? nextCursor : undefined,
-    };
-  }
-
-  async getBatchByFolder<T>(
-    store: string,
-    indexName: string,
-    folderId: string,
-    batchSize: number,
-    startCursor?: IDBValidKey,
-  ): Promise<{ items: T[]; nextCursor?: IDBValidKey }> {
-    const tx = this.getDb().transaction(store, 'readonly');
-    const index = tx.store.index(indexName);
-
-    // Compound index [folderId, receivedAt]: bound to [folderId, ''] → [folderId, '\uffff']
-    // to scope the cursor to a single folder, newest first ('prev')
-    const lowerBound: IDBValidKey = startCursor ? [folderId, startCursor] : [folderId, '\uffff'];
-    const range = IDBKeyRange.bound([folderId, ''], lowerBound, false, !!startCursor);
-
-    const items: T[] = [];
-    let cursor = await index.openCursor(range, 'prev');
-    let nextCursor: IDBValidKey | undefined;
-
-    while (cursor && items.length < batchSize) {
-      items.push(cursor.value as T);
-      nextCursor = (cursor.key as IDBValidKey[])[1];
       cursor = await cursor.continue();
     }
 
