@@ -9,11 +9,6 @@ export type AttachmentType =
   | 'powerpoint'
   | 'excel';
 
-export interface Email {
-  subject: string;
-  body: string;
-}
-
 export interface User {
   email?: string;
   name?: string;
@@ -27,23 +22,6 @@ export interface EmailParams {
   to: User[];
   hasAttachment: boolean;
   attachmentTypes?: AttachmentType[];
-}
-
-export interface StoredEmail {
-  id: string;
-  mail: Email;
-  params: EmailParams;
-}
-
-export interface EmailFilters {
-  from?: string;
-  to?: string;
-  isRead?: boolean;
-  dateRange?: {
-    after: number;
-    before: number;
-  };
-  attachmentType?: AttachmentType;
 }
 
 export interface IndexConfig {
