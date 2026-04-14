@@ -21,7 +21,6 @@ export interface User {
 }
 
 export interface EmailParams {
-  folderId?: string;
   isRead: boolean;
   receivedAt: string;
   from: User[];
@@ -53,8 +52,48 @@ export interface IndexConfig {
   options?: IDBIndexParameters;
 }
 
-export interface DatabaseConfig {
-  store: string;
-  version: number;
+export interface StoreConfig {
+  name: string;
+  keyPath: string;
   indexes: IndexConfig[];
+}
+
+export const EMAIL_DB_INDEXES_KEYS = {
+  byTime: 'byTime',
+  byRead: 'byRead',
+  byFrom: 'byFrom',
+  byTo: 'byTo',
+  byAttachmentType: 'byAttachmentType',
+  byFolderIdAndTime: 'byFolderIdAndTime',
+};
+
+export interface DatabaseConfig {
+  version: number;
+  stores: StoreConfig[];
+}
+
+export interface Database {
+  open: () => Promise<void>;
+  close: () => void;
+  getAll: <T>(storeName: string) => Promise<T[]>;
+  getByIndex: <T>(storeName: string, indexName: string, key: string | string[]) => Promise<T[]>;
+  getByRange: <T>(storeName: string, indexName: string, range: IDBKeyRange) => Promise<T[]>;
+  put: <T>(storeName: string, record: T) => Promise<IDBValidKey>;
+  putMany: <T>(storeName: string, records: T[]) => Promise<void>;
+  remove: (storeName: string, key: string | string[]) => Promise<void>;
+  count: (storeName: string) => Promise<number>;
+  deleteOldest: (storeName: string, indexName: string, count: number) => Promise<void>;
+  getBatch: <T>(
+    storeName: string,
+    indexName: string,
+    batchSize: number,
+    startCursor?: string | string[],
+  ) => Promise<{ items: T[]; nextCursor?: IDBValidKey }>;
+  getBatchByFolder: <T>(
+    storeName: string,
+    indexName: string,
+    folderId: string,
+    batchSize: number,
+    startCursor?: IDBValidKey,
+  ) => Promise<{ items: T[]; nextCursor?: IDBValidKey }>;
 }
