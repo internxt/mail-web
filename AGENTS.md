@@ -1,4 +1,4 @@
-# CLAUDE.md
+# AGENTS.md
 
 > Guidance for AI assistants (Claude Code, CodeRabbit, etc.) working in this repo. Read this **before** scanning the codebase. Follow it strictly.
 

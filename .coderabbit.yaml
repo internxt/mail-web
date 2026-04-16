@@ -16,12 +16,12 @@ reviews:
   path_instructions:
     - path: '**/*'
       instructions: |
-        Read CLAUDE.md at the repo root first. It defines our architecture,
+        Read AGENTS.md at the repo root first. It defines our architecture,
         testing approach (AAA pattern, plain-language behavior descriptions,
         test every .ts logic file, skip pure components), component-should-be-dumb
         rule (logic in hooks), folder placement rules, env-var policy (all vars
         in .env, accessed via ConfigService), dependency-justification policy,
-        and code quality principles. Enforce every rule in CLAUDE.md during review.
+        and code quality principles. Enforce every rule in AGENTS.md during review.
     - path: '**/*.ts,**/*.tsx'
       instructions: |
         Review the TypeScript/React code for:
@@ -30,7 +30,7 @@ reviews:
         - Type safety improvements
         - Clean code principles and readability
         - Security vulnerabilities
-        - Components holding logic that should live in a hook (see CLAUDE.md "Components must be dumb")
+        - Components holding logic that should live in a hook (see AGENTS.md "Components must be dumb")
         - Direct `import.meta.env` usage outside ConfigService
         - Hardcoded user-facing strings (must go through i18n)
         - New dependencies without justification in the PR description
@@ -40,7 +40,7 @@ reviews:
         - Missing edge case coverage
         - Proper assertion usage
         - Test isolation and mocking correctness
-        - AAA structure (Arrange / Act / Assert) as defined in CLAUDE.md
+        - AAA structure (Arrange / Act / Assert) as defined in AGENTS.md
         - Descriptions written in plain behavior language ("When X, then Y"),
           without variable/function/type names
         - Tests that verify purpose/behavior, not implementation details
