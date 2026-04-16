@@ -18,7 +18,7 @@ This file is the source of truth for **how we work** in `mail-web`. CodeRabbit a
 ## Project at a glance
 
 - **Stack:** React 19 + TypeScript, Vite, Redux Toolkit (+ RTK Query), TailwindCSS v4, Vitest, react-router v7, i18next, Tiptap, IndexedDB (via `idb`).
-- **Node:** `>= 24`. Package manager: **npm only** (enforced by `scripts/check-package-manager.js`).
+- **Node:** `>= 22`. Package manager: **npm only** (enforced by `scripts/check-package-manager.js`).
 - **Internal SDKs:** `@internxt/sdk`, `@internxt/ui`, `@internxt/lib`, `@internxt/css-config`, `internxt-crypto`.
 - **Path alias:** `@/*` → `src/*` (configured in `vite.config.ts` and `vitest.config.ts`).
 
