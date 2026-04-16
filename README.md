@@ -64,3 +64,4 @@ src/
 ├── i18n/            # Internationalization and translations
 └── types/           # Shared TypeScript type definitions
 ```
+
