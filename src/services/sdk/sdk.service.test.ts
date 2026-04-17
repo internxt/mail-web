@@ -147,14 +147,7 @@ describe('SDK Manager', () => {
   });
 
   describe('Auth client creation', () => {
-    test('When creating Auth client with initialized security, then client should use provided credentials', () => {
-      const mockApiSecurity = {
-        token: 'test-token',
-        newToken: 'new-test-token',
-        userId: 'test-user-id',
-      };
-      SdkManager.init(mockApiSecurity);
-
+    test('When getting an auth client, then it should use the stored session token', () => {
       const authClient = SdkManager.instance.getAuth();
 
       expect(authClient).toBeDefined();
@@ -164,21 +157,21 @@ describe('SDK Manager', () => {
           clientName: 'mail-web',
           clientVersion: expect.any(String),
         }),
-        mockApiSecurity,
+        expect.objectContaining({
+          token: 'mock-token',
+          unauthorizedCallback: expect.any(Function),
+        }),
       );
     });
 
-    test('When creating Auth client without initialized security, then client should use undefined credentials', () => {
-      const authClient = SdkManager.instance.getAuth();
+    test('When the auth client receives an unauthorized response, then the user should be signed out', () => {
+      SdkManager.instance.getAuth();
 
-      expect(authClient).toBeDefined();
-      expect(Auth.client).toHaveBeenCalledWith(
-        config.DRIVE_API_URL,
-        expect.objectContaining({
-          clientName: 'mail-web',
-        }),
-        undefined,
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const securityArg = (Auth.client as any).mock.calls[0][2];
+      securityArg.unauthorizedCallback();
+
+      expect(store.dispatch).toHaveBeenCalled();
     });
   });
 

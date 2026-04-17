@@ -6,7 +6,7 @@ export const ProtectedRoute = () => {
   const { isAuthenticated } = useAppSelector((state) => state.user);
   const location = useLocation();
 
-  // !TODO: Check if the user already updated the mail to send him to the Inbox instead
+  // !TODO: Check if the user already updated the mail to send him to the Inbox instead of the Identity Setup Page
   if (!isAuthenticated) {
     const to = getRouteConfig(AppView.Welcome).path;
     return <Navigate to={to} state={{ from: location }} replace />;

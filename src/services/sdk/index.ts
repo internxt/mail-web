@@ -29,12 +29,14 @@ export class SdkManager {
     return SdkManager.apiSecurity;
   };
 
-  private getNewTokenApiSecurity(): ApiSecurity {
+  private getNewTokenApiSecurity(unauthorizedCallback?: () => void): ApiSecurity {
     return {
       token: LocalStorageService.instance?.getToken() ?? '',
-      unauthorizedCallback: async () => {
-        await store.dispatch(logoutThunk());
-      },
+      unauthorizedCallback:
+        unauthorizedCallback ??
+        (async () => {
+          await store.dispatch(logoutThunk());
+        }),
     };
   }
 
@@ -45,10 +47,8 @@ export class SdkManager {
     };
   };
 
-  getAuth(): Auth {
-    const apiSecurity = SdkManager.getApiSecurity({
-      throwErrorOnMissingCredentials: false,
-    });
+  getAuth(unauthorizedCallback?: () => void): Auth {
+    const apiSecurity = this.getNewTokenApiSecurity(unauthorizedCallback);
     const appDetails = SdkManager.getAppDetails();
 
     return Auth.client(this.driveApiUrl, appDetails, apiSecurity);

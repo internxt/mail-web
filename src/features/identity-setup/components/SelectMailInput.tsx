@@ -1,27 +1,26 @@
-import { INTERNXT_EMAIL_DOMAINS } from '@/constants';
+import type { EmailDomainsResponse } from '@internxt/sdk';
 import { Dropdown } from '@internxt/ui';
 import { CaretDownIcon, CaretUpIcon, CheckIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 
-export type Domain = (typeof INTERNXT_EMAIL_DOMAINS)[number];
-
 interface SelectMailInputProps {
   value: string;
+  selectedDomain: string;
+  domains: EmailDomainsResponse;
   onChangeValue: (value: string) => void;
-  selectedDomain: Domain;
-  onChangeDomain: (domain: Domain) => void;
+  onChangeDomain: (domain: string) => void;
 }
 
-const SelectMailInput = ({ value, onChangeValue, selectedDomain, onChangeDomain }: SelectMailInputProps) => {
+const SelectMailInput = ({ value, onChangeValue, selectedDomain, domains, onChangeDomain }: SelectMailInputProps) => {
   const [isFocused, setIsFocused] = useState(false);
 
-  const menuItems = INTERNXT_EMAIL_DOMAINS.map((domain) => (
+  const menuItems = domains.map(({ domain }) => (
     <button
       key={domain}
       className={`flex w-full items-center gap-1 py-1 ${domain === selectedDomain ? 'font-bold' : 'font-normal'} text-sm text-gray-100 hover:bg-gray-5`}
       onClick={() => onChangeDomain(domain)}
     >
-      <span className={'w-5 shrink-0 '}>{domain === selectedDomain && <CheckIcon size={16} weight="bold" />}</span>
+      <span className={'w-5 shrink-0 '}>{domain === selectedDomain && <CheckIcon size={16} weight="bold" />}</span>@
       {domain}
     </button>
   ));
@@ -52,7 +51,7 @@ const SelectMailInput = ({ value, onChangeValue, selectedDomain, onChangeDomain 
         >
           {({ open }) => (
             <span className="flex items-center gap-1">
-              {selectedDomain}
+              @{selectedDomain}
               {open ? <CaretUpIcon weight="fill" size={12} /> : <CaretDownIcon weight="fill" size={12} />}
             </span>
           )}

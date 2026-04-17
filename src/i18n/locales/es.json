@@ -8,7 +8,9 @@
     "search": "Buscar",
     "trashAll": "Mover todo a la papelera",
     "emptyTrash": "Vaciar papelera",
-    "archiveAll": "Mover todo al archivo"
+    "archiveAll": "Mover todo al archivo",
+    "upgrade": "Mejorar",
+    "send": "Enviar"
   },
   "filter": {
     "all": "Todos",
@@ -120,6 +122,10 @@
       "popupBlocked": "La ventana emergente fue bloqueada. Permite ventanas emergentes para Internxt Meet.",
       "authCancelled": "Autenticación cancelada por el usuario.",
       "authTimeout": "Tiempo de autenticación agotado. Por favor, inténtalo de nuevo."
+    },
+    "identitySetup": {
+      "usernameRequired": "El nombre de usuario es obligatorio",
+      "passwordWrong": "La contraseña es incorrecta. Por favor, inténtalo de nuevo."
     }
   },
   "modals": {
@@ -151,6 +157,14 @@
         "title": "Desbloquear Cleaner",
         "description": "Mejora ahora para mantener tus archivos optimizados y liberar espacio."
       }
+    },
+    "composeMessageDialog": {
+      "title": "Nuevo mensaje",
+      "to": "Para",
+      "cc": "Cc",
+      "bcc": "Cco",
+      "subject": "Asunto",
+      "message": "Mensaje"
     },
     "preferences": {
       "title": "Preferencias",
