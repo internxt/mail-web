@@ -1,77 +1,75 @@
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
-import { use, useEffect, useState, type ReactNode } from 'react';
+import { use, useState, type ReactNode } from 'react';
 import { UpdateEmail } from './components/UpdateEmail';
 import { ConfirmPassword } from './components/ConfirmPassword';
 import { useAppSelector } from '@/store/hooks';
 import { NavigationService } from '@/services/navigation';
 import { AppView } from '@/routes/paths';
 import { ConfirmChange } from './components/ConfirmChange';
-import { useThemeContext } from '@/context/theme/useThemeContext';
 import { MailService } from '@/services/sdk/mail';
 import { AuthService } from '@/services/sdk/auth';
 import { ErrorService } from '@/services/error';
 import type { SetupMailAccountPayload } from '@internxt/sdk';
+import { CryptoService } from '@/services/crypto';
+import { useTranslationContext } from '@/i18n';
+import { DEFAULT_USER_NAME } from '@/constants';
 
 type Step = 'updateEmail' | 'confirmPassword' | 'confirmChange';
 
 const activeDomainsPromise = MailService.instance.getActiveDomains();
 const IdentitySetup = () => {
-  const { currentTheme, toggleTheme } = useThemeContext();
+  const activeDomains = use(activeDomainsPromise);
+  const { translate } = useTranslationContext();
   const [newEmail, setNewEmail] = useState({
     address: '',
     domain: '',
   });
+  const [isConfirmingChange, setIsConfirmingChange] = useState<boolean>(false);
   const [hashedPassword, setHashedPassword] = useState<string>('');
   const [step, setStep] = useState<Step>('updateEmail');
   const { user } = useAppSelector((state) => state.user);
-  const userFullName = user ? `${user.name} ${user.lastname}` : 'My Internxt';
-  const activeDomains = use(activeDomainsPromise);
-
-  useEffect(() => {
-    const previousTheme = currentTheme;
-    toggleTheme('light');
-    return () => {
-      if (previousTheme) toggleTheme(previousTheme);
-    };
-  }, []);
+  const currentEmail = user?.email ?? '';
+  const userFullName = user ? `${user.name} ${user.lastname}` : DEFAULT_USER_NAME;
 
   const onConfirmPassword = async (password: string) => {
     try {
       if (!newEmail.address || !newEmail.domain) {
-        ErrorService.instance.notifyUser('Please choose an email');
+        ErrorService.instance.notifyUser(translate('errors.identitySetup.emailNotSelected'));
         return;
       }
 
       const { areValidCredentials, hashedPassword } = await AuthService.instance.areCredentialsCorrect(password);
 
       if (!areValidCredentials) {
-        ErrorService.instance.notifyUser('Incorrect password');
+        ErrorService.instance.notifyUser(translate('errors.identitySetup.passwordWrong'));
         return;
       }
 
       setHashedPassword(hashedPassword);
       setStep('confirmChange');
-    } catch (e) {
-      console.error('ERROR WHILE CHECKING THE USER PASSWORD: ', e);
-      ErrorService.instance.notifyUser('Error while checking the user password');
+    } catch {
+      ErrorService.instance.notifyUser(translate('errors.identitySetup.passwordCheckFailed'));
     }
   };
 
   const onConfirmChange = async () => {
+    setIsConfirmingChange(true);
+
     const confirmIdentitySetupPayload: SetupMailAccountPayload = {
       address: newEmail.address,
       displayName: userFullName,
       domain: newEmail.domain,
-      password: hashedPassword,
+      password: CryptoService.instance.encryptTextWithKey(hashedPassword),
     };
 
     try {
+      await AuthService.instance.setupMailAccount(confirmIdentitySetupPayload);
       NavigationService.instance.replace({ id: AppView.Inbox });
-      await MailService.instance.setupMailAccount(confirmIdentitySetupPayload);
-    } catch (error) {
-      console.error('ERROR WHILE CONFIRMING IDENTITY SETUP: ', error);
-      ErrorService.instance.notifyUser('Error while confirming identity setup');
+    } catch {
+      ErrorService.instance.notifyUser(translate('errors.identitySetup.setupFailed'));
+    } finally {
+      setIsConfirmingChange(false);
     }
   };
 
@@ -80,19 +78,23 @@ const IdentitySetup = () => {
       <UpdateEmail
         userFullName={userFullName}
         activeDomains={activeDomains}
-        currentEmail={user?.email as string}
+        currentEmail={currentEmail}
         onNext={(email) => {
           setNewEmail(email);
           setStep('confirmPassword');
         }}
       />
     ),
-    confirmPassword: <ConfirmPassword onNext={onConfirmPassword} onBack={() => setStep('updateEmail')} />,
+    confirmPassword: (
+      <ConfirmPassword userFullName={userFullName} onNext={onConfirmPassword} onBack={() => setStep('updateEmail')} />
+    ),
     confirmChange: (
       <ConfirmChange
         userFullName={userFullName}
         userNewEmail={newEmail}
-        userOldEmail={user?.email as string}
+        userOldEmail={currentEmail}
+        isLoading={isConfirmingChange}
+        isDisabled={isConfirmingChange || !newEmail.address || !newEmail.domain}
         onConfirmChanges={onConfirmChange}
       />
     ),

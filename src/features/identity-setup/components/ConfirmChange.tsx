@@ -3,6 +3,8 @@ import { Avatar, Button } from '@internxt/ui';
 
 interface ConfirmChangeProps {
   userFullName: string;
+  isLoading: boolean;
+  isDisabled: boolean;
   userNewEmail: {
     address: string;
     domain: string;
@@ -11,7 +13,14 @@ interface ConfirmChangeProps {
   onConfirmChanges: () => void;
 }
 
-export const ConfirmChange = ({ userOldEmail, userNewEmail, userFullName, onConfirmChanges }: ConfirmChangeProps) => {
+export const ConfirmChange = ({
+  userOldEmail,
+  isLoading,
+  isDisabled,
+  userNewEmail,
+  userFullName,
+  onConfirmChanges,
+}: ConfirmChangeProps) => {
   const { translate } = useTranslationContext();
   const newEmail = userNewEmail.address + '@' + userNewEmail.domain;
 
@@ -40,7 +49,9 @@ export const ConfirmChange = ({ userOldEmail, userNewEmail, userFullName, onConf
       <div className="flex border w-full border-gray-10" />
 
       <div className="flex flex-col w-full">
-        <Button onClick={onConfirmChanges}>{translate('identitySetup.confirmChanges.action')}</Button>
+        <Button loading={isLoading} disabled={isDisabled} onClick={onConfirmChanges}>
+          {translate('identitySetup.confirmChanges.action')}
+        </Button>
       </div>
     </div>
   );

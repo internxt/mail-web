@@ -1,22 +1,20 @@
 import { useTranslationContext } from '@/i18n';
-import { useAppSelector } from '@/store/hooks';
 import { Avatar, Button, Input } from '@internxt/ui';
 import { ArrowLeftIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { Fragment } from 'react/jsx-runtime';
 
-interface UpdateEmailProps {
+interface ConfirmPasswordProps {
+  userFullName: string;
   onBack: () => void;
   onNext: (password: string) => Promise<void>;
 }
 
-export const ConfirmPassword = ({ onBack, onNext }: UpdateEmailProps) => {
+export const ConfirmPassword = ({ userFullName, onBack, onNext }: ConfirmPasswordProps) => {
   const { translate } = useTranslationContext();
   const [password, setPassword] = useState<string>('');
-  const { user } = useAppSelector((state) => state.user);
-  const userFullName = user ? `${user.name} ${user.lastname}` : 'My Internxt';
 
-  const onConfirm = async () => {
+  const onConfirmPassword = async () => {
     onNext(password);
   };
 
@@ -45,7 +43,7 @@ export const ConfirmPassword = ({ onBack, onNext }: UpdateEmailProps) => {
         </div>
         <div className="flex border w-full border-gray-10" />
 
-        {/* Email input */}
+        {/* Password input */}
         <div className="flex flex-col w-full">
           <Input
             label={translate('identitySetup.confirmPassword.confirmPassword')}
@@ -56,7 +54,7 @@ export const ConfirmPassword = ({ onBack, onNext }: UpdateEmailProps) => {
         </div>
 
         <div className="flex flex-col w-full">
-          <Button onClick={onConfirm}>{translate('identitySetup.confirmPassword.action')}</Button>
+          <Button onClick={onConfirmPassword}>{translate('identitySetup.confirmPassword.action')}</Button>
         </div>
       </div>
     </Fragment>

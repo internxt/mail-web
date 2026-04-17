@@ -1,5 +1,4 @@
 import type { Translate } from '@/i18n';
-import notificationsService, { ToastType } from '../notifications';
 import { VariableNotFoundError } from '@/errors';
 import {
   APP_VERSION_MATCHERS,
@@ -41,10 +40,7 @@ export class ConfigService {
     if (download) {
       window.open(download, '_self');
     } else {
-      notificationsService.show({
-        text: translate('errors.downloadingDesktopApp'),
-        type: ToastType.Error,
-      });
+      ErrorService.instance.notifyUser(translate('errors.downloadingDesktopApp'));
     }
   }
 

@@ -6,17 +6,15 @@ import { useAuth } from '@/hooks/auth/useAuth';
 import { NavigationService } from '@/services/navigation';
 import { AppView } from '@/routes/paths';
 import { useEffect } from 'react';
-import { useThemeContext } from '@/context/theme/useThemeContext';
 
 const WelcomePage = () => {
   const { translate } = useTranslationContext();
-  const { currentTheme, toggleTheme } = useThemeContext();
 
   useEffect(() => {
-    const previousTheme = currentTheme;
-    toggleTheme('light');
+    const hadDark = document.documentElement.classList.contains('dark');
+    document.documentElement.classList.remove('dark');
     return () => {
-      if (previousTheme) toggleTheme(previousTheme);
+      if (hadDark) document.documentElement.classList.add('dark');
     };
   }, []);
 
