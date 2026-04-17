@@ -125,8 +125,12 @@
     },
     "identitySetup": {
       "usernameRequired": "The username is required",
-      "passwordWrong": "The password is incorrect. Please try again."
-    }
+      "passwordWrong": "The password is incorrect. Please try again.",
+      "emailNotSelected": "Please choose an email address first",
+      "passwordCheckFailed": "Something went wrong while verifying your password",
+      "setupFailed": "Something went wrong while setting up your account"
+    },
+    "downloadingDesktopApp": "Something went wrong while downloading the app"
   },
   "modals": {
     "upgradePlanDialog": {

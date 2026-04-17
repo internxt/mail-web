@@ -16,13 +16,8 @@ export class CryptoService {
   async getSalt(): Promise<string> {
     const email = LocalStorageService.instance.getUser()?.email;
     const authClient = SdkManager.instance.getAuth(() => undefined);
-    const securityDetails = await authClient.securityDetails(String(email));
-    const salt = this.decryptTextWithKey(
-      securityDetails.encryptedSalt,
-      ConfigService.instance.getVariable('CRYPTO_SECRET'),
-    );
-
-    return salt;
+    const securityDetails = await authClient.securityDetails(email as string);
+    return this.decryptTextWithKey(securityDetails.encryptedSalt, ConfigService.instance.getVariable('CRYPTO_SECRET'));
   }
 
   passToHash(passObject: PassObjectInterface): { salt: string; hash: string } {
@@ -45,5 +40,12 @@ export class CryptoService {
     const bytes = CryptoJS.AES.decrypt(reb.toString(CryptoJS.enc.Base64), keyToDecrypt);
 
     return bytes.toString(CryptoJS.enc.Utf8);
+  }
+
+  public encryptTextWithKey(textToEncrypt: string): string {
+    const bytes = CryptoJS.AES.encrypt(textToEncrypt, ConfigService.instance.getVariable('CRYPTO_SECRET')).toString();
+    const text64 = CryptoJS.enc.Base64.parse(bytes);
+
+    return text64.toString(CryptoJS.enc.Hex);
   }
 }

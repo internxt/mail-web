@@ -125,8 +125,12 @@
     },
     "identitySetup": {
       "usernameRequired": "Le nom d'utilisateur est obligatoire",
-      "passwordWrong": "Le mot de passe est incorrect. Veuillez réessayer."
-    }
+      "passwordWrong": "Le mot de passe est incorrect. Veuillez réessayer.",
+      "emailNotSelected": "Veuillez d'abord choisir une adresse e-mail",
+      "passwordCheckFailed": "Une erreur s'est produite lors de la vérification de votre mot de passe",
+      "setupFailed": "Une erreur s'est produite lors de la configuration de votre compte"
+    },
+    "downloadingDesktopApp": "Une erreur s'est produite lors du téléchargement de l'application"
   },
   "modals": {
     "upgradePlanDialog": {
