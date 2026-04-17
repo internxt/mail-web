@@ -8,7 +8,9 @@
     "search": "Cerca",
     "trashAll": "Sposta tutto nel cestino",
     "emptyTrash": "Svuota il cestino",
-    "archiveAll": "Sposta tutto nell'archivio"
+    "archiveAll": "Sposta tutto nell'archivio",
+    "upgrade": "Aggiorna",
+    "send": "Invia"
   },
   "filter": {
     "all": "Tutti",
@@ -120,6 +122,10 @@
       "popupBlocked": "Il popup è stato bloccato. Consenti i popup per Internxt Meet.",
       "authCancelled": "Autenticazione annullata dall'utente.",
       "authTimeout": "Timeout di autenticazione. Riprova."
+    },
+    "identitySetup": {
+      "usernameRequired": "Il nome utente è obbligatorio",
+      "passwordWrong": "La password non è corretta. Riprova."
     }
   },
   "modals": {
@@ -151,6 +157,14 @@
         "title": "Sblocca Cleaner",
         "description": "Aggiorna ora per ottimizzare i tuoi file e liberare spazio."
       }
+    },
+    "composeMessageDialog": {
+      "title": "Nuovo messaggio",
+      "to": "A",
+      "cc": "Cc",
+      "bcc": "Ccn",
+      "subject": "Oggetto",
+      "message": "Messaggio"
     },
     "preferences": {
       "title": "Preferenze",

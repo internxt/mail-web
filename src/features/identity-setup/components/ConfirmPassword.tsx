@@ -7,19 +7,17 @@ import { Fragment } from 'react/jsx-runtime';
 
 interface UpdateEmailProps {
   onBack: () => void;
-  onNext: () => void;
+  onNext: (password: string) => Promise<void>;
 }
 
-// !TODO: Confirm password here directly (or maybe from onNext function)
 export const ConfirmPassword = ({ onBack, onNext }: UpdateEmailProps) => {
   const { translate } = useTranslationContext();
   const [password, setPassword] = useState<string>('');
   const { user } = useAppSelector((state) => state.user);
   const userFullName = user ? `${user.name} ${user.lastname}` : 'My Internxt';
 
-  const onConfirm = () => {
-    console.log('onConfirm', password);
-    onNext();
+  const onConfirm = async () => {
+    onNext(password);
   };
 
   return (

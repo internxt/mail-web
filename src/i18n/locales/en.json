@@ -122,6 +122,10 @@
       "popupBlocked": "The popup window was blocked. Please allow popups for Internxt Meet.",
       "authCancelled": "Authentication cancelled by user.",
       "authTimeout": "Authentication timeout. Please try again."
+    },
+    "identitySetup": {
+      "usernameRequired": "The username is required",
+      "passwordWrong": "The password is incorrect. Please try again."
     }
   },
   "modals": {

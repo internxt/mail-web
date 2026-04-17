@@ -18,6 +18,7 @@
     "test:related": "vitest run --changed HEAD",
     "prepare": "husky",
     "format": "prettier --write **/*.{js,jsx,tsx,ts}",
+    "check:i18n": "node scripts/check-i18n.cjs",
     "preinstall": "node scripts/check-package-manager.js"
   },
   "dependencies": {
@@ -38,6 +39,7 @@
     "@tiptap/react": "^3.20.0",
     "@tiptap/starter-kit": "^3.20.0",
     "axios": "^1.13.6",
+    "crypto-js": "^4.2.0",
     "dayjs": "^1.11.20",
     "dompurify": "^3.3.3",
     "i18next": "^25.8.13",
@@ -63,6 +65,7 @@
     "@internxt/prettier-config": "internxt/prettier-config#v1.0.2",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
+    "@types/crypto-js": "^4.2.2",
     "@types/dompurify": "^3.0.5",
     "@types/node": "^25.3.3",
     "@types/react": "^19.2.7",

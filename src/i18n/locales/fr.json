@@ -8,7 +8,9 @@
     "search": "Rechercher",
     "trashAll": "Tout déplacer vers la corbeille",
     "emptyTrash": "Vider la corbeille",
-    "archiveAll": "Tout déplacer vers les archives"
+    "archiveAll": "Tout déplacer vers les archives",
+    "upgrade": "Mettre à niveau",
+    "send": "Envoyer"
   },
   "filter": {
     "all": "Tous",
@@ -120,6 +122,10 @@
       "popupBlocked": "La fenêtre contextuelle a été bloquée. Veuillez autoriser les fenêtres contextuelles pour Internxt Meet.",
       "authCancelled": "Authentification annulée par l'utilisateur.",
       "authTimeout": "Délai d'authentification dépassé. Veuillez réessayer."
+    },
+    "identitySetup": {
+      "usernameRequired": "Le nom d'utilisateur est obligatoire",
+      "passwordWrong": "Le mot de passe est incorrect. Veuillez réessayer."
     }
   },
   "modals": {
@@ -151,6 +157,14 @@
         "title": "Débloquer Cleaner",
         "description": "Mettez à niveau pour optimiser vos fichiers et libérer de l'espace."
       }
+    },
+    "composeMessageDialog": {
+      "title": "Nouveau message",
+      "to": "À",
+      "cc": "Cc",
+      "bcc": "Cci",
+      "subject": "Objet",
+      "message": "Message"
     },
     "preferences": {
       "title": "Préférences",

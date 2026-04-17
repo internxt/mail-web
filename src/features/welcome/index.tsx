@@ -5,9 +5,20 @@ import { useTranslationContext } from '@/i18n';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { NavigationService } from '@/services/navigation';
 import { AppView } from '@/routes/paths';
+import { useEffect } from 'react';
+import { useThemeContext } from '@/context/theme/useThemeContext';
 
 const WelcomePage = () => {
   const { translate } = useTranslationContext();
+  const { currentTheme, toggleTheme } = useThemeContext();
+
+  useEffect(() => {
+    const previousTheme = currentTheme;
+    toggleTheme('light');
+    return () => {
+      if (previousTheme) toggleTheme(previousTheme);
+    };
+  }, []);
 
   const onSuccess = () => {
     NavigationService.instance.replace({ id: AppView.IdentitySetup });

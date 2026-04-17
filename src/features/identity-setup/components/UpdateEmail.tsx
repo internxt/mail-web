@@ -1,28 +1,33 @@
 import { useTranslationContext } from '@/i18n';
 import { Avatar, Button } from '@internxt/ui';
 import { useState } from 'react';
-import SelectMailInput, { type Domain } from './SelectMailInput';
+import SelectMailInput from './SelectMailInput';
+import type { EmailDomainsResponse } from '@internxt/sdk';
 
 interface UpdateEmailProps {
-  onNext: (email: string) => void;
   userFullName: string;
+  activeDomains: EmailDomainsResponse;
   currentEmail: string;
+  onNext: (params: { address: string; domain: string }) => void;
 }
 
-export const UpdateEmail = ({ userFullName, currentEmail, onNext }: UpdateEmailProps) => {
+export const UpdateEmail = ({ userFullName, activeDomains, currentEmail, onNext }: UpdateEmailProps) => {
   const { translate, translateArray } = useTranslationContext();
   const [username, setUsername] = useState<string>('');
-  const [domain, setDomain] = useState<Domain>('@inxt.me');
+  const [domain, setDomain] = useState<string>(activeDomains[0]?.domain ?? '');
+  const [usernameError, setUsernameError] = useState<string>('');
 
   const descriptions = translateArray('identitySetup.updateEmail.description', {
     name: userFullName,
     current_email: currentEmail,
   });
 
-  const fullEmail = `${username}${domain}`;
-
-  const handleOnClick = () => {
-    onNext(fullEmail);
+  const handleConfirm = () => {
+    if (!username.trim()) {
+      setUsernameError(translate('errors.identitySetup.usernameRequired'));
+      return;
+    }
+    onNext({ address: username, domain });
   };
 
   return (
@@ -49,15 +54,23 @@ export const UpdateEmail = ({ userFullName, currentEmail, onNext }: UpdateEmailP
       <div className="flex flex-col w-full">
         <SelectMailInput
           value={username}
-          onChangeValue={setUsername}
+          onChangeValue={(value) => {
+            setUsername(value);
+            if (value.trim()) setUsernameError('');
+          }}
           selectedDomain={domain}
+          domains={activeDomains}
           onChangeDomain={setDomain}
         />
-        <p className="text-sm text-gray-50">{translate('identitySetup.updateEmail.mailType')}</p>
+        {usernameError ? (
+          <p className="text-sm text-red">{usernameError}</p>
+        ) : (
+          <p className="text-sm text-gray-50">{translate('identitySetup.updateEmail.mailType')}</p>
+        )}
       </div>
 
       <div className="flex flex-col w-full">
-        <Button onClick={handleOnClick}>{translate('identitySetup.updateEmail.action')}</Button>
+        <Button onClick={handleConfirm}>{translate('identitySetup.updateEmail.action')}</Button>
       </div>
     </div>
   );

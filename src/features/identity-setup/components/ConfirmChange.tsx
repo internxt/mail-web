@@ -3,13 +3,17 @@ import { Avatar, Button } from '@internxt/ui';
 
 interface ConfirmChangeProps {
   userFullName: string;
-  userNewEmail: string;
+  userNewEmail: {
+    address: string;
+    domain: string;
+  };
   userOldEmail: string;
   onConfirmChanges: () => void;
 }
 
 export const ConfirmChange = ({ userOldEmail, userNewEmail, userFullName, onConfirmChanges }: ConfirmChangeProps) => {
   const { translate } = useTranslationContext();
+  const newEmail = userNewEmail.address + '@' + userNewEmail.domain;
 
   return (
     <div className="flex flex-col gap-5 justify-center items-center">
@@ -24,7 +28,7 @@ export const ConfirmChange = ({ userOldEmail, userNewEmail, userFullName, onConf
         <div className="flex flex-col gap-2">
           <div className="flex flex-col ">
             <p className="text-gray-80">{translate('identitySetup.confirmChanges.newEmail')}</p>
-            <p className="font-bold">{userNewEmail}</p>
+            <p className="font-bold">{newEmail}</p>
           </div>
           <div className="flex flex-col text-gray-80">
             <p>{translate('identitySetup.confirmChanges.recoveryEmail')}</p>
