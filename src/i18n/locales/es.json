@@ -58,6 +58,32 @@
     "termsAndConditions": "Términos y condiciones",
     "contactSupport": "Contactar con soporte"
   },
+  "search": {
+    "searchEmails": {
+      "title": "Encuentra correos en tu bandeja",
+      "description": "Busca por nombre y adjuntos"
+    },
+    "emailInputPlaceholder": "Buscar por nombre o correo",
+    "filters": {
+      "from": "De",
+      "to": "Para",
+      "date": "Fecha",
+      "hasAttachments": "Con adjuntos",
+      "unread": "No leído"
+    },
+    "date": {
+      "anyDate": "Cualquier fecha",
+      "today": "Hoy",
+      "last7days": "Últimos 7 días",
+      "last30days": "Últimos 30 días",
+      "thisYear": "Este año ({{year}})",
+      "lastYear": "El año pasado ({{year}})",
+      "specificDate": "Fecha específica",
+      "after": "Después de",
+      "before": "Antes de",
+      "selectToday": "Seleccionar hoy"
+    }
+  },
   "mail": {
     "title": "Correo",
     "newMessage": "Nuevo mensaje",

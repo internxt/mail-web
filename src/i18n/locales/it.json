@@ -58,6 +58,32 @@
     "termsAndConditions": "Termini e condizioni",
     "contactSupport": "Contatta il supporto"
   },
+  "search": {
+    "searchEmails": {
+      "title": "Trova email nella tua casella",
+      "description": "Cerca per nome e allegati"
+    },
+    "emailInputPlaceholder": "Cerca per nome o email",
+    "filters": {
+      "from": "Da",
+      "to": "A",
+      "date": "Data",
+      "hasAttachments": "Con allegati",
+      "unread": "Non letto"
+    },
+    "date": {
+      "anyDate": "Qualsiasi data",
+      "today": "Oggi",
+      "last7days": "Ultimi 7 giorni",
+      "last30days": "Ultimi 30 giorni",
+      "thisYear": "Quest'anno ({{year}})",
+      "lastYear": "L'anno scorso ({{year}})",
+      "specificDate": "Data specifica",
+      "after": "Dopo il",
+      "before": "Prima del",
+      "selectToday": "Seleziona oggi"
+    }
+  },
   "mail": {
     "title": "Posta",
     "newMessage": "Nuovo messaggio",
