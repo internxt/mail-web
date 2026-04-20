@@ -74,7 +74,17 @@
     "preview": {
       "to": "To",
       "cc": "CC",
-      "bcc": "BCC"
+      "bcc": "BCC",
+      "emptyEmail": {
+        "unreadEmails": {
+          "title": "Unread messages",
+          "description": "Click any email to preview"
+        },
+        "noUnreadEmails": {
+          "title": "You’re all set!",
+          "description": "There are no unread messages"
+        }
+      }
     }
   },
   "errors": {
