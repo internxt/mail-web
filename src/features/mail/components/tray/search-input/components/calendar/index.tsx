@@ -38,11 +38,16 @@ const Calendar = ({ selected, onSelect, selectTodayLabel }: MiniCalendarProps) =
 
   const togglePicker = (picker: 'month' | 'year') => setOpenPicker((prev) => (prev === picker ? null : picker));
 
+  const isFutureDay = (day: Dayjs) => day.isAfter(today, 'day');
+  const isCurrentMonth = cursor.isSame(today, 'month');
+
   const getDayClassName = (day: Dayjs) => {
     const isSelected = selected ? day.isSame(selected, 'day') : false;
     const isToday = day.isSame(today, 'day');
     const isOtherMonth = !day.isSame(cursor, 'month');
+    const isFuture = isFutureDay(day);
     const base = 'flex h-7 w-full items-center justify-center rounded-full text-xs transition-colors';
+    if (isFuture) return `${base} cursor-not-allowed text-gray-20`;
     if (isSelected) return `${base} bg-primary font-semibold text-white`;
     if (isToday) return `${base} font-semibold text-primary hover:bg-primary/10`;
     if (isOtherMonth) return `${base} text-gray-20 hover:bg-gray-5`;
@@ -79,16 +84,24 @@ const Calendar = ({ selected, onSelect, selectTodayLabel }: MiniCalendarProps) =
                 <div className="max-h-48 overflow-y-auto py-1">
                   {MONTHS_SHORT.map((m, i) => {
                     const isCurrent = cursor.month() === i;
+                    const isFutureMonth = cursor.year() === today.year() && i > today.month();
+                    const monthClassName = (() => {
+                      const base = 'w-full px-3 py-1.5 text-left text-sm transition-colors';
+                      if (isFutureMonth) return `${base} cursor-not-allowed text-gray-20`;
+                      if (isCurrent) return `${base} bg-primary/10 font-semibold text-primary`;
+                      return `${base} text-gray-80 hover:bg-gray-5 dark:hover:bg-gray-10`;
+                    })();
                     return (
                       <button
                         key={m}
                         type="button"
                         data-selected={isCurrent}
+                        disabled={isFutureMonth}
                         onClick={() => {
                           setCursor((c) => c.month(i));
                           setOpenPicker(null);
                         }}
-                        className={`w-full px-3 py-1.5 text-left text-sm transition-colors ${isCurrent ? 'bg-primary/10 font-semibold text-primary' : 'text-gray-80 hover:bg-gray-5 dark:hover:bg-gray-10'}`}
+                        className={monthClassName}
                       >
                         {m}
                       </button>
@@ -146,8 +159,9 @@ const Calendar = ({ selected, onSelect, selectTodayLabel }: MiniCalendarProps) =
 
         <button
           type="button"
-          onClick={() => setCursor((c) => c.add(1, 'month'))}
-          className="flex h-6 w-6 items-center justify-center rounded-full hover:bg-gray-5 dark:hover:bg-gray-10"
+          onClick={() => !isCurrentMonth && setCursor((c) => c.add(1, 'month'))}
+          disabled={isCurrentMonth}
+          className={`flex h-6 w-6 items-center justify-center rounded-full transition-colors ${isCurrentMonth ? 'cursor-not-allowed text-gray-20' : 'hover:bg-gray-5 dark:hover:bg-gray-10'}`}
         >
           <CaretRightIcon size={14} />
         </button>
@@ -165,6 +179,7 @@ const Calendar = ({ selected, onSelect, selectTodayLabel }: MiniCalendarProps) =
             <button
               key={day.format('YYYY-MM-DD')}
               type="button"
+              disabled={isFutureDay(day)}
               onClick={() => onSelect(day)}
               className={getDayClassName(day)}
             >
