@@ -5,7 +5,6 @@ import PreviewMail from './components/mail-preview';
 import TrayList from './components/tray';
 import Settings from './components/settings';
 import { useGetMailMessageQuery, useMarkAsReadMutation } from '@/store/api/mail';
-import { DateService } from '@/services/date';
 import { ErrorService } from '@/services/error';
 import useListFolderPaginated from '@/hooks/mail/useListFolderPaginated';
 import { useUnreadByMailbox } from '@/hooks/mail/useUnreadByMailbox';
@@ -68,7 +67,7 @@ const MailView = ({ folder }: MailViewProps) => {
           <Settings />
         </div>
 
-        <Activity mode={!activeMail && listEmailsCount ? 'visible' : 'hidden'}>
+        <Activity mode={!activeMailId && listEmailsCount ? 'visible' : 'hidden'}>
           <PreviewEmailEmptyState unreadEmailsCount={unreadByMailbox[folder]} />
         </Activity>
 
@@ -80,7 +79,7 @@ const MailView = ({ folder }: MailViewProps) => {
             bcc={bcc.map((u) => ({ name: u.name ?? '', email: u.email }))}
             mail={{
               subject: activeMail.subject,
-              receivedAt: DateService.formatWithTime(activeMail.receivedAt),
+              receivedAt: activeMail.receivedAt,
               htmlBody: activeMail.htmlBody ?? '',
             }}
           />

@@ -8,7 +8,7 @@ export const useUnreadByMailbox = (options?: Parameters<typeof useGetMailboxesIn
   const { data: mailboxes, ...rest } = useGetMailboxesInfoQuery(undefined, options);
 
   const unreadByMailbox = useMemo(
-    () => Object.fromEntries(mailboxes?.map((m) => [m.type, m.unreadEmails]) ?? []) as UnreadByMailbox,
+    () => Object.fromEntries(mailboxes?.map((m: MailboxResponse) => [m.type, m.unreadEmails]) ?? []) as UnreadByMailbox,
     [mailboxes],
   );
 

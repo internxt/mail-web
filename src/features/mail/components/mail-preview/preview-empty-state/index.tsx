@@ -8,7 +8,8 @@ interface PreviewEmailStateProps {
 
 const PreviewEmailEmptyState = ({ unreadEmailsCount }: PreviewEmailStateProps) => {
   const { translate } = useTranslationContext();
-  const hasUnread = unreadEmailsCount !== undefined && unreadEmailsCount > 0;
+  if (unreadEmailsCount === undefined) return null;
+  const hasUnread = unreadEmailsCount > 0;
 
   const title = hasUnread
     ? translate('mail.preview.emptyEmail.unreadEmails.title')
@@ -25,7 +26,7 @@ const PreviewEmailEmptyState = ({ unreadEmailsCount }: PreviewEmailStateProps) =
 
         <div className="flex flex-col gap-2 items-center">
           {hasUnread && (
-            <div className="flex px-2.5 py-0.5 bg-gray-10 rounded-full w-max">
+            <div className="flex px-3 py-0.5 bg-gray-10 rounded-full w-max">
               <p className="text-lg font-medium text-gray-60">{unreadEmailsCount}</p>
             </div>
           )}
