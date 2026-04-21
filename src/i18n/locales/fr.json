@@ -58,6 +58,33 @@
     "termsAndConditions": "Conditions générales",
     "contactSupport": "Contacter le support"
   },
+  "search": {
+    "searchEmails": {
+      "title": "Trouvez des e-mails dans votre boîte de réception",
+      "description": "Recherchez par nom et pièces jointes"
+    },
+    "emailInputPlaceholder": "Rechercher par nom ou e-mail",
+    "filters": {
+      "from": "De",
+      "to": "À",
+      "date": "Date",
+      "hasAttachments": "Avec pièces jointes",
+      "unread": "Non lu"
+    },
+    "date": {
+      "anyDate": "N'importe quelle date",
+      "today": "Aujourd'hui",
+      "last7days": "7 derniers jours",
+      "last30days": "30 derniers jours",
+      "thisYear": "Cette année ({{year}})",
+      "lastYear": "L'année dernière ({{year}})",
+      "specificDate": "Date spécifique",
+      "after": "Après le",
+      "before": "Avant le",
+      "selectToday": "Sélectionner aujourd'hui",
+      "format": "jj/mm/aaaa"
+    }
+  },
   "mail": {
     "title": "Courrier",
     "newMessage": "Nouveau message",

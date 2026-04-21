@@ -60,6 +60,33 @@
     "termsAndConditions": "Terms and Conditions",
     "contactSupport": "Contact Support"
   },
+  "search": {
+    "searchEmails": {
+      "title": "Find emails in your inbox",
+      "description": "Search by name and attachments"
+    },
+    "emailInputPlaceholder": "Search by name or email",
+    "filters": {
+      "from": "From",
+      "to": "To",
+      "date": "Date",
+      "hasAttachments": "Has attachments",
+      "unread": "Unread"
+    },
+    "date": {
+      "anyDate": "Any date",
+      "today": "Today",
+      "last7days": "Last 7 days",
+      "last30days": "Last 30 days",
+      "thisYear": "This year ({{year}})",
+      "lastYear": "Last year ({{year}})",
+      "specificDate": "Specific date",
+      "after": "After",
+      "before": "Before",
+      "selectToday": "Select today",
+      "format": "dd/mm/yyyy"
+    }
+  },
   "mail": {
     "title": "Mail",
     "newMessage": "New Message",
