@@ -98,7 +98,17 @@
     "preview": {
       "to": "A",
       "cc": "CC",
-      "bcc": "CCN"
+      "bcc": "CCN",
+      "emptyEmail": {
+        "unreadEmails": {
+          "title": "Messaggi non letti",
+          "description": "Clicca su un'email per visualizzarla in anteprima"
+        },
+        "noUnreadEmails": {
+          "title": "Sei in pari!",
+          "description": "Non ci sono messaggi non letti"
+        }
+      }
     }
   },
   "errors": {

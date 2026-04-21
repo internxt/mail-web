@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { Activity, useState } from 'react';
 import { useTranslationContext } from '@/i18n';
 import type { FolderType } from '@/types/mail';
 import PreviewMail from './components/mail-preview';
 import TrayList from './components/tray';
 import Settings from './components/settings';
 import { useGetMailMessageQuery, useMarkAsReadMutation } from '@/store/api/mail';
-import { DateService } from '@/services/date';
 import { ErrorService } from '@/services/error';
 import useListFolderPaginated from '@/hooks/mail/useListFolderPaginated';
+import { useUnreadByMailbox } from '@/hooks/mail/useUnreadByMailbox';
+import PreviewEmailEmptyState from './components/mail-preview/preview-empty-state';
 
 interface MailViewProps {
   folder: FolderType;
@@ -18,6 +19,10 @@ const MailView = ({ folder }: MailViewProps) => {
   const [activeMailId, setActiveMailId] = useState<string | undefined>(undefined);
 
   const { isLoadingListFolder, listFolderEmails, hasMoreEmails, onLoadMore } = useListFolderPaginated(folder);
+  const { unreadByMailbox } = useUnreadByMailbox();
+
+  const listEmailsCount = listFolderEmails?.length;
+
   const { data: activeMail } = useGetMailMessageQuery({ emailId: activeMailId! }, { skip: !activeMailId });
   const [markAsRead] = useMarkAsReadMutation();
 
@@ -61,7 +66,12 @@ const MailView = ({ folder }: MailViewProps) => {
         <div className="flex w-full justify-end">
           <Settings />
         </div>
-        {activeMail && from ? (
+
+        <Activity mode={!activeMailId && !!listEmailsCount ? 'visible' : 'hidden'}>
+          <PreviewEmailEmptyState unreadEmailsCount={unreadByMailbox[folder]} />
+        </Activity>
+
+        {activeMail && from && (
           <PreviewMail
             from={{ name: from.name ?? '', email: from.email }}
             to={to.map((u) => ({ name: u.name ?? '', email: u.email }))}
@@ -69,11 +79,11 @@ const MailView = ({ folder }: MailViewProps) => {
             bcc={bcc.map((u) => ({ name: u.name ?? '', email: u.email }))}
             mail={{
               subject: activeMail.subject,
-              receivedAt: DateService.formatWithTime(activeMail.receivedAt),
-              htmlBody: (activeMail.htmlBody as string | null) ?? '',
+              receivedAt: activeMail.receivedAt,
+              htmlBody: activeMail.htmlBody ?? '',
             }}
           />
-        ) : null}
+        )}
       </div>
     </div>
   );
