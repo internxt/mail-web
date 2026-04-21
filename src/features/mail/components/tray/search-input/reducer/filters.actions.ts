@@ -27,12 +27,12 @@ export const setDatePreset = (preset: DatePreset) => ({
   payload: { preset },
 });
 
-export const setAfterDate = (date: Dayjs) => ({
+export const setAfterDate = (date: Dayjs | null) => ({
   type: ActionTypes.SET_AFTER_DATE,
   payload: { date },
 });
 
-export const setBeforeDate = (date: Dayjs) => ({
+export const setBeforeDate = (date: Dayjs | null) => ({
   type: ActionTypes.SET_BEFORE_DATE,
   payload: { date },
 });

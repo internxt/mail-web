@@ -52,11 +52,11 @@ export type FiltersAction =
     }
   | {
       type: (typeof ActionTypes)['SET_AFTER_DATE'];
-      payload: { date: Dayjs };
+      payload: { date: Dayjs | null };
     }
   | {
       type: (typeof ActionTypes)['SET_BEFORE_DATE'];
-      payload: { date: Dayjs };
+      payload: { date: Dayjs | null };
     }
   | {
       type: (typeof ActionTypes)['REMOVE_EMAIL'];
