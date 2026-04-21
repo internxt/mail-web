@@ -67,7 +67,7 @@ const MailView = ({ folder }: MailViewProps) => {
           <Settings />
         </div>
 
-        <Activity mode={!activeMailId && listEmailsCount ? 'visible' : 'hidden'}>
+        <Activity mode={!activeMailId && !!listEmailsCount ? 'visible' : 'hidden'}>
           <PreviewEmailEmptyState unreadEmailsCount={unreadByMailbox[folder]} />
         </Activity>
 

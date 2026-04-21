@@ -35,7 +35,7 @@ describe('Unread By Mailbox - Custom hook', () => {
     expect(result.current.unreadByMailbox).toStrictEqual(EXPECTED_UNREAD);
   });
 
-  test('When mailboxes are not yet loaded, then the hook return an empty object', () => {
+  test('When mailboxes are not yet loaded, then the an empty object is returned', () => {
     mockUseGetMailboxesInfoQuery.mockReturnValue({ data: undefined } as unknown as ReturnType<
       typeof useGetMailboxesInfoQuery
     >);
