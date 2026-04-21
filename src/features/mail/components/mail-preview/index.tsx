@@ -13,13 +13,11 @@ interface PreviewMailProps {
   };
 }
 
-const PreviewMail = ({ from, to, cc, bcc, mail }: PreviewMailProps) => {
-  return (
-    <div className="flex flex-col w-full h-full">
-      <PreviewHeader sender={from} date={mail.receivedAt} to={to} cc={cc} bcc={bcc} attachmentsLength={0} />
-      <Preview subject={mail.subject} body={mail.htmlBody} />
-    </div>
-  );
-};
+const PreviewMail = ({ from, to, cc, bcc, mail }: PreviewMailProps) => (
+  <div className="flex flex-col w-full h-full">
+    <PreviewHeader sender={from} date={mail.receivedAt} to={to} cc={cc} bcc={bcc} attachmentsLength={0} />
+    <Preview subject={mail.subject} body={mail.htmlBody} />
+  </div>
+);
 
 export default PreviewMail;

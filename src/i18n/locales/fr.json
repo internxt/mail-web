@@ -72,7 +72,17 @@
     "preview": {
       "to": "À",
       "cc": "CC",
-      "bcc": "CCI"
+      "bcc": "CCI",
+      "emptyEmail": {
+        "unreadEmails": {
+          "title": "Messages non lus",
+          "description": "Cliquez sur un e-mail pour le prévisualiser"
+        },
+        "noUnreadEmails": {
+          "title": "Vous êtes à jour !",
+          "description": "Aucun message non lu"
+        }
+      }
     }
   },
   "errors": {

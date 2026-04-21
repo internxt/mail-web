@@ -72,7 +72,17 @@
     "preview": {
       "to": "Para",
       "cc": "CC",
-      "bcc": "CCO"
+      "bcc": "CCO",
+      "emptyEmail": {
+        "unreadEmails": {
+          "title": "Mensajes sin leer",
+          "description": "Haz clic en cualquier correo para previsualizarlo"
+        },
+        "noUnreadEmails": {
+          "title": "¡Todo al día!",
+          "description": "No hay mensajes sin leer"
+        }
+      }
     }
   },
   "errors": {

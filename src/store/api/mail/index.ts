@@ -8,9 +8,9 @@ import type { EmailListResponse, EmailResponse, ListEmailsQuery, MailboxResponse
 export const mailApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getMailboxesInfo: builder.query<MailboxResponse[], void>({
-      async queryFn() {
+      async queryFn(): Promise<{ data: MailboxResponse[] } | { error: FetchMailboxesInfoError }> {
         try {
-          const mailboxes = await MailService.instance.getMailboxesInfo();
+          const mailboxes: MailboxResponse[] = await MailService.instance.getMailboxesInfo();
           return { data: mailboxes };
         } catch (error) {
           const err = ErrorService.instance.castError(error);
