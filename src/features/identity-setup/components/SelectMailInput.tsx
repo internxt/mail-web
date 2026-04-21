@@ -17,7 +17,7 @@ const SelectMailInput = ({ value, onChangeValue, selectedDomain, domains, onChan
   const menuItems = domains.map(({ domain }) => (
     <button
       key={domain}
-      className={`flex w-full items-center gap-1 py-1 ${domain === selectedDomain ? 'font-bold' : 'font-normal'} text-sm text-gray-100 hover:bg-gray-5`}
+      className={`flex w-full items-center gap-1 py-1 ${domain === selectedDomain ? 'font-bold' : 'font-normal'} text-sm text-gray-100`}
       onClick={() => onChangeDomain(domain)}
     >
       <span className={'w-5 shrink-0 '}>{domain === selectedDomain && <CheckIcon size={16} weight="bold" />}</span>@
@@ -44,8 +44,8 @@ const SelectMailInput = ({ value, onChangeValue, selectedDomain, domains, onChan
 
       <div className="flex flex-col z-10">
         <Dropdown
-          classButton="flex items-center gap-1 px-3 text-sm font-medium text-gray-60 hover:text-gray-80 transition-colors whitespace-nowrap"
-          classMenuItems="right-0 top-1 min-w-[160px] rounded-lg bg-surface shadow-subtle-hard text-gray-100 dark:bg-gray-5"
+          classButton="flex items-center gap-1 px-3 text-sm font-medium text-gray-60transition-colors whitespace-nowrap"
+          classMenuItems="right-0 top-1 min-w-[160px] rounded-lg shadow-subtle-hard text-gray-100"
           openDirection="right"
           menuItems={menuItems}
         >
