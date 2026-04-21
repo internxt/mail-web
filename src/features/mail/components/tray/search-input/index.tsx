@@ -27,7 +27,6 @@ const SearchInput = () => {
 
   const searchInput = useRef<HTMLInputElement>(null);
   const [openSearchBox, setOpenSearchBox] = useState(false);
-  const [preventBlur, setPreventBlur] = useState(false);
   const [filters, dispatch] = useReducer(filterReducer, initialFilterState);
   const {
     activeFilters,
@@ -50,10 +49,8 @@ const SearchInput = () => {
   const handleBeforeDate = (date: Dayjs) => dispatch(setBeforeDate(date));
 
   const handleBlur = () => {
-    if (!preventBlur) {
-      setOpenSearchBox(false);
-      dispatch(resetFilters());
-    }
+    setOpenSearchBox(false);
+    dispatch(resetFilters());
   };
 
   useHotkeys(
@@ -94,6 +91,7 @@ const SearchInput = () => {
 
   return (
     <form className="relative flex h-full w-full items-center" onSubmit={handleSubmit}>
+      {/* TODO: Extract this INPUT to a component */}
       <label className="relative flex w-full items-center" htmlFor="globalSearchInput">
         <MagnifyingGlassIcon
           className="pointer-events-none absolute left-2.5 top-1/2 z-1 -translate-y-1/2 text-gray-60"
@@ -123,19 +121,17 @@ const SearchInput = () => {
         </div>
         <button
           type="button"
-          onClick={() => handleSearchQuery('')}
+          onClick={(e) => {
+            e.preventDefault();
+            handleSearchQuery('');
+          }}
           className={`absolute right-2.5 top-1/2 z-1 -translate-y-1/2 cursor-pointer text-gray-60 transition-all duration-100 ease-out ${searchQuery.length === 0 ? 'pointer-events-none opacity-0' : ''}`}
         >
           <XIcon size={20} />
         </button>
       </label>
 
-      <div
-        role="none"
-        className={dropdownClassName}
-        onMouseEnter={() => setPreventBlur(true)}
-        onMouseLeave={() => setPreventBlur(false)}
-      >
+      <div role="none" className={dropdownClassName} onMouseDown={(e) => e.preventDefault()}>
         <div className="flex h-full w-full flex-col gap-3 px-3 py-3">
           <div className="relative flex flex-wrap items-center gap-1.5">
             {filterItems.map((item) => (
