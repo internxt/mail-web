@@ -81,7 +81,8 @@
       "specificDate": "Fecha específica",
       "after": "Después de",
       "before": "Antes de",
-      "selectToday": "Seleccionar hoy"
+      "selectToday": "Seleccionar hoy",
+      "format": "dd/mm/aaaa"
     }
   },
   "mail": {

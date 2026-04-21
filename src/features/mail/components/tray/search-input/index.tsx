@@ -6,21 +6,32 @@ import ContactInput from './filters/contact-input';
 import DateFilter from './filters/date-filter';
 import FilterItem from './filters/filter-item';
 import EmptyState from './components/empty-state';
-import type { FilterId } from './types';
-import { useSearchFilters } from './hooks/useSearchFilters';
-import { Activity } from 'react';
+import type { DatePreset, FilterId } from './types';
+import { Activity, useReducer, useRef, useState } from 'react';
+import { filterReducer } from './reducer/filters.state';
+import { initialFilterState } from './reducer/filters.config';
+import type { Dayjs } from 'dayjs';
+import {
+  resetFilters,
+  setAddEmail,
+  setAfterDate,
+  setBeforeDate,
+  setDatePreset,
+  setRemoveEmail,
+  setSearchQuery,
+  setToggleFilter,
+} from './reducer/filters.actions';
 
 const SearchInput = () => {
   const { translate } = useTranslationContext();
 
+  const searchInput = useRef<HTMLInputElement>(null);
+  const [openSearchBox, setOpenSearchBox] = useState(false);
+  const [preventBlur, setPreventBlur] = useState(false);
+  const [filters, dispatch] = useReducer(filterReducer, initialFilterState);
   const {
-    searchInput,
-    openSearchBox,
-    setOpenSearchBox,
-    query,
-    setQuery,
-    setPreventBlur,
     activeFilters,
+    searchQuery,
     expandedFilter,
     filterOffsetLeft,
     fromEmails,
@@ -28,14 +39,22 @@ const SearchInput = () => {
     datePreset,
     afterDate,
     beforeDate,
-    handleFilterToggle,
-    handleAddEmail,
-    handleRemoveEmail,
-    handleDatePreset,
-    handleAfterDate,
-    handleBeforeDate,
-    handleBlur,
-  } = useSearchFilters();
+  } = filters;
+
+  const handleFilterToggle = (id: FilterId, offsetLeft: number) => dispatch(setToggleFilter(id, offsetLeft));
+  const handleAddEmail = (filterId: 'from' | 'to', email: string) => dispatch(setAddEmail(filterId, email));
+  const handleSearchQuery = (searchQuery: string) => dispatch(setSearchQuery(searchQuery));
+  const handleRemoveEmail = (filterId: 'from' | 'to', email: string) => dispatch(setRemoveEmail(filterId, email));
+  const handleDatePreset = (preset: DatePreset) => dispatch(setDatePreset(preset));
+  const handleAfterDate = (date: Dayjs) => dispatch(setAfterDate(date));
+  const handleBeforeDate = (date: Dayjs) => dispatch(setBeforeDate(date));
+
+  const handleBlur = () => {
+    if (!preventBlur) {
+      setOpenSearchBox(false);
+      dispatch(resetFilters());
+    }
+  };
 
   useHotkeys(
     ['Meta+F', 'Control+F'],
@@ -58,7 +77,7 @@ const SearchInput = () => {
   const handleSubmit = (e: React.BaseSyntheticEvent) => {
     e.preventDefault();
 
-    if (!query) return;
+    if (!searchQuery) return;
 
     // !TODO: Add search logic
   };
@@ -87,12 +106,12 @@ const SearchInput = () => {
           autoComplete="off"
           spellCheck="false"
           type="text"
-          value={query}
+          value={searchQuery}
           className="h-10 w-full appearance-none rounded-lg border border-transparent bg-gray-5 pl-9 pr-9 text-base text-gray-100 placeholder-gray-60 outline-none ring-1 ring-gray-10 transition-all duration-150 ease-out hover:shadow-sm hover:ring-gray-20 focus:border-primary focus:bg-surface focus:placeholder-gray-80 focus:shadow-none focus:ring-3 focus:ring-primary/10 dark:focus:bg-gray-1 dark:focus:ring-primary/20"
           onKeyUp={(e) => {
             if (e.key === 'Escape') e.currentTarget.blur();
           }}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => handleSearchQuery(e.target.value)}
           onFocus={() => setOpenSearchBox(true)}
           onBlur={handleBlur}
           placeholder={translate('actions.search')}
@@ -104,8 +123,8 @@ const SearchInput = () => {
         </div>
         <button
           type="button"
-          onClick={() => setQuery('')}
-          className={`absolute right-2.5 top-1/2 z-1 -translate-y-1/2 cursor-pointer text-gray-60 transition-all duration-100 ease-out ${query.length === 0 ? 'pointer-events-none opacity-0' : ''}`}
+          onClick={() => handleSearchQuery('')}
+          className={`absolute right-2.5 top-1/2 z-1 -translate-y-1/2 cursor-pointer text-gray-60 transition-all duration-100 ease-out ${searchQuery.length === 0 ? 'pointer-events-none opacity-0' : ''}`}
         >
           <XIcon size={20} />
         </button>
@@ -153,7 +172,7 @@ const SearchInput = () => {
             </Activity>
           </div>
 
-          {!query && (
+          {!searchQuery && (
             <div className="flex flex-1 flex-col items-center justify-center">
               <EmptyState />
             </div>

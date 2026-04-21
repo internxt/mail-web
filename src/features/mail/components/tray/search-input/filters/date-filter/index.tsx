@@ -83,7 +83,7 @@ const DateFilter = ({
                     <input
                       type="text"
                       value={activeCalendar === side || draft ? draft : (dateValue?.format('DD/MM/YYYY') ?? '')}
-                      placeholder="dd/mm/yyyy"
+                      placeholder={translate('search.date.format')}
                       onChange={(e) => setDraft(e.target.value)}
                       onFocus={() => {
                         setDraft(dateValue ? dateValue.format('DD/MM/YYYY') : '');

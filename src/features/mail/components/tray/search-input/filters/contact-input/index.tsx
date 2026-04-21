@@ -15,11 +15,12 @@ const ContactInput = ({ emails, onAdd, onRemove, placeholder, offsetLeft }: Cont
 
   const commit = () => {
     const trimmed = draft.trim();
-    const isValid = isValidEmail(trimmed);
-    if (isValid && trimmed && !emails.includes(trimmed)) {
-      onAdd(trimmed);
-      setDraft('');
+    if (!trimmed || emails.includes(trimmed) || !isValidEmail(trimmed)) {
+      return;
     }
+
+    onAdd(trimmed);
+    setDraft('');
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -43,7 +44,12 @@ const ContactInput = ({ emails, onAdd, onRemove, placeholder, offsetLeft }: Cont
             className="flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
           >
             {email}
-            <button type="button" onClick={() => onRemove(email)} className="opacity-60 hover:opacity-100">
+            <button
+              type="button"
+              aria-label={email}
+              onClick={() => onRemove(email)}
+              className="opacity-60 hover:opacity-100"
+            >
               <XIcon size={10} />
             </button>
           </span>

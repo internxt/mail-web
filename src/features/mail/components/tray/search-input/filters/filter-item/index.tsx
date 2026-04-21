@@ -33,14 +33,14 @@ const FilterItem = ({ id, label, activeFilters, expandedFilter, onToggle }: Filt
         />
       )}
       {isActive && (
-        <XIcon
-          size={12}
-          className="ml-0.5 opacity-60 hover:opacity-100"
+        <button
           onClick={(e) => {
             e.stopPropagation();
             onToggle(id, 0);
           }}
-        />
+        >
+          <XIcon size={12} className="ml-0.5 opacity-60 hover:opacity-100" />
+        </button>
       )}
     </button>
   );

@@ -8,19 +8,21 @@ interface MiniCalendarProps {
   selectTodayLabel: string;
 }
 
-const WEEKDAYS = Array.from({ length: 7 }, (_, i) =>
-  dayjs()
-    .day(i === 6 ? 0 : i + 1)
-    .format('ddd'),
-);
-const MONTHS_SHORT = Array.from({ length: 12 }, (_, i) => dayjs().month(i).format('MMM'));
-const MONTHS_FULL = Array.from({ length: 12 }, (_, i) => dayjs().month(i).format('MMMM'));
 const MIN_YEAR = 1970;
 
 const Calendar = ({ selected, onSelect, selectTodayLabel }: MiniCalendarProps) => {
+  const today = dayjs();
+
   const [cursor, setCursor] = useState(selected ?? dayjs());
   const [openPicker, setOpenPicker] = useState<'month' | 'year' | null>(null);
-  const today = dayjs();
+
+  const WEEKDAYS = Array.from({ length: 7 }, (_, i) =>
+    dayjs()
+      .day(i === 6 ? 0 : i + 1)
+      .format('ddd'),
+  );
+  const MONTHS_SHORT = Array.from({ length: 12 }, (_, i) => dayjs().month(i).format('MMM'));
+  const MONTHS_FULL = Array.from({ length: 12 }, (_, i) => dayjs().month(i).format('MMMM'));
 
   const startOfMonth = cursor.startOf('month');
   const firstDayOffset = (startOfMonth.day() + 6) % 7;
@@ -32,7 +34,7 @@ const Calendar = ({ selected, onSelect, selectTodayLabel }: MiniCalendarProps) =
   ];
   while (cells.length % 7 !== 0) cells.push(null);
 
-  const allYears = Array.from({ length: today.year() - MIN_YEAR + 1 }, (_, i) => MIN_YEAR + i);
+  const allYears = Array.from({ length: today.year() - MIN_YEAR + 1 }, (_, i) => today.year() - i);
 
   const togglePicker = (picker: 'month' | 'year') => setOpenPicker((prev) => (prev === picker ? null : picker));
 
