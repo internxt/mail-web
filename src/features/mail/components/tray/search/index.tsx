@@ -1,13 +1,11 @@
 import { useTranslationContext } from '@/i18n';
-import { MagnifyingGlassIcon, XIcon } from '@phosphor-icons/react';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { isMacOs } from 'react-device-detect';
 import ContactInput from './filters/contact-input';
 import DateFilter from './filters/date-filter';
 import FilterItem from './filters/filter-item';
 import EmptyState from './components/empty-state';
 import type { DatePreset, FilterId } from './types';
-import { Activity, useEffect, useReducer, useRef, useState } from 'react';
+import { Activity, useReducer, useRef, useState } from 'react';
 import { filterReducer } from './reducer/filters.state';
 import { initialFilterState } from './reducer/filters.config';
 import type { Dayjs } from 'dayjs';
@@ -21,10 +19,9 @@ import {
   setSearchQuery,
   setToggleFilter,
 } from './reducer/filters.actions';
-import { useDebounce } from '@/hooks/useDebounce';
-import { MailService } from '@/services/sdk/mail';
+import SearchInput from './components/search-input';
 
-const SearchInput = () => {
+const Search = () => {
   const { translate } = useTranslationContext();
 
   const searchInput = useRef<HTMLInputElement>(null);
@@ -42,7 +39,6 @@ const SearchInput = () => {
     afterDate,
     beforeDate,
   } = filters;
-  const debouncedQuery = useDebounce(searchQuery, 500);
 
   const handleFilterToggle = (id: FilterId, offsetLeft: number) => dispatch(setToggleFilter(id, offsetLeft));
   const handleAddEmail = (filterId: 'from' | 'to', email: string) => dispatch(setAddEmail(filterId, email));
@@ -76,29 +72,6 @@ const SearchInput = () => {
     { id: 'unread', label: translate('search.filters.unread') },
   ];
 
-  const handleSearch = async () => {
-    const isRead = activeFilters.find((f) => f === 'unread');
-    const hasAttachments = activeFilters.find((f) => f === 'hasAttachments');
-
-    const results = await MailService.instance.search({
-      after: afterDate?.toISOString(),
-      before: beforeDate?.toISOString(),
-      to: toEmails.length > 0 ? toEmails : undefined,
-      from: fromEmails.length > 0 ? fromEmails : undefined,
-      limit: 100,
-      position: 0,
-      text: debouncedQuery,
-      isRead: isRead ? true : undefined,
-      hasAttachment: hasAttachments ? true : undefined,
-    });
-
-    console.log(results);
-  };
-
-  useEffect(() => {
-    handleSearch();
-  }, [debouncedQuery, activeFilters, afterDate, beforeDate, toEmails, fromEmails]);
-
   const dropdownClassName = (() => {
     const base =
       'absolute top-12 z-20 w-screen max-w-160 h-screen max-h-80 origin-top rounded-xl bg-surface text-gray-100 shadow-subtle-hard ring-1 ring-gray-10 transition-all duration-150 ease-out dark:bg-gray-5';
@@ -111,49 +84,18 @@ const SearchInput = () => {
 
   return (
     <div className="relative flex h-full w-full items-center">
-      {/* TODO: Extract this INPUT to a component */}
-      <div className="relative flex w-full items-center">
-        <MagnifyingGlassIcon
-          className="pointer-events-none absolute left-2.5 top-1/2 z-1 -translate-y-1/2 text-gray-60"
-          size={20}
-        />
-        <input
-          ref={searchInput}
-          id="globalSearchInput"
-          data-cy="globalSearchInput"
-          autoComplete="off"
-          spellCheck="false"
-          type="text"
-          value={searchQuery}
-          className="h-10 w-full appearance-none rounded-lg border border-transparent bg-gray-5 pl-9 pr-9 text-base text-gray-100 placeholder-gray-60 outline-none ring-1 ring-gray-10 transition-all duration-150 ease-out hover:shadow-sm hover:ring-gray-20 focus:border-primary focus:bg-surface focus:placeholder-gray-80 focus:shadow-none focus:ring-3 focus:ring-primary/10 dark:focus:bg-gray-1 dark:focus:ring-primary/20"
-          onKeyUp={(e) => {
-            if (e.key === 'Escape') e.currentTarget.blur();
-          }}
-          onChange={(e) => onSearchQueryChanges(e.target.value)}
-          onFocus={() => setOpenSearchBox(true)}
-          onBlur={handleBlur}
-          placeholder={translate('actions.search')}
-        />
-        <div
-          className={`pointer-events-none absolute right-2.5 top-1/2 z-1 -translate-y-1/2 rounded-md bg-gray-10 px-2 py-1 text-sm text-gray-50 transition-opacity duration-100 ${openSearchBox ? 'opacity-0' : ''}`}
-        >
-          {isMacOs ? '⌘F' : 'Ctrl F'}
-        </div>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            onSearchQueryChanges('');
-          }}
-          className={`absolute right-2.5 top-1/2 z-1 -translate-y-1/2 cursor-pointer text-gray-60 transition-all duration-100 ease-out ${searchQuery.length === 0 ? 'pointer-events-none opacity-0' : ''}`}
-        >
-          <XIcon size={20} />
-        </button>
-      </div>
+      <SearchInput
+        handleBlur={handleBlur}
+        onSearchQueryChanges={onSearchQueryChanges}
+        openSearchBox={openSearchBox}
+        searchInput={searchInput}
+        searchQuery={searchQuery}
+        setOpenSearchBox={setOpenSearchBox}
+      />
 
       <div role="none" className={dropdownClassName}>
         <div className="flex h-full w-full flex-col gap-3 px-3 py-3">
-          <div
+          <fieldset
             className="relative flex flex-wrap items-center gap-1.5"
             onMouseEnter={() => setPreventBlur(true)}
             onMouseLeave={() => setPreventBlur(false)}
@@ -190,7 +132,7 @@ const SearchInput = () => {
                 onBeforeDate={handleBeforeDate}
               />
             </Activity>
-          </div>
+          </fieldset>
 
           {!searchQuery && (
             <div className="flex flex-1 flex-col items-center justify-center">
@@ -203,4 +145,4 @@ const SearchInput = () => {
   );
 };
 
-export default SearchInput;
+export default Search;

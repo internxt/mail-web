@@ -1,9 +1,21 @@
 import { api } from '../base';
-import { FetchMailboxesInfoError, FetchMessageError, FetchListFolderError, UpdateMailError } from '@/errors';
+import {
+  FetchMailboxesInfoError,
+  FetchMessageError,
+  FetchListFolderError,
+  SearchMailError,
+  UpdateMailError,
+} from '@/errors';
 import { ErrorService } from '@/services/error';
 import { MailService } from '@/services/sdk/mail';
 import type { FolderType } from '@/types/mail';
-import type { EmailListResponse, EmailResponse, ListEmailsQuery, MailboxResponse } from '@internxt/sdk';
+import type {
+  EmailListResponse,
+  EmailResponse,
+  ListEmailsQuery,
+  MailboxResponse,
+  SearchFiltersQuery,
+} from '@internxt/sdk';
 
 export const mailApi = api.injectEndpoints({
   endpoints: (builder) => ({
@@ -43,6 +55,17 @@ export const mailApi = api.injectEndpoints({
         }
       },
       providesTags: ['ListFolder'],
+    }),
+    getEmailSearch: builder.query<EmailListResponse, SearchFiltersQuery>({
+      async queryFn(filters) {
+        try {
+          const results = await MailService.instance.search(filters);
+          return { data: results };
+        } catch (error) {
+          const err = ErrorService.instance.castError(error);
+          return { error: new SearchMailError(err.message, err.requestId) };
+        }
+      },
     }),
     getMailMessage: builder.query<EmailResponse, { emailId: string }>({
       async queryFn({ emailId }) {
@@ -99,5 +122,10 @@ export const mailApi = api.injectEndpoints({
   }),
 });
 
-export const { useGetMailboxesInfoQuery, useGetListFolderQuery, useGetMailMessageQuery, useMarkAsReadMutation } =
-  mailApi;
+export const {
+  useGetMailboxesInfoQuery,
+  useGetListFolderQuery,
+  useGetEmailSearchQuery,
+  useGetMailMessageQuery,
+  useMarkAsReadMutation,
+} = mailApi;

@@ -1,7 +1,7 @@
 import { Checkbox, Dropdown, type MenuItemType } from '@internxt/ui';
-import SearchInput from '../search-input';
 import { ArchiveIcon, CaretDownIcon, DotsThreeVerticalIcon, FunnelSimpleIcon, TrashIcon } from '@phosphor-icons/react';
 import { useTranslationContext } from '@/i18n';
+import Search from '../search';
 
 interface HeaderProps {
   folderName: string;
@@ -27,14 +27,6 @@ const Header = ({ folderName }: HeaderProps) => {
       name: translate('filter.unread'),
       action: () => {},
     },
-    {
-      name: translate('filter.starred'),
-      action: () => {},
-    },
-    {
-      name: translate('filter.unstarred'),
-      action: () => {},
-    },
   ];
 
   const bulkActionContext: MenuItemType<unknown>[] = [
@@ -53,7 +45,7 @@ const Header = ({ folderName }: HeaderProps) => {
   return (
     <section className="flex flex-col w-full">
       <div className="py-3 flex w-full px-5">
-        <SearchInput />
+        <Search />
       </div>
       <div className="flex flex-row w-full justify-between px-5 py-3 z-10">
         <div className="flex flex-row gap-2 items-center">

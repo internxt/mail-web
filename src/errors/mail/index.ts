@@ -31,6 +31,17 @@ export class FetchMessageError extends Error {
   }
 }
 
+export class SearchMailError extends Error {
+  constructor(
+    errorMsg?: string,
+    public requestId?: string,
+  ) {
+    super('Error while searching emails: ' + errorMsg);
+
+    Object.setPrototypeOf(this, SearchMailError.prototype);
+  }
+}
+
 export class UpdateMailError extends Error {
   constructor(
     errorMsg?: string,
