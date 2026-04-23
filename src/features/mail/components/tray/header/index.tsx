@@ -5,7 +5,7 @@ import Search from '../search';
 
 interface HeaderProps {
   folderName: string;
-  onSearchEmailSelected: (mailId: string, isRead?: boolean) => void;
+  onSearchEmailSelected?: (mailId: string, isRead?: boolean) => void;
 }
 
 const Header = ({ folderName, onSearchEmailSelected }: HeaderProps) => {

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import type { SearchFiltersQuery, EmailListResponse } from '@internxt/sdk';
 import { MailService } from '@/services/sdk/mail';
 import { useDebounce } from '../useDebounce';
@@ -9,13 +9,19 @@ export const useEmailSearch = (filters: Omit<SearchFiltersQuery, 'limit' | 'posi
   const [position, setPosition] = useState(0);
   const [results, setResults] = useState<EmailListResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const activeControllerRef = useRef<AbortController | null>(null);
 
   const debouncedText = useDebounce(filters.text, 500);
+
+  const resetState = () => {
+    setResults(null);
+    setPosition(0);
+  };
 
   const fetchResults = useCallback(
     async (pos: number, signal: AbortSignal) => {
       if (!debouncedText) {
-        setResults(null);
+        resetState();
         return;
       }
       setIsLoading(true);
@@ -36,17 +42,25 @@ export const useEmailSearch = (filters: Omit<SearchFiltersQuery, 'limit' | 'posi
   );
 
   useEffect(() => {
+    activeControllerRef.current?.abort();
     const controller = new AbortController();
+    activeControllerRef.current = controller;
     setPosition(0);
     fetchResults(0, controller.signal);
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+      activeControllerRef.current = null;
+    };
   }, [fetchResults]);
 
   const onLoadMore = () => {
     if (isLoading || !results?.hasMoreMails) return;
+    activeControllerRef.current?.abort();
+    const controller = new AbortController();
+    activeControllerRef.current = controller;
     const next = position + DEFAULT_LIMIT;
     setPosition(next);
-    fetchResults(next, new AbortController().signal);
+    fetchResults(next, controller.signal);
   };
 
   return {

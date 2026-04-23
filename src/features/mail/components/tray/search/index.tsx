@@ -24,7 +24,7 @@ import SearchInput from './components/search-input';
 import SearchEmailList from './components/list';
 
 interface SearchProps {
-  onMailSelected: (id: string, isRead?: boolean) => void;
+  onMailSelected?: (id: string, isRead?: boolean) => void;
 }
 
 const Search = ({ onMailSelected }: SearchProps) => {
@@ -76,7 +76,7 @@ const Search = ({ onMailSelected }: SearchProps) => {
   };
 
   const handleMessageSelected = (mailId: string, isRead?: boolean) => {
-    onMailSelected(mailId, isRead);
+    onMailSelected?.(mailId, isRead);
     setOpenSearchBox(false);
     dispatch(resetFilters());
   };

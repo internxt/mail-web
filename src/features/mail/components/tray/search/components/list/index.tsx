@@ -34,7 +34,7 @@ const SearchEmailList = ({ mails, hasMoreItems, loading, onLoadMore, onMailSelec
   return (
     <div className="flex flex-col w-full h-full">
       <div id="tray-scroll-container" className="overflow-y-auto w-full h-full min-h-0">
-        {loading ? (
+        {loading && (!mails || mails.length === 0) ? (
           <>
             {new Array(8).fill(0).map((_, index) => (
               <div key={index} className="flex flex-col gap-2">

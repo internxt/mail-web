@@ -45,7 +45,7 @@ const SearchInput = ({
         placeholder={translate('actions.search')}
       />
       <div
-        className={`pointer-events-none absolute right-2.5 top-1/2 z-1 -translate-y-1/2 rounded-md bg-gray-10 px-2 py-1 text-sm text-gray-50 transition-opacity duration-100 ${openSearchBox ? 'opacity-0' : ''}`}
+        className={`pointer-events-none absolute right-2.5 top-1/2 z-1 -translate-y-1/2 rounded-md bg-gray-10 px-2 py-1 text-sm text-gray-50 transition-opacity duration-100 ${openSearchBox || searchQuery.length > 0 ? 'opacity-0' : ''}`}
       >
         {isMacOs ? '⌘F' : 'Ctrl F'}
       </div>
