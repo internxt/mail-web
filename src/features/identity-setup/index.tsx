@@ -14,6 +14,7 @@ import type { SetupMailAccountPayload } from '@internxt/sdk';
 import { CryptoService } from '@/services/crypto';
 import { useTranslationContext } from '@/i18n';
 import { DEFAULT_USER_NAME } from '@/constants';
+import { createEncryptionAndRecoveryKeystores, uint8ArrayToBase64 } from 'internxt-crypto';
 
 type Step = 'updateEmail' | 'confirmPassword' | 'confirmChange';
 
@@ -27,6 +28,7 @@ const IdentitySetup = () => {
   });
   const [isConfirmingChange, setIsConfirmingChange] = useState<boolean>(false);
   const [hashedPassword, setHashedPassword] = useState<string>('');
+  const [userPassword, setUserPassword] = useState<string>('');
   const [step, setStep] = useState<Step>('updateEmail');
   const { user } = useAppSelector((state) => state.user);
   const currentEmail = user?.email ?? '';
@@ -47,6 +49,7 @@ const IdentitySetup = () => {
       }
 
       setHashedPassword(hashedPassword);
+      setUserPassword(password);
       setStep('confirmChange');
     } catch {
       ErrorService.instance.notifyUser(translate('errors.identitySetup.passwordCheckFailed'));
@@ -56,15 +59,27 @@ const IdentitySetup = () => {
   const onConfirmChange = async () => {
     setIsConfirmingChange(true);
 
-    const confirmIdentitySetupPayload: SetupMailAccountPayload = {
-      address: newEmail.address,
-      displayName: userFullName,
-      domain: newEmail.domain,
-      password: CryptoService.instance.encryptTextWithKey(hashedPassword),
-    };
-
     try {
-      await AuthService.instance.setupMailAccount(confirmIdentitySetupPayload);
+      const mailboxEmail = `${newEmail.address}@${newEmail.domain}`;
+      const { encryptionKeystore, recoveryKeystore, salt } = await createEncryptionAndRecoveryKeystores(
+        mailboxEmail,
+        userPassword,
+      );
+
+      const confirmIdentitySetupPayload: SetupMailAccountPayload = {
+        address: newEmail.address,
+        displayName: userFullName,
+        domain: newEmail.domain,
+        password: CryptoService.instance.encryptTextWithKey(hashedPassword),
+        keys: {
+          publicKey: encryptionKeystore.publicKey,
+          encryptionPrivateKey: encryptionKeystore.privateKeyEncrypted,
+          recoveryPrivateKey: recoveryKeystore.privateKeyEncrypted,
+          salt: uint8ArrayToBase64(salt),
+        },
+      };
+
+      await MailService.instance.setupMailAccount(confirmIdentitySetupPayload);
       NavigationService.instance.replace({ id: AppView.Inbox });
     } catch {
       ErrorService.instance.notifyUser(translate('errors.identitySetup.setupFailed'));
