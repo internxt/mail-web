@@ -5,6 +5,12 @@ import { useState } from 'react';
 import Calendar from '../../components/calendar';
 import type { DatePreset } from '../../types';
 
+interface PresetProps {
+  id: DatePreset;
+  label: string;
+  action?: () => void;
+}
+
 interface DateFilterDropdownProps {
   offsetLeft: number;
   selected: DatePreset;
@@ -30,7 +36,7 @@ const DateFilter = ({
   const [afterDraft, setAfterDraft] = useState('');
   const [beforeDraft, setBeforeDraft] = useState('');
 
-  const presets: { id: DatePreset; label: string; action?: () => void }[] = [
+  const presets: PresetProps[] = [
     { id: 'anyDate', label: translate('search.date.anyDate') },
     {
       id: 'today',
