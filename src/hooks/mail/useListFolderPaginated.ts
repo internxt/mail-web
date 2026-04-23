@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 const useListFolderPaginated = (mailbox: FolderType) => {
   const [anchorId, setAnchorId] = useState<string | undefined>(undefined);
+  const [unreadFilter, setUnreadFilter] = useState<boolean | undefined>(undefined);
 
   const {
     data: listFolder,
@@ -15,6 +16,7 @@ const useListFolderPaginated = (mailbox: FolderType) => {
       mailbox,
       limit: DEFAULT_FOLDER_LIMIT,
       anchorId,
+      unread: unreadFilter || undefined,
     },
     {
       pollingInterval: 30000,
@@ -29,11 +31,18 @@ const useListFolderPaginated = (mailbox: FolderType) => {
     setAnchorId(listFolder?.nextAnchor);
   };
 
+  const toggleUnreadFilter = () => {
+    setAnchorId(undefined);
+    setUnreadFilter((prev) => !prev);
+  };
+
   return {
     listFolderEmails: listFolder?.emails,
     isLoadingListFolder,
     onLoadMore,
     hasMoreEmails: listFolder?.hasMoreMails,
+    isUnreadFilter: unreadFilter,
+    toggleUnreadFilter,
   };
 };
 
