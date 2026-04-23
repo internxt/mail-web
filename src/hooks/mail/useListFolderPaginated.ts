@@ -16,7 +16,7 @@ const useListFolderPaginated = (mailbox: FolderType) => {
       mailbox,
       limit: DEFAULT_FOLDER_LIMIT,
       anchorId,
-      unread: unreadFilter || undefined,
+      unread: unreadFilter,
     },
     {
       pollingInterval: 30000,
@@ -31,9 +31,13 @@ const useListFolderPaginated = (mailbox: FolderType) => {
     setAnchorId(listFolder?.nextAnchor);
   };
 
-  const toggleUnreadFilter = () => {
+  const applyUnreadFilter = (value: boolean | undefined) => {
     setAnchorId(undefined);
-    setUnreadFilter((prev) => !prev);
+    setUnreadFilter(value);
+  };
+
+  const toggleUnreadFilter = () => {
+    applyUnreadFilter(unreadFilter === true ? undefined : true);
   };
 
   return {
@@ -43,6 +47,7 @@ const useListFolderPaginated = (mailbox: FolderType) => {
     hasMoreEmails: listFolder?.hasMoreMails,
     isUnreadFilter: unreadFilter,
     toggleUnreadFilter,
+    applyUnreadFilter,
   };
 };
 

@@ -10,10 +10,10 @@ import { useUnreadByMailbox } from '@/hooks/mail/useUnreadByMailbox';
 import { useMailSelection } from '@/hooks/mail/useMailSelection';
 import PreviewEmailEmptyState from './components/mail-preview/preview-empty-state';
 import TrayHeader from './components/tray/header';
-import { Tray, type MenuItemType } from '@internxt/ui';
+import { Tray } from '@internxt/ui';
 import { TrayEmptyState } from './components/tray/tray-empty-state';
-import { ArchiveIcon, TrashIcon } from '@phosphor-icons/react';
 import { formatEmailsToList } from '@/utils/format-emails';
+import { useListActionContext } from '@/hooks/mail/useListActionContext';
 
 interface MailViewProps {
   folder: FolderType;
@@ -23,10 +23,24 @@ const MailView = ({ folder }: MailViewProps) => {
   const { translate } = useTranslationContext();
   const [activeMailId, setActiveMailId] = useState<string | undefined>(undefined);
 
-  const { isLoadingListFolder, listFolderEmails, hasMoreEmails, onLoadMore, isUnreadFilter, toggleUnreadFilter } =
-    useListFolderPaginated(folder);
+  const {
+    isLoadingListFolder,
+    listFolderEmails,
+    hasMoreEmails,
+    onLoadMore,
+    isUnreadFilter,
+    toggleUnreadFilter,
+    applyUnreadFilter,
+  } = useListFolderPaginated(folder);
   const { selectedEmails, selectAll, selectNone, selectRead, selectUnread, toggleSelectAll } =
     useMailSelection(listFolderEmails);
+  const { listActionContext, bulkActionContext } = useListActionContext(folder, {
+    selectAll,
+    selectNone,
+    selectRead,
+    selectUnread,
+    applyUnreadFilter,
+  });
   const { unreadByMailbox } = useUnreadByMailbox();
 
   const listEmailsCount = listFolderEmails?.length;
@@ -40,26 +54,6 @@ const MailView = ({ folder }: MailViewProps) => {
   const to = activeMail?.to ?? [];
   const cc = activeMail?.cc ?? [];
   const bcc = activeMail?.bcc ?? [];
-
-  const listActionContext: MenuItemType<unknown>[] = [
-    { name: translate('filter.all'), action: selectAll },
-    { name: translate('filter.none'), action: selectNone },
-    { name: translate('filter.read'), action: selectRead },
-    { name: translate('filter.unread'), action: selectUnread },
-  ];
-
-  const bulkActionContext: MenuItemType<unknown>[] = [
-    {
-      name: translate('actions.trashAll'),
-      action: () => {},
-      icon: TrashIcon,
-    },
-    {
-      name: translate('actions.archiveAll'),
-      action: () => {},
-      icon: ArchiveIcon,
-    },
-  ];
 
   const onSelectEmail = async (id: string, isRead?: boolean) => {
     setActiveMailId(id);
@@ -92,7 +86,7 @@ const MailView = ({ folder }: MailViewProps) => {
             selectedCount={selectedEmails.length}
             totalCount={listFolderEmails?.length ?? 0}
             onCheckboxClicked={toggleSelectAll}
-            onToggleUnreadFilter={toggleUnreadFilter}
+            onToggleUnreadFilter={folder !== 'sent' ? toggleUnreadFilter : undefined}
             onSearchEmailSelected={onSelectEmail}
           />
         </div>

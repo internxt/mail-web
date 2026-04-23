@@ -13,15 +13,11 @@ export const useEmailSearch = (filters: Omit<SearchFiltersQuery, 'limit' | 'posi
 
   const debouncedText = useDebounce(filters.text, 500);
 
-  const resetState = () => {
-    setResults(null);
-    setPosition(0);
-  };
-
   const fetchResults = useCallback(
     async (pos: number, signal: AbortSignal) => {
       if (!debouncedText) {
-        resetState();
+        setResults(null);
+        setPosition(0);
         return;
       }
       setIsLoading(true);

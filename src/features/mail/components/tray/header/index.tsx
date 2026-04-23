@@ -27,6 +27,7 @@ const TrayHeader = ({
 }: HeaderProps) => {
   const allSelected = totalCount > 0 && selectedCount === totalCount;
   const someSelected = selectedCount > 0 && selectedCount < totalCount;
+  const areBulkActionsAvailable = bulkActionContext.length > 0;
 
   return (
     <section className="flex flex-col w-full">
@@ -47,21 +48,25 @@ const TrayHeader = ({
           </div>
           <p className="text-gray-400">{folderName}</p>
         </div>
-        <div className="flex flex-row gap-1">
-          <button
-            type="button"
-            onClick={onToggleUnreadFilter}
-            className={isUnreadFilter ? 'text-primary' : 'text-gray-60'}
-          >
-            <FunnelSimpleIcon size={24} />
-          </button>
-          <Dropdown
-            openDirection="left"
-            classMenuItems="flex bg-surface border-gray-10 shadow-subtle-hard dark:bg-gray-5 rounded-lg bg-surface text-gray-100"
-            dropdownActionsContext={bulkActionContext}
-          >
-            {() => <DotsThreeVerticalIcon size={24} />}
-          </Dropdown>
+        <div className="flex flex-row gap-1 items-center max-h-6 h-screen">
+          {onToggleUnreadFilter && (
+            <button
+              type="button"
+              onClick={onToggleUnreadFilter}
+              className={`mb-1.5 ${isUnreadFilter ? 'text-primary' : 'text-gray-60'}`}
+            >
+              <FunnelSimpleIcon size={24} />
+            </button>
+          )}
+          {areBulkActionsAvailable && (
+            <Dropdown
+              openDirection="left"
+              classMenuItems="flex bg-surface border-gray-10 shadow-subtle-hard dark:bg-gray-5 rounded-lg bg-surface text-gray-100"
+              dropdownActionsContext={bulkActionContext}
+            >
+              {() => <DotsThreeVerticalIcon size={24} />}
+            </Dropdown>
+          )}
         </div>
       </div>
     </section>
