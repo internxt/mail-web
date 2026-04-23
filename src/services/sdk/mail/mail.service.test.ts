@@ -3,6 +3,7 @@ import { beforeEach, afterEach, describe, expect, test, vi } from 'vitest';
 import { SdkManager } from '..';
 import { MailService } from '.';
 import { getMockedMails, getMockedMailBoxes, getMockedMail } from '@/test-utils/fixtures';
+import type { SetupMailAccountPayload } from '@internxt/sdk';
 
 describe('Mail Service', () => {
   beforeEach(() => {
@@ -134,6 +135,44 @@ describe('Mail Service', () => {
       vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
 
       await expect(MailService.instance.getMessage('email-123')).rejects.toThrow(unexpectedError);
+    });
+  });
+
+  describe('Setup mail account', () => {
+    const payload: SetupMailAccountPayload = {
+      address: 'jane',
+      displayName: 'Jane Doe',
+      domain: 'internxt.com',
+      password: 'encrypted-password',
+      keys: {
+        publicKey: 'public-key',
+        encryptionPrivateKey: 'encryption-private-key',
+        recoveryPrivateKey: 'recovery-private-key',
+        salt: 'salt',
+      },
+    };
+
+    test('When setting up a mail account, then the created account should be returned', async () => {
+      const mockResponse = { address: 'jane@internxt.com' };
+      const mockMailClient = {
+        setupMailAccount: vi.fn().mockResolvedValue(mockResponse),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      const result = await MailService.instance.setupMailAccount(payload);
+
+      expect(result).toStrictEqual(mockResponse);
+      expect(mockMailClient.setupMailAccount).toHaveBeenCalledWith(payload);
+    });
+
+    test('When the mail account setup fails, then an error should be thrown', async () => {
+      const unexpectedError = new Error('Unexpected error');
+      const mockMailClient = {
+        setupMailAccount: vi.fn().mockRejectedValue(unexpectedError),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      await expect(MailService.instance.setupMailAccount(payload)).rejects.toThrow(unexpectedError);
     });
   });
 });

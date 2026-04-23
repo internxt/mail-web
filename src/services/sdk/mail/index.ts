@@ -5,6 +5,7 @@ import type {
   ListEmailsQuery,
   MailboxResponse,
   SearchFiltersQuery,
+  SetupMailAccountPayload,
   UpdateEmailRequest,
 } from '@internxt/sdk';
 import { SdkManager } from '..';
@@ -14,6 +15,16 @@ export class MailService {
 
   get client() {
     return SdkManager.instance.getMail();
+  }
+
+  /**
+   * Creates a mail account for the user.
+   *
+   * @param payload - Setup details for the mail account.
+   * @returns A promise that resolves with the created account address.
+   */
+  async setupMailAccount(payload: SetupMailAccountPayload): Promise<{ address: string }> {
+    return this.client.setupMailAccount(payload);
   }
 
   /**
