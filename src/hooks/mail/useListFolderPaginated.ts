@@ -18,6 +18,7 @@ const useListFolderPaginated = (mailbox: FolderType) => {
     },
     {
       pollingInterval: 30000,
+      skipPollingIfUnfocused: true,
       skip: !mailbox,
     },
   );

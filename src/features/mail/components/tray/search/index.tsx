@@ -19,7 +19,11 @@ import {
   setSearchQuery,
   setToggleFilter,
 } from './reducer/filters.actions';
+import useEmailSearch from '@/hooks/mail/useEmailSearch';
 import SearchInput from './components/search-input';
+import SearchEmailList from './components/list';
+import { useDispatch } from 'react-redux';
+import { mailApi } from '@/store/api/mail';
 
 const Search = () => {
   const { translate } = useTranslationContext();
@@ -27,6 +31,7 @@ const Search = () => {
   const searchInput = useRef<HTMLInputElement>(null);
   const [openSearchBox, setOpenSearchBox] = useState(false);
   const [preventBlur, setPreventBlur] = useState(false);
+  const storeDispatch = useDispatch();
   const [filters, dispatch] = useReducer(filterReducer, initialFilterState);
   const {
     activeFilters,
@@ -39,6 +44,20 @@ const Search = () => {
     afterDate,
     beforeDate,
   } = filters;
+  const {
+    hasMoreEmails,
+    searchEmails,
+    isLoading: isLoadingSearchEmails,
+    onLoadMore,
+  } = useEmailSearch({
+    text: searchQuery,
+    from: fromEmails,
+    to: toEmails,
+    after: afterDate?.toISOString(),
+    before: beforeDate?.toISOString(),
+    hasAttachment: activeFilters.includes('hasAttachments') || undefined,
+    unread: activeFilters.includes('unread') || undefined,
+  });
 
   const handleFilterToggle = (id: FilterId, offsetLeft: number) => dispatch(setToggleFilter(id, offsetLeft));
   const handleAddEmail = (filterId: 'from' | 'to', email: string) => dispatch(setAddEmail(filterId, email));
@@ -52,6 +71,7 @@ const Search = () => {
     if (preventBlur) return;
     setOpenSearchBox(false);
     dispatch(resetFilters());
+    storeDispatch(mailApi.util.invalidateTags(['EmailSearch']));
   };
 
   useHotkeys(
@@ -134,9 +154,21 @@ const Search = () => {
             </Activity>
           </fieldset>
 
-          {!searchQuery && (
+          {searchEmails.length === 0 && (
             <div className="flex flex-1 flex-col items-center justify-center">
               <EmptyState />
+            </div>
+          )}
+
+          {searchEmails.length > 0 && (
+            <div className="-mx-3 flex flex-col flex-1 overflow-y-auto min-h-0">
+              <SearchEmailList
+                loading={isLoadingSearchEmails}
+                mails={searchEmails}
+                onMailSelected={() => {}}
+                onLoadMore={onLoadMore}
+                hasMoreItems={hasMoreEmails}
+              />
             </div>
           )}
         </div>
