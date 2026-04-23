@@ -13,7 +13,7 @@ export const useEmailSearch = (filters: Omit<SearchFiltersQuery, 'limit' | 'posi
   const debouncedText = useDebounce(filters.text, 500);
 
   const fetchResults = useCallback(
-    async (pos: number) => {
+    async (pos: number, signal: AbortSignal) => {
       if (!debouncedText) {
         setResults(null);
         return;
@@ -26,24 +26,27 @@ export const useEmailSearch = (filters: Omit<SearchFiltersQuery, 'limit' | 'posi
           limit: DEFAULT_LIMIT,
           position: pos,
         });
+        if (signal.aborted) return;
         setResults((prev) => (pos === 0 ? data : { ...data, emails: [...(prev?.emails ?? []), ...data.emails] }));
       } finally {
-        setIsLoading(false);
+        if (!signal.aborted) setIsLoading(false);
       }
     },
     [debouncedText, filters.from, filters.to, filters.after, filters.before, filters.hasAttachment, filters.unread],
   );
 
   useEffect(() => {
+    const controller = new AbortController();
     setPosition(0);
-    fetchResults(0);
+    fetchResults(0, controller.signal);
+    return () => controller.abort();
   }, [fetchResults]);
 
   const onLoadMore = () => {
     if (isLoading || !results?.hasMoreMails) return;
     const next = position + DEFAULT_LIMIT;
     setPosition(next);
-    fetchResults(next);
+    fetchResults(next, new AbortController().signal);
   };
 
   return {

@@ -5,9 +5,10 @@ import Search from '../search';
 
 interface HeaderProps {
   folderName: string;
+  onSearchEmailSelected: (mailId: string, isRead?: boolean) => void;
 }
 
-const Header = ({ folderName }: HeaderProps) => {
+const Header = ({ folderName, onSearchEmailSelected }: HeaderProps) => {
   const { translate } = useTranslationContext();
 
   const listActionContext: MenuItemType<unknown>[] = [
@@ -45,7 +46,7 @@ const Header = ({ folderName }: HeaderProps) => {
   return (
     <section className="flex flex-col w-full">
       <div className="py-3 flex w-full px-5">
-        <Search />
+        <Search onMailSelected={onSearchEmailSelected} />
       </div>
       <div className="flex flex-row w-full justify-between px-5 py-3 z-10">
         <div className="flex flex-row gap-2 items-center">

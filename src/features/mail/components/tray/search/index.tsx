@@ -22,16 +22,17 @@ import {
 import useEmailSearch from '@/hooks/mail/useEmailSearch';
 import SearchInput from './components/search-input';
 import SearchEmailList from './components/list';
-import { useDispatch } from 'react-redux';
-import { mailApi } from '@/store/api/mail';
 
-const Search = () => {
+interface SearchProps {
+  onMailSelected: (id: string, isRead?: boolean) => void;
+}
+
+const Search = ({ onMailSelected }: SearchProps) => {
   const { translate } = useTranslationContext();
 
   const searchInput = useRef<HTMLInputElement>(null);
   const [openSearchBox, setOpenSearchBox] = useState(false);
   const [preventBlur, setPreventBlur] = useState(false);
-  const storeDispatch = useDispatch();
   const [filters, dispatch] = useReducer(filterReducer, initialFilterState);
   const {
     activeFilters,
@@ -44,6 +45,7 @@ const Search = () => {
     afterDate,
     beforeDate,
   } = filters;
+
   const {
     hasMoreEmails,
     searchEmails,
@@ -71,7 +73,12 @@ const Search = () => {
     if (preventBlur) return;
     setOpenSearchBox(false);
     dispatch(resetFilters());
-    storeDispatch(mailApi.util.invalidateTags(['EmailSearch']));
+  };
+
+  const handleMessageSelected = (mailId: string, isRead?: boolean) => {
+    onMailSelected(mailId, isRead);
+    setOpenSearchBox(false);
+    dispatch(resetFilters());
   };
 
   useHotkeys(
@@ -113,13 +120,14 @@ const Search = () => {
         setOpenSearchBox={setOpenSearchBox}
       />
 
-      <div role="none" className={dropdownClassName}>
+      <div
+        role="none"
+        className={dropdownClassName}
+        onMouseEnter={() => setPreventBlur(true)}
+        onMouseLeave={() => setPreventBlur(false)}
+      >
         <div className="flex h-full w-full flex-col gap-3 px-3 py-3">
-          <fieldset
-            className="relative flex flex-wrap items-center gap-1.5"
-            onMouseEnter={() => setPreventBlur(true)}
-            onMouseLeave={() => setPreventBlur(false)}
-          >
+          <fieldset className="relative flex flex-wrap items-center gap-1.5">
             {filterItems.map((item) => (
               <FilterItem
                 key={item.id}
@@ -161,11 +169,11 @@ const Search = () => {
           )}
 
           {searchEmails.length > 0 && (
-            <div className="-mx-3 flex flex-col flex-1 overflow-y-auto min-h-0">
+            <div className="-mx-3 z-40 flex flex-col flex-1 overflow-y-auto min-h-0">
               <SearchEmailList
                 loading={isLoadingSearchEmails}
                 mails={searchEmails}
-                onMailSelected={() => {}}
+                onMailSelected={handleMessageSelected}
                 onLoadMore={onLoadMore}
                 hasMoreItems={hasMoreEmails}
               />

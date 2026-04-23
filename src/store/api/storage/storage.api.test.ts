@@ -1,9 +1,9 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
-import { configureStore } from '@reduxjs/toolkit';
 import { storageApi } from '.';
 import { StorageService } from '@/services/sdk/storage';
 import { ErrorService } from '@/services/error';
 import { FetchStorageLimitError, FetchStorageUsageError } from '@/errors';
+import { createTestStore } from '@/test-utils/createTestStore';
 
 vi.mock('@/services/error', () => ({
   ErrorService: {
@@ -12,12 +12,6 @@ vi.mock('@/services/error', () => ({
     },
   },
 }));
-
-const createTestStore = () =>
-  configureStore({
-    reducer: { [storageApi.reducerPath]: storageApi.reducer },
-    middleware: (getDefault) => getDefault().concat(storageApi.middleware),
-  });
 
 describe('Storage Query', () => {
   beforeEach(() => {

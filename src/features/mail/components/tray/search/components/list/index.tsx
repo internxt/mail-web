@@ -7,7 +7,7 @@ interface SearchEmailListProps {
   hasMoreItems: boolean;
   loading: boolean;
   onLoadMore: () => void;
-  onMailSelected: (id: string) => void;
+  onMailSelected: (id: string, isRead?: boolean) => void;
 }
 
 const SearchEmailList = ({ mails, hasMoreItems, loading, onLoadMore, onMailSelected }: SearchEmailListProps) => {

@@ -39,7 +39,7 @@ const TrayList = ({
   return (
     <div className="flex flex-col border-r border-gray-5 h-full">
       <div className="flex z-10">
-        <Header folderName={folderName} />
+        <Header folderName={folderName} onSearchEmailSelected={onMailSelected ?? (() => {})} />
       </div>
       <div className="flex-1 w-full overflow-hidden">
         <Tray
