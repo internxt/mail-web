@@ -8,13 +8,14 @@ import { useTranslationContext } from '@/i18n';
 import LanguageDropdown from './language-dropdown';
 import { LocalStorageService } from '@/services/local-storage';
 
-const languages = ['en', 'es', 'fr', 'it'];
+const languages = ['en', 'es', 'fr', 'it'] as const;
+type SupportedLanguage = (typeof languages)[number];
 
-const sanitizeLanguage = (language: string): string => {
-  return language.toLowerCase().includes('en') ? 'en' : language;
+const sanitizeLanguage = (language: string): SupportedLanguage => {
+  return language.toLowerCase().includes('en') ? 'en' : (language as SupportedLanguage);
 };
 
-const getInitialLanguage = (): string => {
+const getInitialLanguage = (): SupportedLanguage => {
   const formattedLang = i18next.language.split('-')[0];
   const stored = LocalStorageService.instance.get('i18nextLng')?.split('-')[0];
   return sanitizeLanguage(stored ?? formattedLang);
@@ -22,7 +23,7 @@ const getInitialLanguage = (): string => {
 
 const Language = () => {
   const { translate } = useTranslationContext();
-  const [lang, setLang] = useState<string>(getInitialLanguage);
+  const [lang, setLang] = useState<SupportedLanguage>(getInitialLanguage);
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
 
   const onToggleDropdownButton = () => {
@@ -33,7 +34,7 @@ const Language = () => {
     setIsDropdownOpen(false);
   };
 
-  const onChangeLanguage = (updatedLanguage: string) => {
+  const onChangeLanguage = (updatedLanguage: SupportedLanguage) => {
     setLang(updatedLanguage);
     void i18next.changeLanguage(updatedLanguage);
     dayjs.locale(updatedLanguage);
