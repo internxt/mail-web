@@ -201,5 +201,8 @@
     "spaceUsed": "{{space}}% space used",
     "settings": "Settings",
     "logout": "Log out"
+  },
+  "toastNotification": {
+    "textCopied": "Copied to clipboard"
   }
 }
