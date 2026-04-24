@@ -1,7 +1,5 @@
 import { useTranslationContext } from '@/i18n';
-import { MagnifyingGlassIcon, XIcon } from '@phosphor-icons/react';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { isMacOs } from 'react-device-detect';
 import ContactInput from './filters/contact-input';
 import DateFilter from './filters/date-filter';
 import FilterItem from './filters/filter-item';
@@ -21,12 +19,20 @@ import {
   setSearchQuery,
   setToggleFilter,
 } from './reducer/filters.actions';
+import useEmailSearch from '@/hooks/mail/useEmailSearch';
+import SearchInput from './components/search-input';
+import SearchEmailList from './components/list';
 
-const SearchInput = () => {
+interface SearchProps {
+  onMailSelected?: (id: string, isRead?: boolean) => void;
+}
+
+const Search = ({ onMailSelected }: SearchProps) => {
   const { translate } = useTranslationContext();
 
   const searchInput = useRef<HTMLInputElement>(null);
   const [openSearchBox, setOpenSearchBox] = useState(false);
+  const [preventBlur, setPreventBlur] = useState(false);
   const [filters, dispatch] = useReducer(filterReducer, initialFilterState);
   const {
     activeFilters,
@@ -40,15 +46,37 @@ const SearchInput = () => {
     beforeDate,
   } = filters;
 
+  const {
+    hasMoreEmails,
+    searchEmails,
+    isLoading: isLoadingSearchEmails,
+    onLoadMore,
+  } = useEmailSearch({
+    text: searchQuery,
+    from: fromEmails,
+    to: toEmails,
+    after: afterDate?.toISOString(),
+    before: beforeDate?.toISOString(),
+    hasAttachment: activeFilters.includes('hasAttachments') || undefined,
+    unread: activeFilters.includes('unread') || undefined,
+  });
+
   const handleFilterToggle = (id: FilterId, offsetLeft: number) => dispatch(setToggleFilter(id, offsetLeft));
   const handleAddEmail = (filterId: 'from' | 'to', email: string) => dispatch(setAddEmail(filterId, email));
-  const handleSearchQuery = (searchQuery: string) => dispatch(setSearchQuery(searchQuery));
+  const onSearchQueryChanges = (searchQuery: string) => dispatch(setSearchQuery(searchQuery));
   const handleRemoveEmail = (filterId: 'from' | 'to', email: string) => dispatch(setRemoveEmail(filterId, email));
   const handleDatePreset = (preset: DatePreset) => dispatch(setDatePreset(preset));
   const handleAfterDate = (date: Dayjs) => dispatch(setAfterDate(date));
   const handleBeforeDate = (date: Dayjs) => dispatch(setBeforeDate(date));
 
   const handleBlur = () => {
+    if (preventBlur) return;
+    setOpenSearchBox(false);
+    dispatch(resetFilters());
+  };
+
+  const handleMessageSelected = (mailId: string, isRead?: boolean) => {
+    onMailSelected?.(mailId, isRead);
     setOpenSearchBox(false);
     dispatch(resetFilters());
   };
@@ -71,14 +99,6 @@ const SearchInput = () => {
     { id: 'unread', label: translate('search.filters.unread') },
   ];
 
-  const handleSubmit = (e: React.BaseSyntheticEvent) => {
-    e.preventDefault();
-
-    if (!searchQuery) return;
-
-    // !TODO: Add search logic
-  };
-
   const dropdownClassName = (() => {
     const base =
       'absolute top-12 z-20 w-screen max-w-160 h-screen max-h-80 origin-top rounded-xl bg-surface text-gray-100 shadow-subtle-hard ring-1 ring-gray-10 transition-all duration-150 ease-out dark:bg-gray-5';
@@ -90,50 +110,24 @@ const SearchInput = () => {
   const currentEmails = expandedFilter === 'from' ? fromEmails : toEmails;
 
   return (
-    <form className="relative flex h-full w-full items-center" onSubmit={handleSubmit}>
-      {/* TODO: Extract this INPUT to a component */}
-      <label className="relative flex w-full items-center" htmlFor="globalSearchInput">
-        <MagnifyingGlassIcon
-          className="pointer-events-none absolute left-2.5 top-1/2 z-1 -translate-y-1/2 text-gray-60"
-          size={20}
-        />
-        <input
-          ref={searchInput}
-          id="globalSearchInput"
-          data-cy="globalSearchInput"
-          autoComplete="off"
-          spellCheck="false"
-          type="text"
-          value={searchQuery}
-          className="h-10 w-full appearance-none rounded-lg border border-transparent bg-gray-5 pl-9 pr-9 text-base text-gray-100 placeholder-gray-60 outline-none ring-1 ring-gray-10 transition-all duration-150 ease-out hover:shadow-sm hover:ring-gray-20 focus:border-primary focus:bg-surface focus:placeholder-gray-80 focus:shadow-none focus:ring-3 focus:ring-primary/10 dark:focus:bg-gray-1 dark:focus:ring-primary/20"
-          onKeyUp={(e) => {
-            if (e.key === 'Escape') e.currentTarget.blur();
-          }}
-          onChange={(e) => handleSearchQuery(e.target.value)}
-          onFocus={() => setOpenSearchBox(true)}
-          onBlur={handleBlur}
-          placeholder={translate('actions.search')}
-        />
-        <div
-          className={`pointer-events-none absolute right-2.5 top-1/2 z-1 -translate-y-1/2 rounded-md bg-gray-10 px-2 py-1 text-sm text-gray-50 transition-opacity duration-100 ${openSearchBox ? 'opacity-0' : ''}`}
-        >
-          {isMacOs ? '⌘F' : 'Ctrl F'}
-        </div>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            handleSearchQuery('');
-          }}
-          className={`absolute right-2.5 top-1/2 z-1 -translate-y-1/2 cursor-pointer text-gray-60 transition-all duration-100 ease-out ${searchQuery.length === 0 ? 'pointer-events-none opacity-0' : ''}`}
-        >
-          <XIcon size={20} />
-        </button>
-      </label>
+    <div className="relative flex h-full w-full items-center">
+      <SearchInput
+        handleBlur={handleBlur}
+        onSearchQueryChanges={onSearchQueryChanges}
+        openSearchBox={openSearchBox}
+        searchInput={searchInput}
+        searchQuery={searchQuery}
+        setOpenSearchBox={setOpenSearchBox}
+      />
 
-      <div role="none" className={dropdownClassName} onMouseDown={(e) => e.preventDefault()}>
+      <div
+        role="none"
+        className={dropdownClassName}
+        onMouseEnter={() => setPreventBlur(true)}
+        onMouseLeave={() => setPreventBlur(false)}
+      >
         <div className="flex h-full w-full flex-col gap-3 px-3 py-3">
-          <div className="relative flex flex-wrap items-center gap-1.5">
+          <fieldset className="relative flex flex-wrap items-center gap-1.5">
             {filterItems.map((item) => (
               <FilterItem
                 key={item.id}
@@ -166,17 +160,29 @@ const SearchInput = () => {
                 onBeforeDate={handleBeforeDate}
               />
             </Activity>
-          </div>
+          </fieldset>
 
-          {!searchQuery && (
+          {searchEmails.length === 0 && (
             <div className="flex flex-1 flex-col items-center justify-center">
               <EmptyState />
             </div>
           )}
+
+          {searchEmails.length > 0 && (
+            <div className="-mx-3 z-40 flex flex-col flex-1 overflow-y-auto min-h-0">
+              <SearchEmailList
+                loading={isLoadingSearchEmails}
+                mails={searchEmails}
+                onMailSelected={handleMessageSelected}
+                onLoadMore={onLoadMore}
+                hasMoreItems={hasMoreEmails}
+              />
+            </div>
+          )}
         </div>
       </div>
-    </form>
+    </div>
   );
 };
 
-export default SearchInput;
+export default Search;

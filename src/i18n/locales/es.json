@@ -7,6 +7,7 @@
     "newMessage": "Nuevo mensaje",
     "search": "Buscar",
     "trashAll": "Mover todo a la papelera",
+    "emptyTrash": "Vaciar papelera",
     "archiveAll": "Mover todo al archivo"
   },
   "filter": {

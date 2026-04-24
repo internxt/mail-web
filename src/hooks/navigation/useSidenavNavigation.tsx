@@ -10,7 +10,7 @@ import { useUnreadByMailbox } from '@/hooks/mail/useUnreadByMailbox';
 export const useSidenavNavigation = () => {
   const { translate } = useTranslationContext();
   const { pathname } = useLocation();
-  const { unreadByMailbox } = useUnreadByMailbox({ pollingInterval: 30000 });
+  const { unreadByMailbox } = useUnreadByMailbox({ pollingInterval: 30000, skipPollingIfUnfocused: true });
 
   const isActiveButton = useCallback((path: string) => !!matchPath(path, pathname), [pathname]);
 

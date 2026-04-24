@@ -3,6 +3,7 @@ import type {
   EmailResponse,
   ListEmailsQuery,
   MailboxResponse,
+  SearchFiltersQuery,
   UpdateEmailRequest,
 } from '@internxt/sdk';
 import { SdkManager } from '..';
@@ -51,5 +52,9 @@ export class MailService {
    */
   async updateEmailStatus(emailId: string, status: UpdateEmailRequest): Promise<void> {
     return this.client.updateEmail(emailId, status);
+  }
+
+  async search(query: SearchFiltersQuery): Promise<EmailListResponse> {
+    return this.client.search(query);
   }
 }

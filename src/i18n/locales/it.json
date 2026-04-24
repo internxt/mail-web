@@ -7,6 +7,7 @@
     "newMessage": "Nuovo messaggio",
     "search": "Cerca",
     "trashAll": "Sposta tutto nel cestino",
+    "emptyTrash": "Svuota il cestino",
     "archiveAll": "Sposta tutto nell'archivio"
   },
   "filter": {

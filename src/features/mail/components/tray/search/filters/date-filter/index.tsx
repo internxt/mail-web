@@ -5,6 +5,12 @@ import { useState } from 'react';
 import Calendar from '../../components/calendar';
 import type { DatePreset } from '../../types';
 
+interface PresetProps {
+  id: DatePreset;
+  label: string;
+  action?: () => void;
+}
+
 interface DateFilterDropdownProps {
   offsetLeft: number;
   selected: DatePreset;
@@ -30,13 +36,48 @@ const DateFilter = ({
   const [afterDraft, setAfterDraft] = useState('');
   const [beforeDraft, setBeforeDraft] = useState('');
 
-  const presets: { id: DatePreset; label: string }[] = [
+  const presets: PresetProps[] = [
     { id: 'anyDate', label: translate('search.date.anyDate') },
-    { id: 'today', label: translate('search.date.today') },
-    { id: 'last7days', label: translate('search.date.last7days') },
-    { id: 'last30days', label: translate('search.date.last30days') },
-    { id: 'thisYear', label: translate('search.date.thisYear', { year: now.year().toString() }) },
-    { id: 'lastYear', label: translate('search.date.lastYear', { year: (now.year() - 1).toString() }) },
+    {
+      id: 'today',
+      label: translate('search.date.today'),
+      action: () => {
+        onAfterDate(now.startOf('day'));
+        onBeforeDate(now.endOf('day'));
+      },
+    },
+    {
+      id: 'last7days',
+      label: translate('search.date.last7days'),
+      action: () => {
+        onAfterDate(now.subtract(7, 'day'));
+        onBeforeDate(now);
+      },
+    },
+    {
+      id: 'last30days',
+      label: translate('search.date.last30days'),
+      action: () => {
+        onAfterDate(now.subtract(30, 'day'));
+        onBeforeDate(now);
+      },
+    },
+    {
+      id: 'thisYear',
+      label: translate('search.date.thisYear', { year: now.year().toString() }),
+      action: () => {
+        onAfterDate(now.startOf('year'));
+        onBeforeDate(now.endOf('year'));
+      },
+    },
+    {
+      id: 'lastYear',
+      label: translate('search.date.lastYear', { year: (now.year() - 1).toString() }),
+      action: () => {
+        onAfterDate(now.subtract(1, 'year').startOf('year'));
+        onBeforeDate(now.subtract(1, 'year').endOf('year'));
+      },
+    },
     { id: 'specificDate', label: translate('search.date.specificDate') },
   ];
 
@@ -44,12 +85,13 @@ const DateFilter = ({
     <div className="absolute top-full z-30 mt-1" style={{ left: offsetLeft }}>
       <div className="relative w-72 rounded-xl border border-gray-10 bg-surface shadow-subtle-hard dark:bg-gray-5">
         <ul className="py-1.5">
-          {presets.map(({ id, label }) => (
+          {presets.map(({ id, label, action }) => (
             <li key={id}>
               <button
                 type="button"
                 onClick={() => {
                   onSelectPreset(id);
+                  action?.();
                   if (id !== 'specificDate') setActiveCalendar(null);
                 }}
                 className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-100 hover:bg-gray-5 dark:hover:bg-gray-10"
