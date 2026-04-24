@@ -15,6 +15,7 @@
     "test": "vitest run",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
+    "test:related": "vitest run --changed HEAD",
     "prepare": "husky",
     "format": "prettier --write **/*.{js,jsx,tsx,ts}",
     "preinstall": "node scripts/check-package-manager.js"
