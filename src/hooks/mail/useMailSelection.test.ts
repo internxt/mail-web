@@ -83,6 +83,9 @@ describe('Mail Selection - custom hook', () => {
 
   test('When toggleSelectAll is called and some are selected, then all are selected', () => {
     const { emails } = getMockedMails(3);
+    emails[0].isRead = true;
+    emails[1].isRead = false;
+    emails[2].isRead = false;
     const { result } = renderHook(() => useMailSelection(emails));
 
     act(() => result.current.selectRead());
