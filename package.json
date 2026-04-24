@@ -15,7 +15,7 @@
     "test": "vitest run",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
-    "test:related": "vitest run --changed HEAD",
+    "test:related": "vitest run --changed HEAD --passWithNoTests",
     "prepare": "husky",
     "format": "prettier --write **/*.{js,jsx,tsx,ts}",
     "check:i18n": "node scripts/check-i18n.cjs",
