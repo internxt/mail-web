@@ -44,7 +44,7 @@
     "dompurify": "^3.3.3",
     "i18next": "^25.8.13",
     "idb": "^8.0.3",
-    "internxt-crypto": "^1.1.1",
+    "internxt-crypto": "^1.2.0",
     "prettysize": "^2.0.0",
     "react": "^19.2.0",
     "react-device-detect": "^2.2.3",
