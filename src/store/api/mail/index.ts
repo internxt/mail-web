@@ -20,7 +20,7 @@ export const mailApi = api.injectEndpoints({
       providesTags: ['Mailbox'],
     }),
     getListFolder: builder.query<EmailListResponse, ListEmailsQuery>({
-      serializeQueryArgs: ({ queryArgs }) => ({ mailbox: queryArgs?.mailbox }),
+      serializeQueryArgs: ({ queryArgs }) => ({ mailbox: queryArgs?.mailbox, unread: queryArgs?.unread }),
       merge: (currentCache, newItems, { arg }) => {
         // No anchorId means first page — replace instead of accumulate
         if (arg?.anchorId) {
@@ -32,7 +32,9 @@ export const mailApi = api.injectEndpoints({
         currentCache.nextAnchor = newItems.nextAnchor;
       },
       forceRefetch: ({ currentArg, previousArg }) =>
-        currentArg?.mailbox !== previousArg?.mailbox || currentArg?.anchorId !== previousArg?.anchorId,
+        currentArg?.mailbox !== previousArg?.mailbox ||
+        currentArg?.anchorId !== previousArg?.anchorId ||
+        currentArg?.unread !== previousArg?.unread,
       async queryFn(query) {
         try {
           const mailList = await MailService.instance.listFolder(query);

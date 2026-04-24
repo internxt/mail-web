@@ -1,4 +1,4 @@
-import { DateService } from '@/services/date';
+import { formatEmailsToList } from '@/utils/format-emails';
 import type { EmailListResponse } from '@internxt/sdk';
 import { InfiniteScroll, MessageCheap, MessageCheapSkeleton } from '@internxt/ui';
 
@@ -11,18 +11,7 @@ interface SearchEmailListProps {
 }
 
 const SearchEmailList = ({ mails, hasMoreItems, loading, onLoadMore, onMailSelected }: SearchEmailListProps) => {
-  const formattedMails =
-    mails?.map((mail) => ({
-      id: mail.id,
-      from: {
-        name: mail.from[0]?.name ?? mail.from[0]?.email ?? '',
-        avatar: '',
-      },
-      subject: mail.subject,
-      createdAt: DateService.formatMailTimestamp(mail.receivedAt),
-      body: mail.preview,
-      read: mail.isRead,
-    })) ?? [];
+  const formattedMails = formatEmailsToList(mails) ?? [];
   const loader = (
     <div className="flex flex-col">
       {new Array(3).fill(0).map((_, index) => (
