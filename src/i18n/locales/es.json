@@ -138,7 +138,13 @@
       "passwordCheckFailed": "Algo ha ido mal al verificar tu contraseña",
       "setupFailed": "Algo ha ido mal al configurar tu cuenta"
     },
-    "downloadingDesktopApp": "Algo ha ido mal al descargar la aplicación"
+    "downloadingDesktopApp": "Algo ha ido mal al descargar la aplicación",
+    "mail": {
+      "markAsRead": "Algo ha ido mal al marcar el correo como leído",
+      "markAsUnread": "Algo ha ido mal al marcar el correo como no leído",
+      "trash": "Algo ha ido mal al eliminar el correo",
+      "move": "Algo ha ido mal al mover el correo"
+    }
   },
   "modals": {
     "upgradePlanDialog": {

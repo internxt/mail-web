@@ -1,19 +1,7 @@
-import { describe, test, expect, vi, beforeEach } from 'vitest';
+import { describe, test, expect } from 'vitest';
 import { isCurrentPath } from '.';
 
-vi.mock('react-router-dom', () => ({
-  matchPath: vi.fn((pattern: string, pathname: string) => {
-    if (pattern === pathname) return {};
-    if (pathname.startsWith(pattern.replace('/*', ''))) return {};
-    return null;
-  }),
-}));
-
 describe('isCurrentPath', () => {
-  beforeEach(() => {
-    vi.restoreAllMocks();
-  });
-
   test('When the pattern matches the pathname exactly, then it should return true', () => {
     // Arrange
     const pattern = '/inbox';

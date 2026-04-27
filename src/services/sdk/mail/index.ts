@@ -85,7 +85,7 @@ export class MailService {
   }
 
   /**
-   * This EP is used for both trashing and deleting emails
+   * Deletes an email. Behavior depends on the source folder: emails in inbox/spam are moved to trash; emails already in trash are permanently deleted.
    * @param emailId - The ID of the email we want to trash or delete
    * @returns - A promise that resolves when the operation is complete
    */

@@ -7,8 +7,13 @@ vi.mock('@/services/error', () => ({
   ErrorService: {
     instance: {
       castError: vi.fn((err) => err),
+      notifyUser: vi.fn(),
     },
   },
+}));
+
+vi.mock('@/i18n', () => ({
+  useTranslationContext: () => ({ translate: (key: string) => key }),
 }));
 
 const makeParams = (overrides?: Record<string, unknown>) => ({
@@ -24,6 +29,7 @@ const makeParams = (overrides?: Record<string, unknown>) => ({
 describe('Preview Mail Actions - custom hook', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Mark as read', () => {
@@ -36,13 +42,13 @@ describe('Preview Mail Actions - custom hook', () => {
       expect(params.updateReadStatus).toHaveBeenCalledWith({ emailId: 'mail-1', mailbox: 'inbox', isRead: true });
     });
 
-    test('When marking a mail as read succeeds, then the preview is closed', async () => {
+    test('When marking a mail as read succeeds, then the preview stays open', async () => {
       const params = makeParams();
       const { result } = renderHook(() => usePreviewMailActions(params));
 
       await act(() => result.current.onMarkAsRead());
 
-      expect(params.clearActiveMail).toHaveBeenCalledOnce();
+      expect(params.clearActiveMail).not.toHaveBeenCalled();
     });
 
     test('When no mail is open and mark as read is triggered, then nothing happens', async () => {
@@ -54,7 +60,7 @@ describe('Preview Mail Actions - custom hook', () => {
       expect(params.updateReadStatus).not.toHaveBeenCalled();
     });
 
-    test('When marking a mail as read fails, then the error is logged and the preview stays open', async () => {
+    test('When marking a mail as read fails, then the error is logged', async () => {
       const error = new Error('Network error');
       const params = makeParams({ updateReadStatus: vi.fn().mockRejectedValue(error) });
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -64,7 +70,6 @@ describe('Preview Mail Actions - custom hook', () => {
 
       expect(ErrorService.instance.castError).toHaveBeenCalledWith(error);
       expect(consoleErrorSpy).toHaveBeenCalledOnce();
-      expect(params.clearActiveMail).not.toHaveBeenCalled();
     });
   });
 
@@ -76,15 +81,6 @@ describe('Preview Mail Actions - custom hook', () => {
       await act(() => result.current.onMarkAsUnread());
 
       expect(params.updateReadStatus).toHaveBeenCalledWith({ emailId: 'mail-1', mailbox: 'inbox', isRead: false });
-    });
-
-    test('When marking a mail as unread succeeds, then the preview is closed', async () => {
-      const params = makeParams();
-      const { result } = renderHook(() => usePreviewMailActions(params));
-
-      await act(() => result.current.onMarkAsUnread());
-
-      expect(params.clearActiveMail).toHaveBeenCalledOnce();
     });
 
     test('When no mail is open and mark as unread is triggered, then nothing happens', async () => {

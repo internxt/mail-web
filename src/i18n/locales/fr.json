@@ -138,7 +138,13 @@
       "passwordCheckFailed": "Une erreur s'est produite lors de la vérification de votre mot de passe",
       "setupFailed": "Une erreur s'est produite lors de la configuration de votre compte"
     },
-    "downloadingDesktopApp": "Une erreur s'est produite lors du téléchargement de l'application"
+    "downloadingDesktopApp": "Une erreur s'est produite lors du téléchargement de l'application",
+    "mail": {
+      "markAsRead": "Une erreur s'est produite lors du marquage de l'e-mail comme lu",
+      "markAsUnread": "Une erreur s'est produite lors du marquage de l'e-mail comme non lu",
+      "trash": "Une erreur s'est produite lors de la suppression de l'e-mail",
+      "move": "Une erreur s'est produite lors du déplacement de l'e-mail"
+    }
   },
   "modals": {
     "upgradePlanDialog": {

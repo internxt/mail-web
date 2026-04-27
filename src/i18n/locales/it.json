@@ -138,7 +138,13 @@
       "passwordCheckFailed": "Si è verificato un errore durante la verifica della password",
       "setupFailed": "Si è verificato un errore durante la configurazione del tuo account"
     },
-    "downloadingDesktopApp": "Si è verificato un errore durante il download dell'app"
+    "downloadingDesktopApp": "Si è verificato un errore durante il download dell'app",
+    "mail": {
+      "markAsRead": "Si è verificato un errore durante la marcatura dell'e-mail come letta",
+      "markAsUnread": "Si è verificato un errore durante la marcatura dell'e-mail come non letta",
+      "trash": "Si è verificato un errore durante l'eliminazione dell'e-mail",
+      "move": "Si è verificato un errore durante lo spostamento dell'e-mail"
+    }
   },
   "modals": {
     "upgradePlanDialog": {

@@ -23,6 +23,35 @@ vi.mock('@/services/error', () => ({
   },
 }));
 
+const mailboxQuery = { mailbox: 'inbox', limit: DEFAULT_FOLDER_LIMIT } as ListEmailsQuery;
+
+const setupCachedStore = async (emailOverrides?: Record<string, unknown>) => {
+  const mockedMails = getMockedMails();
+  const mockedMailboxes = getMockedMailBoxes();
+  const targetEmail = { ...mockedMails.emails[0], isRead: false, ...emailOverrides };
+  mockedMails.emails[0] = targetEmail;
+  const inboxMailbox = { ...mockedMailboxes.find((m) => m.type === 'inbox')!, unreadEmails: 5 };
+
+  vi.spyOn(MailService.instance, 'listFolder').mockResolvedValue(mockedMails);
+  vi.spyOn(MailService.instance, 'getMailboxesInfo').mockResolvedValue(
+    mockedMailboxes.map((m) => (m.type === 'inbox' ? inboxMailbox : m)),
+  );
+
+  const store = createTestStore();
+  await store.dispatch(mailApi.endpoints.getListFolder.initiate(mailboxQuery));
+  await store.dispatch(mailApi.endpoints.getMailboxesInfo.initiate());
+
+  return { store, mockedMails, targetEmail };
+};
+
+const getCacheState = (store: ReturnType<typeof createTestStore>) => {
+  const rootState = store.getState() as unknown as RootState;
+  return {
+    listState: mailApi.endpoints.getListFolder.select(mailboxQuery)(rootState),
+    mailboxState: mailApi.endpoints.getMailboxesInfo.select()(rootState),
+  };
+};
+
 describe('Mail API', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -143,35 +172,6 @@ describe('Mail API', () => {
   });
 
   describe('Update Read Status', () => {
-    const mailboxQuery = { mailbox: 'inbox', limit: DEFAULT_FOLDER_LIMIT } as ListEmailsQuery;
-
-    const setupCachedStore = async (emailOverrides?: Record<string, unknown>) => {
-      const mockedMails = getMockedMails();
-      const mockedMailboxes = getMockedMailBoxes();
-      const targetEmail = { ...mockedMails.emails[0], isRead: false, ...emailOverrides };
-      mockedMails.emails[0] = targetEmail;
-      const inboxMailbox = { ...mockedMailboxes.find((m) => m.type === 'inbox')!, unreadEmails: 5 };
-
-      vi.spyOn(MailService.instance, 'listFolder').mockResolvedValue(mockedMails);
-      vi.spyOn(MailService.instance, 'getMailboxesInfo').mockResolvedValue(
-        mockedMailboxes.map((m) => (m.type === 'inbox' ? inboxMailbox : m)),
-      );
-
-      const store = createTestStore();
-      await store.dispatch(mailApi.endpoints.getListFolder.initiate(mailboxQuery));
-      await store.dispatch(mailApi.endpoints.getMailboxesInfo.initiate());
-
-      return { store, targetEmail };
-    };
-
-    const getCacheState = (store: ReturnType<typeof createTestStore>) => {
-      const rootState = store.getState() as unknown as RootState;
-      return {
-        listState: mailApi.endpoints.getListFolder.select(mailboxQuery)(rootState),
-        mailboxState: mailApi.endpoints.getMailboxesInfo.select()(rootState),
-      };
-    };
-
     test('When marking a mail as read, then it should call the service and return null', async () => {
       vi.spyOn(MailService.instance, 'updateEmailStatus').mockResolvedValue();
       const store = createTestStore();

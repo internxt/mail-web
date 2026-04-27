@@ -58,9 +58,15 @@ const MailView = ({ folder }: MailViewProps) => {
     activeMailId,
     folder,
     clearActiveMail: () => setActiveMailId(undefined),
-    updateReadStatus: (args) => updateReadStatus(args).unwrap(),
-    moveToFolder: (args) => moveToFolder(args).unwrap(),
-    deleteEmails: (args) => deleteEmails(args).unwrap(),
+    updateReadStatus: async (args) => {
+      await updateReadStatus(args).unwrap();
+    },
+    moveToFolder: async (args) => {
+      await moveToFolder(args).unwrap();
+    },
+    deleteEmails: async (args) => {
+      await deleteEmails(args).unwrap();
+    },
   });
   const { unreadByMailbox } = useUnreadByMailbox();
 

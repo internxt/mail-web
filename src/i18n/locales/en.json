@@ -136,7 +136,13 @@
       "passwordCheckFailed": "Something went wrong while verifying your password",
       "setupFailed": "Something went wrong while setting up your account"
     },
-    "downloadingDesktopApp": "Something went wrong while downloading the app"
+    "downloadingDesktopApp": "Something went wrong while downloading the app",
+    "mail": {
+      "markAsRead": "Something went wrong while marking the email as read",
+      "markAsUnread": "Something went wrong while marking the email as unread",
+      "trash": "Something went wrong while deleting the email",
+      "move": "Something went wrong while moving the email"
+    }
   },
   "modals": {
     "upgradePlanDialog": {

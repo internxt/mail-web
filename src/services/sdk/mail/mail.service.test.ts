@@ -207,7 +207,7 @@ describe('Mail Service', () => {
   describe('Trashing email', () => {
     test('When trashing email, then the client should be called with the correct params', async () => {
       const mockMailClient = {
-        deleteEmail: vi.fn(),
+        deleteEmail: vi.fn().mockResolvedValue(undefined),
       } as any;
       vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
 
@@ -216,7 +216,7 @@ describe('Mail Service', () => {
       expect(mockMailClient.deleteEmail).toHaveBeenCalledWith('email-1');
     });
 
-    test('When trashing emails fails, then an error should be thrown', async () => {
+    test('When trashing an email fails, then an error should be thrown', async () => {
       const unexpectedError = new Error('Unexpected error');
 
       const mockMailClient = {

@@ -9,8 +9,7 @@ import {
   WarningOctagonIcon,
 } from '@phosphor-icons/react';
 import MoveTo from '@/assets/icons/move-to.svg?react';
-import { Dropdown } from '@internxt/ui';
-import type { MenuItemsType } from '@internxt/ui/dist/components/menu/Menu';
+import { Dropdown, type MenuItemType } from '@internxt/ui';
 import { isCurrentPath } from '@/utils/current-path';
 import { useLocation } from 'react-router-dom';
 import { useCallback, useMemo } from 'react';
@@ -49,7 +48,7 @@ const ActionsBar = ({
 
   const isActive = useCallback((path: string) => isCurrentPath(path, pathname), [pathname]);
 
-  const moveToItems: MenuItemsType<unknown> = useMemo(
+  const moveToItems: MenuItemType<unknown>[] = useMemo(
     () => [
       {
         disabled: () => isActive('/inbox') || optionsDisabled,

@@ -4,6 +4,7 @@ import { batchProcess } from '.';
 describe('Batch Process', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   test('When there are no items, then the handler is never called', async () => {
@@ -38,26 +39,18 @@ describe('Batch Process', () => {
   });
 
   test('When a custom batch size is provided, then it is respected', async () => {
-    const batches: number[][] = [];
-    let current: number[] = [];
-
-    const handler = vi.fn(async (item: number) => {
-      current.push(item);
-    });
-
+    const handler = vi.fn().mockResolvedValue(undefined);
     const items = Array.from({ length: 9 }, (_, i) => i);
+    const batchSize = 3;
 
-    const originalPromiseAll = Promise.all.bind(Promise);
-    const spy = vi.spyOn(Promise, 'all').mockImplementation((promises) => {
-      batches.push([...current]);
-      current = [];
-      return originalPromiseAll(promises);
-    });
+    await batchProcess(items, handler, batchSize);
 
-    await batchProcess(items, handler, 3);
-
-    spy.mockRestore();
-    expect(batches).toHaveLength(3);
+    const expectedBatches = Math.ceil(items.length / batchSize);
+    for (let i = 0; i < expectedBatches; i++) {
+      const batchCalls = handler.mock.calls.slice(i * batchSize, (i + 1) * batchSize).map(([item]) => item);
+      expect(batchCalls).toEqual(items.slice(i * batchSize, (i + 1) * batchSize));
+    }
+    expect(handler).toHaveBeenCalledTimes(items.length);
   });
 
   test('When one batch completes, then the next batch starts after it', async () => {
@@ -80,6 +73,7 @@ describe('Batch Process', () => {
     const items = [0, 10];
     const promise = batchProcess(items, handler, 1);
 
+    expect(callLog).not.toContain('item-10');
     resolveFirst();
     await promise;
 

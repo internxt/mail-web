@@ -1,4 +1,5 @@
 import { ErrorService } from '@/services/error';
+import { useTranslationContext } from '@/i18n';
 import type { FolderType } from '@/types/mail';
 import { useCallback } from 'react';
 
@@ -6,9 +7,9 @@ interface UsePreviewMailActionsParams {
   activeMailId: string | undefined;
   folder: FolderType;
   clearActiveMail: () => void;
-  updateReadStatus: (args: { emailId: string; mailbox: FolderType; isRead: boolean }) => Promise<null>;
-  moveToFolder: (args: { emailIds: string[]; sourceMailbox: FolderType; targetMailbox: FolderType }) => Promise<null>;
-  deleteEmails: (args: { emailIds: string[]; sourceMailbox: FolderType }) => Promise<null>;
+  updateReadStatus: (args: { emailId: string; mailbox: FolderType; isRead: boolean }) => Promise<void>;
+  moveToFolder: (args: { emailIds: string[]; sourceMailbox: FolderType; targetMailbox: FolderType }) => Promise<void>;
+  deleteEmails: (args: { emailIds: string[]; sourceMailbox: FolderType }) => Promise<void>;
 }
 
 interface PreviewMailActions {
@@ -21,11 +22,6 @@ interface PreviewMailActions {
   onForward: () => void;
 }
 
-const logError = (action: string, error: unknown) => {
-  const err = ErrorService.instance.castError(error);
-  console.error(`Error while running ${action}: `, err);
-};
-
 export const usePreviewMailActions = ({
   activeMailId,
   folder,
@@ -34,17 +30,31 @@ export const usePreviewMailActions = ({
   moveToFolder,
   deleteEmails,
 }: UsePreviewMailActionsParams): PreviewMailActions => {
+  const { translate } = useTranslationContext();
+
+  const notifyError = useCallback(
+    (action: string, messageKey: Parameters<typeof translate>[0], error: unknown) => {
+      const err = ErrorService.instance.castError(error);
+      console.error(`Error while running ${action}: `, err);
+      ErrorService.instance.notifyUser(translate(messageKey));
+    },
+    [translate],
+  );
+
   const setReadStatus = useCallback(
     async (isRead: boolean) => {
       if (!activeMailId) return;
       try {
         await updateReadStatus({ emailId: activeMailId, mailbox: folder, isRead });
-        clearActiveMail();
       } catch (error) {
-        logError(isRead ? 'markAsRead' : 'markAsUnread', error);
+        notifyError(
+          isRead ? 'markAsRead' : 'markAsUnread',
+          isRead ? 'errors.mail.markAsRead' : 'errors.mail.markAsUnread',
+          error,
+        );
       }
     },
-    [activeMailId, folder, updateReadStatus, clearActiveMail],
+    [activeMailId, folder, updateReadStatus, notifyError],
   );
 
   const onMarkAsRead = useCallback(() => setReadStatus(true), [setReadStatus]);
@@ -56,9 +66,9 @@ export const usePreviewMailActions = ({
       await deleteEmails({ emailIds: [activeMailId], sourceMailbox: folder });
       clearActiveMail();
     } catch (error) {
-      logError('trash', error);
+      notifyError('trash', 'errors.mail.trash', error);
     }
-  }, [activeMailId, folder, deleteEmails, clearActiveMail]);
+  }, [activeMailId, folder, deleteEmails, clearActiveMail, notifyError]);
 
   const onMove = useCallback(
     async (targetMailbox: FolderType) => {
@@ -67,10 +77,10 @@ export const usePreviewMailActions = ({
         await moveToFolder({ emailIds: [activeMailId], sourceMailbox: folder, targetMailbox });
         clearActiveMail();
       } catch (error) {
-        logError('move', error);
+        notifyError('move', 'errors.mail.move', error);
       }
     },
-    [activeMailId, folder, moveToFolder, clearActiveMail],
+    [activeMailId, folder, moveToFolder, clearActiveMail, notifyError],
   );
 
   const noop = useCallback(() => {}, []);
