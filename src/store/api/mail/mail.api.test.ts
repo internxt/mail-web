@@ -3,8 +3,11 @@ import { ErrorService } from '@/services/error';
 import {
   DeleteEmailError,
   FetchListFolderError,
+  FetchMailAccountKeysError,
   FetchMailboxesInfoError,
   FetchMessageError,
+  MAIL_NOT_SETUP_CODE,
+  MailNotSetupError,
   UpdateMailError,
 } from '@/errors';
 import { MailService } from '@/services/sdk/mail';
@@ -452,6 +455,55 @@ describe('Mail API', () => {
 
       expect(castErrorSpy).toHaveBeenCalledOnce();
       expect(result.error).toBeInstanceOf(DeleteEmailError);
+    });
+  });
+
+  describe('Get Mail Account Keys', () => {
+    const address = 'jane@inxt.me';
+    const mockKeys = {
+      address,
+      publicKey: 'pub',
+      encryptionPrivateKey: 'enc',
+      recoveryPrivateKey: 'rec',
+      salt: 'salt',
+    };
+
+    test('When fetching the mail account keys, then it should return the keys', async () => {
+      vi.spyOn(MailService.instance, 'getMailAccountKeys').mockResolvedValue(mockKeys);
+      const store = createTestStore();
+
+      const result = await store.dispatch(mailApi.endpoints.getMailAccountKeys.initiate({ address }));
+
+      expect(result.data).toStrictEqual(mockKeys);
+    });
+
+    test('When the user has not set up a mail account, then a MailNotSetupError should be returned', async () => {
+      vi.spyOn(MailService.instance, 'getMailAccountKeys').mockRejectedValue(new Error('Forbidden'));
+      vi.spyOn(ErrorService.instance, 'castError').mockReturnValue({
+        message: 'Mail account has not been set up',
+        status: 403,
+        code: MAIL_NOT_SETUP_CODE,
+        requestId: 'req-123',
+      } as never);
+      const store = createTestStore();
+
+      const result = await store.dispatch(mailApi.endpoints.getMailAccountKeys.initiate({ address }));
+
+      expect(result.error).toBeInstanceOf(MailNotSetupError);
+    });
+
+    test('When the keys request fails for another reason, then a generic fetch error should be returned', async () => {
+      vi.spyOn(MailService.instance, 'getMailAccountKeys').mockRejectedValue(new Error('Network error'));
+      vi.spyOn(ErrorService.instance, 'castError').mockReturnValue({
+        message: 'Network error',
+        status: 500,
+        requestId: 'req-123',
+      } as never);
+      const store = createTestStore();
+
+      const result = await store.dispatch(mailApi.endpoints.getMailAccountKeys.initiate({ address }));
+
+      expect(result.error).toBeInstanceOf(FetchMailAccountKeysError);
     });
   });
 });

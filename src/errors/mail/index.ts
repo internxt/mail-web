@@ -43,6 +43,27 @@ export class UpdateMailError extends Error {
   }
 }
 
+export const MAIL_NOT_SETUP_CODE = 'MAIL_NOT_SETUP';
+
+export class MailNotSetupError extends Error {
+  constructor(public requestId?: string) {
+    super('Mail account has not been set up');
+
+    Object.setPrototypeOf(this, MailNotSetupError.prototype);
+  }
+}
+
+export class FetchMailAccountKeysError extends Error {
+  constructor(
+    errorMsg?: string,
+    public requestId?: string,
+  ) {
+    super('Error while fetching mail account keys: ' + errorMsg);
+
+    Object.setPrototypeOf(this, FetchMailAccountKeysError.prototype);
+  }
+}
+
 export class DeleteEmailError extends Error {
   constructor(
     errorMsg?: string,
