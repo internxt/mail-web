@@ -34,11 +34,22 @@ export class FetchMessageError extends Error {
 export class UpdateMailError extends Error {
   constructor(
     errorMsg?: string,
-    action?: 'markAsRead' | 'markAsFlagged' | 'markAsUnflagged',
+    action?: 'markAsRead' | 'markAsFlagged' | 'markAsUnflagged' | 'moveToFolder',
     public requestId?: string,
   ) {
     super(`Error while updating mail when ${action}: ` + errorMsg);
 
     Object.setPrototypeOf(this, UpdateMailError.prototype);
+  }
+}
+
+export class DeleteEmailError extends Error {
+  constructor(
+    errorMsg?: string,
+    public requestId?: string,
+  ) {
+    super('Error while deleting email: ' + errorMsg);
+
+    Object.setPrototypeOf(this, DeleteEmailError.prototype);
   }
 }

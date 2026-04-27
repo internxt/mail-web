@@ -175,4 +175,56 @@ describe('Mail Service', () => {
       await expect(MailService.instance.setupMailAccount(payload)).rejects.toThrow(unexpectedError);
     });
   });
+
+  describe('Search emails', () => {
+    test('When searching emails, then the client should be called with the correct params', async () => {
+      const mockedEmails = getMockedMails(5);
+      const query = { mailboxId: 'inbox', limit: 10, offset: 0 };
+
+      const mockMailClient = {
+        search: vi.fn().mockResolvedValue(mockedEmails),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      const result = await MailService.instance.search(query);
+
+      expect(result).toStrictEqual(mockedEmails);
+      expect(mockMailClient.search).toHaveBeenCalledWith(query);
+    });
+
+    test('When searching emails fails, then an error should be thrown', async () => {
+      const unexpectedError = new Error('Unexpected error');
+
+      const mockMailClient = {
+        search: vi.fn().mockRejectedValue(unexpectedError),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      await expect(MailService.instance.search({})).rejects.toThrow(unexpectedError);
+    });
+  });
+
+  describe('Trashing email', () => {
+    test('When trashing email, then the client should be called with the correct params', async () => {
+      const mockMailClient = {
+        deleteEmail: vi.fn(),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      await MailService.instance.trashEmail('email-1');
+
+      expect(mockMailClient.deleteEmail).toHaveBeenCalledWith('email-1');
+    });
+
+    test('When trashing emails fails, then an error should be thrown', async () => {
+      const unexpectedError = new Error('Unexpected error');
+
+      const mockMailClient = {
+        deleteEmail: vi.fn().mockRejectedValue(unexpectedError),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      await expect(MailService.instance.trashEmail('email-1')).rejects.toThrow(unexpectedError);
+    });
+  });
 });

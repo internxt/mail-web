@@ -15,7 +15,9 @@ export const useMailSelection = (emails: EmailListResponse['emails'] | undefined
   };
 
   const selectUnread = () => {
-    setSelectedEmails(emails?.filter((email) => !email.isRead).map((email) => email.id) ?? []);
+    const unreadEmails = emails?.filter((email) => !email.isRead);
+    const unreadEmailsIds = unreadEmails?.map((email) => email.id);
+    setSelectedEmails(unreadEmailsIds ?? []);
   };
 
   const toggleSelectAll = () => {

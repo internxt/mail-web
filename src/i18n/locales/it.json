@@ -6,10 +6,18 @@
     "logOut": "Esci",
     "newMessage": "Nuovo messaggio",
     "search": "Cerca",
+    "trashEmail": "Sposta nel cestino",
+    "forward": "Inoltra",
+    "reply": "Rispondi",
+    "replyAll": "Rispondi a tutti",
+    "flag": "Contrassegna",
+    "move": "Sposta",
+    "markAsRead": "Segna come letto",
+    "markAsUnread": "Segna come non letto",
     "trashAll": "Sposta tutto nel cestino",
     "emptyTrash": "Svuota il cestino",
     "archiveAll": "Sposta tutto nell'archivio",
-    "upgrade": "Aggiorna",
+    "upgrade": "Aggiorna piano",
     "send": "Invia"
   },
   "filter": {
@@ -165,8 +173,8 @@
     "composeMessageDialog": {
       "title": "Nuovo messaggio",
       "to": "A",
-      "cc": "Cc",
-      "bcc": "Ccn",
+      "cc": "CC",
+      "bcc": "CCN",
       "subject": "Oggetto",
       "message": "Messaggio"
     },
@@ -201,5 +209,8 @@
     "spaceUsed": "{{space}}% di spazio utilizzato",
     "settings": "Impostazioni",
     "logout": "Esci"
+  },
+  "toastNotification": {
+    "textCopied": "Copiato negli appunti"
   }
 }

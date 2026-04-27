@@ -18,8 +18,8 @@
     "test:related": "vitest run --changed HEAD --passWithNoTests",
     "prepare": "husky",
     "format": "prettier --write **/*.{js,jsx,tsx,ts}",
-    "check:i18n": "node scripts/check-i18n.cjs",
-    "preinstall": "node scripts/check-package-manager.js"
+    "preinstall": "node scripts/check-package-manager.js",
+    "check:i18n": "node scripts/check-i18n.cjs"
   },
   "dependencies": {
     "@internxt/css-config": "^1.1.0",

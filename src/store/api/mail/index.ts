@@ -1,8 +1,15 @@
 import { api } from '../base';
-import { FetchMailboxesInfoError, FetchMessageError, FetchListFolderError, UpdateMailError } from '@/errors';
+import {
+  FetchMailboxesInfoError,
+  FetchMessageError,
+  FetchListFolderError,
+  UpdateMailError,
+  DeleteEmailError,
+} from '@/errors';
 import { ErrorService } from '@/services/error';
 import { MailService } from '@/services/sdk/mail';
 import type { FolderType } from '@/types/mail';
+import { batchProcess } from '@/utils/batch-processes';
 import type { EmailListResponse, EmailResponse, ListEmailsQuery, MailboxResponse } from '@internxt/sdk';
 
 export const mailApi = api.injectEndpoints({
@@ -44,7 +51,7 @@ export const mailApi = api.injectEndpoints({
           return { error: new FetchListFolderError(err.message, err.requestId) };
         }
       },
-      providesTags: ['ListFolder'],
+      providesTags: (_, __, arg) => [{ type: 'ListFolder', id: arg?.mailbox }],
     }),
     getMailMessage: builder.query<EmailResponse, { emailId: string }>({
       async queryFn({ emailId }) {
@@ -58,24 +65,24 @@ export const mailApi = api.injectEndpoints({
       },
       providesTags: ['MailMessage'],
     }),
-    markAsRead: builder.mutation<null, { emailId: string; mailbox: string }>({
-      async queryFn({ emailId }) {
+    updateReadStatus: builder.mutation<null, { emailId: string; mailbox: string; isRead: boolean }>({
+      async queryFn({ emailId, isRead }) {
         try {
-          await MailService.instance.updateEmailStatus(emailId, { isRead: true });
+          await MailService.instance.updateEmailStatus(emailId, { isRead });
           return { data: null };
         } catch (error) {
           const err = ErrorService.instance.castError(error);
           return { error: new UpdateMailError(err.message, 'markAsRead', err.requestId) };
         }
       },
-      async onQueryStarted({ emailId, mailbox }, { dispatch, queryFulfilled }) {
+      async onQueryStarted({ emailId, mailbox, isRead }, { dispatch, queryFulfilled }) {
         let shouldUpdateUnreadCount = false;
 
         const patchEmailList = dispatch(
           mailApi.util.updateQueryData('getListFolder', { mailbox: mailbox as FolderType }, (draft) => {
             const mail = draft.emails.find((m) => m.id === emailId);
-            if (mail && !mail.isRead) {
-              mail.isRead = true;
+            if (mail && mail.isRead !== isRead) {
+              mail.isRead = isRead;
               shouldUpdateUnreadCount = true;
             }
           }),
@@ -86,7 +93,11 @@ export const mailApi = api.injectEndpoints({
         const patchMailboxes = dispatch(
           mailApi.util.updateQueryData('getMailboxesInfo', undefined, (draft) => {
             const entry = draft.find((m) => m.type === mailbox);
-            if (entry) entry.unreadEmails = Math.max(0, entry.unreadEmails - 1);
+
+            if (entry) {
+              const op = isRead ? entry.unreadEmails - 1 : entry.unreadEmails + 1;
+              entry.unreadEmails = Math.max(0, op);
+            }
           }),
         );
 
@@ -98,8 +109,83 @@ export const mailApi = api.injectEndpoints({
         }
       },
     }),
+    moveToFolder: builder.mutation<null, { emailIds: string[]; sourceMailbox: FolderType; targetMailbox: FolderType }>({
+      async queryFn({ emailIds, targetMailbox }) {
+        try {
+          await batchProcess(emailIds, (id) => MailService.instance.updateEmailStatus(id, { mailbox: targetMailbox }));
+          return { data: null };
+        } catch (error) {
+          const err = ErrorService.instance.castError(error);
+          return { error: new UpdateMailError(err.message, 'moveToFolder', err.requestId) };
+        }
+      },
+      async onQueryStarted({ emailIds, sourceMailbox, targetMailbox }, { dispatch, queryFulfilled }) {
+        let unreadCount = 0;
+
+        const patchEmailList = dispatch(
+          mailApi.util.updateQueryData('getListFolder', { mailbox: sourceMailbox }, (draft) => {
+            unreadCount = draft.emails.filter((m) => emailIds.includes(m.id) && !m.isRead).length;
+            draft.emails = draft.emails.filter((m) => !emailIds.includes(m.id));
+          }),
+        );
+        const patchMailbox = dispatch(
+          mailApi.util.updateQueryData('getMailboxesInfo', undefined, (draft) => {
+            const entry = draft.find((m) => m.type === sourceMailbox);
+            if (entry) entry.unreadEmails = Math.max(0, entry.unreadEmails - unreadCount);
+          }),
+        );
+        try {
+          await queryFulfilled;
+          dispatch(mailApi.util.invalidateTags([{ type: 'ListFolder', id: targetMailbox }]));
+        } catch {
+          patchEmailList.undo();
+          patchMailbox.undo();
+        }
+      },
+    }),
+    deleteMails: builder.mutation<null, { emailIds: string[]; sourceMailbox: FolderType }>({
+      async queryFn({ emailIds }) {
+        try {
+          await batchProcess(emailIds, (id) => MailService.instance.trashEmail(id));
+          return { data: null };
+        } catch (error) {
+          const err = ErrorService.instance.castError(error);
+          return { error: new DeleteEmailError(err.message, err.requestId) };
+        }
+      },
+
+      async onQueryStarted({ emailIds, sourceMailbox }, { dispatch, queryFulfilled }) {
+        let unreadCount = 0;
+
+        const patchEmailList = dispatch(
+          mailApi.util.updateQueryData('getListFolder', { mailbox: sourceMailbox }, (draft) => {
+            unreadCount = draft.emails.filter((m) => emailIds.includes(m.id) && !m.isRead).length;
+            draft.emails = draft.emails.filter((m) => !emailIds.includes(m.id));
+          }),
+        );
+        const patchMailbox = dispatch(
+          mailApi.util.updateQueryData('getMailboxesInfo', undefined, (draft) => {
+            const entry = draft.find((m) => m.type === sourceMailbox);
+            if (entry) entry.unreadEmails = Math.max(0, entry.unreadEmails - unreadCount);
+          }),
+        );
+
+        try {
+          await queryFulfilled;
+        } catch {
+          patchEmailList.undo();
+          patchMailbox.undo();
+        }
+      },
+    }),
   }),
 });
 
-export const { useGetMailboxesInfoQuery, useGetListFolderQuery, useGetMailMessageQuery, useMarkAsReadMutation } =
-  mailApi;
+export const {
+  useGetMailboxesInfoQuery,
+  useGetListFolderQuery,
+  useGetMailMessageQuery,
+  useUpdateReadStatusMutation,
+  useDeleteMailsMutation,
+  useMoveToFolderMutation,
+} = mailApi;
