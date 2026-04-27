@@ -3,6 +3,7 @@ import type {
   EmailListResponse,
   EmailResponse,
   ListEmailsQuery,
+  MailAccountKeysResponse,
   MailboxResponse,
   SearchFiltersQuery,
   SetupMailAccountPayload,
@@ -25,6 +26,16 @@ export class MailService {
    */
   async setupMailAccount(payload: SetupMailAccountPayload): Promise<{ address: string }> {
     return this.client.setupMailAccount(payload);
+  }
+
+  /**
+   * Gets the mail account keys for the given address.
+   *
+   * @param address - The mail address whose keys should be retrieved.
+   * @returns A promise that resolves with the encrypted keys and salt for the address.
+   */
+  async getMailAccountKeys(address: string): Promise<MailAccountKeysResponse> {
+    return this.client.getMailAccountKeys(address);
   }
 
   /**

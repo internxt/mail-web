@@ -204,6 +204,39 @@ describe('Mail Service', () => {
     });
   });
 
+  describe('Get mail account keys', () => {
+    test('When fetching keys for an address, then the keys should be returned', async () => {
+      const address = 'jane@internxt.com';
+      const mockKeys = {
+        address,
+        publicKey: 'pub',
+        encryptionPrivateKey: 'enc',
+        recoveryPrivateKey: 'rec',
+        salt: 'salt',
+      };
+
+      const mockMailClient = {
+        getMailAccountKeys: vi.fn().mockResolvedValue(mockKeys),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      const result = await MailService.instance.getMailAccountKeys(address);
+
+      expect(result).toStrictEqual(mockKeys);
+      expect(mockMailClient.getMailAccountKeys).toHaveBeenCalledWith(address);
+    });
+
+    test('When fetching keys fails, then an error should be thrown', async () => {
+      const unexpectedError = new Error('Unexpected error');
+      const mockMailClient = {
+        getMailAccountKeys: vi.fn().mockRejectedValue(unexpectedError),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      await expect(MailService.instance.getMailAccountKeys('jane@internxt.com')).rejects.toThrow(unexpectedError);
+    });
+  });
+
   describe('Trashing email', () => {
     test('When trashing email, then the client should be called with the correct params', async () => {
       const mockMailClient = {

@@ -3,7 +3,7 @@ import { Footer } from './components/Footer';
 import { use, useState, type ReactNode } from 'react';
 import { UpdateEmail } from './components/UpdateEmail';
 import { ConfirmPassword } from './components/ConfirmPassword';
-import { useAppSelector } from '@/store/hooks';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { NavigationService } from '@/services/navigation';
 import { AppView } from '@/routes/paths';
 import { ConfirmChange } from './components/ConfirmChange';
@@ -15,6 +15,7 @@ import { CryptoService } from '@/services/crypto';
 import { useTranslationContext } from '@/i18n';
 import { DEFAULT_USER_NAME } from '@/constants';
 import { createEncryptionAndRecoveryKeystores, uint8ArrayToBase64 } from 'internxt-crypto';
+import { mailApi } from '@/store/api/mail';
 
 type Step = 'updateEmail' | 'confirmPassword' | 'confirmChange';
 
@@ -30,6 +31,7 @@ const IdentitySetup = () => {
   const [hashedPassword, setHashedPassword] = useState<string>('');
   const [userPassword, setUserPassword] = useState<string>('');
   const [step, setStep] = useState<Step>('updateEmail');
+  const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.user);
   const currentEmail = user?.email ?? '';
   const userFullName = user ? `${user.name} ${user.lastname}` : DEFAULT_USER_NAME;
@@ -80,6 +82,7 @@ const IdentitySetup = () => {
       };
 
       await MailService.instance.setupMailAccount(confirmIdentitySetupPayload);
+      dispatch(mailApi.util.invalidateTags(['MailAccountKeys']));
       NavigationService.instance.replace({ id: AppView.Inbox });
     } catch {
       ErrorService.instance.notifyUser(translate('errors.identitySetup.setupFailed'));

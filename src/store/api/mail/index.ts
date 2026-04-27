@@ -1,8 +1,11 @@
 import { api } from '../base';
 import {
+  FetchMailAccountKeysError,
   FetchMailboxesInfoError,
   FetchMessageError,
   FetchListFolderError,
+  MAIL_NOT_SETUP_CODE,
+  MailNotSetupError,
   UpdateMailError,
   DeleteEmailError,
 } from '@/errors';
@@ -10,7 +13,13 @@ import { ErrorService } from '@/services/error';
 import { MailService } from '@/services/sdk/mail';
 import type { FolderType } from '@/types/mail';
 import { batchProcess } from '@/utils/batch-processes';
-import type { EmailListResponse, EmailResponse, ListEmailsQuery, MailboxResponse } from '@internxt/sdk';
+import type {
+  EmailListResponse,
+  EmailResponse,
+  ListEmailsQuery,
+  MailAccountKeysResponse,
+  MailboxResponse,
+} from '@internxt/sdk';
 import type { AppDispatch } from '@/store';
 
 const patchMailsAfterAction = async ({
@@ -51,6 +60,23 @@ const patchMailsAfterAction = async ({
 
 export const mailApi = api.injectEndpoints({
   endpoints: (builder) => ({
+    getMailAccountKeys: builder.query<MailAccountKeysResponse, { address: string }>({
+      async queryFn({
+        address,
+      }): Promise<{ data: MailAccountKeysResponse } | { error: MailNotSetupError | FetchMailAccountKeysError }> {
+        try {
+          const keys = await MailService.instance.getMailAccountKeys(address);
+          return { data: keys };
+        } catch (error) {
+          const err = ErrorService.instance.castError(error);
+          if (err.status === 403 && err.code === MAIL_NOT_SETUP_CODE) {
+            return { error: new MailNotSetupError(err.requestId) };
+          }
+          return { error: new FetchMailAccountKeysError(err.message, err.requestId) };
+        }
+      },
+      providesTags: ['MailAccountKeys'],
+    }),
     getMailboxesInfo: builder.query<MailboxResponse[], void>({
       async queryFn(): Promise<{ data: MailboxResponse[] } | { error: FetchMailboxesInfoError }> {
         try {
@@ -190,6 +216,7 @@ export const mailApi = api.injectEndpoints({
 });
 
 export const {
+  useGetMailAccountKeysQuery,
   useGetMailboxesInfoQuery,
   useGetListFolderQuery,
   useGetMailMessageQuery,

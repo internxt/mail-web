@@ -5,11 +5,13 @@ import notificationsService, { ToastType } from '../notifications';
 interface AxiosErrorResponse {
   error?: string;
   message?: string;
+  code?: string;
 }
 
 interface ErrorWithStatus extends Error {
   status?: number;
   headers?: Record<string, string>;
+  data?: AxiosErrorResponse;
 }
 
 type ErrorTypeToast = ToastType.Warning | ToastType.Error;
@@ -25,7 +27,7 @@ export class ErrorService {
       return new AppError(
         response?.data?.error || response?.data?.message || err.message || 'Unknown error',
         response?.status,
-        undefined,
+        response?.data?.code,
         response?.headers as Record<string, string>,
       );
     }
@@ -33,8 +35,8 @@ export class ErrorService {
     if (typeof err === 'string') return new AppError(err);
 
     if (err instanceof Error) {
-      const { headers, status } = err as ErrorWithStatus;
-      return new AppError(err.message || 'Unknown error', status, undefined, headers);
+      const { headers, status, data } = err as ErrorWithStatus;
+      return new AppError(err.message || 'Unknown error', status, data?.code, headers);
     }
 
     const map = err as Record<string, unknown>;
