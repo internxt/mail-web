@@ -75,7 +75,21 @@ export class MailService {
     return this.client.updateEmail(emailId, status);
   }
 
+  /**
+   * Return the list of emails matching the search filters
+   * @param query - The search filters
+   * @returns the emails list
+   */
   async search(query: SearchFiltersQuery): Promise<EmailListResponse> {
     return this.client.search(query);
+  }
+
+  /**
+   * Deletes an email. Behavior depends on the source folder: emails in inbox/spam are moved to trash; emails already in trash are permanently deleted.
+   * @param emailId - The ID of the email we want to trash or delete
+   * @returns - A promise that resolves when the operation is complete
+   */
+  async trashEmail(emailId: string): Promise<void> {
+    return this.client.deleteEmail(emailId);
   }
 }

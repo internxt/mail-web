@@ -8,7 +8,7 @@ interface UseListActionContextParams {
   selectNone: () => void;
   selectRead: () => void;
   selectUnread: () => void;
-  applyUnreadFilter: (value: boolean | undefined) => void;
+  deleteEmails: (emailIds: string[]) => Promise<void | null>;
 }
 
 interface UseListActionContextResult {
@@ -18,55 +18,40 @@ interface UseListActionContextResult {
 
 export const useListActionContext = (
   folder: FolderType,
-  { selectAll, selectNone, selectRead, selectUnread, applyUnreadFilter }: UseListActionContextParams,
+  selectedMails: string[],
+  { selectAll, selectNone, selectRead, selectUnread, deleteEmails }: UseListActionContextParams,
 ): UseListActionContextResult => {
   const { translate } = useTranslationContext();
 
   const baseSelectionActions: MenuItemType<unknown>[] = [
-    {
-      name: translate('filter.all'),
-      action: () => {
-        selectAll();
-        applyUnreadFilter(undefined);
-      },
-    },
-    {
-      name: translate('filter.none'),
-      action: () => {
-        selectNone();
-        applyUnreadFilter(undefined);
-      },
-    },
+    { name: translate('filter.all'), action: selectAll },
+    { name: translate('filter.none'), action: selectNone },
   ];
 
   const inboxSelectionActions: MenuItemType<unknown>[] = [
     ...baseSelectionActions,
-    {
-      name: translate('filter.read'),
-      action: () => {
-        selectRead();
-        applyUnreadFilter(false);
-      },
-    },
-    {
-      name: translate('filter.unread'),
-      action: () => {
-        selectUnread();
-        applyUnreadFilter(true);
-      },
-    },
+    { name: translate('filter.read'), action: selectRead },
+    { name: translate('filter.unread'), action: selectUnread },
   ];
 
   const trashBulkAction: MenuItemType<unknown> = {
     name: translate('actions.trashAll'),
-    action: () => {},
+    action: async () => {
+      await deleteEmails(selectedMails);
+      selectNone();
+    },
     icon: TrashIcon,
+    disabled: () => selectedMails.length === 0,
   };
 
   const emptyTrashBulkAction: MenuItemType<unknown> = {
     name: translate('actions.emptyTrash'),
-    action: () => {},
+    action: async () => {
+      await deleteEmails(selectedMails);
+      selectNone();
+    },
     icon: TrashIcon,
+    disabled: () => selectedMails.length === 0,
   };
 
   switch (folder) {

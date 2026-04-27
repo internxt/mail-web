@@ -40,14 +40,16 @@ const useListFolderPaginated = (mailbox: FolderType) => {
     applyUnreadFilter(unreadFilter === true ? undefined : true);
   };
 
+  const listFolderEmails = listFolder?.emails;
+
   return {
-    listFolderEmails: listFolder?.emails,
+    listFolderEmails,
     isLoadingListFolder,
     onLoadMore,
     hasMoreEmails: listFolder?.hasMoreMails,
     isUnreadFilter: unreadFilter,
+    listEmailsCount: listFolderEmails?.length,
     toggleUnreadFilter,
-    applyUnreadFilter,
   };
 };
 

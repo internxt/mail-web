@@ -6,6 +6,14 @@
     "logOut": "Log out",
     "newMessage": "New Message",
     "search": "Search",
+    "trashEmail": "Move to trash",
+    "forward": "Forward",
+    "reply": "Reply",
+    "replyAll": "Reply all",
+    "flag": "Flag",
+    "move": "Move",
+    "markAsRead": "Mark as read",
+    "markAsUnread": "Mark as unread",
     "trashAll": "Move all to trash",
     "emptyTrash": "Empty trash",
     "archiveAll": "Move all to archive",
@@ -16,9 +24,7 @@
     "all": "All",
     "none": "None",
     "read": "Read",
-    "unread": "Unread",
-    "starred": "Starred",
-    "unstarred": "Unstarred"
+    "unread": "Unread"
   },
   "labels": {
     "To": "To",
@@ -130,7 +136,13 @@
       "passwordCheckFailed": "Something went wrong while verifying your password",
       "setupFailed": "Something went wrong while setting up your account"
     },
-    "downloadingDesktopApp": "Something went wrong while downloading the app"
+    "downloadingDesktopApp": "Something went wrong while downloading the app",
+    "mail": {
+      "markAsRead": "Something went wrong while marking the email as read",
+      "markAsUnread": "Something went wrong while marking the email as unread",
+      "trash": "Something went wrong while deleting the email",
+      "move": "Something went wrong while moving the email"
+    }
   },
   "modals": {
     "upgradePlanDialog": {

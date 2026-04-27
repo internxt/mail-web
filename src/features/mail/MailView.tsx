@@ -3,7 +3,12 @@ import { useTranslationContext } from '@/i18n';
 import type { FolderType } from '@/types/mail';
 import PreviewMail from './components/mail-preview';
 import Settings from './components/settings';
-import { useGetMailMessageQuery, useMarkAsReadMutation } from '@/store/api/mail';
+import {
+  useDeleteMailsMutation,
+  useGetMailMessageQuery,
+  useMoveToFolderMutation,
+  useUpdateReadStatusMutation,
+} from '@/store/api/mail';
 import { ErrorService } from '@/services/error';
 import useListFolderPaginated from '@/hooks/mail/useListFolderPaginated';
 import { useUnreadByMailbox } from '@/hooks/mail/useUnreadByMailbox';
@@ -14,6 +19,8 @@ import { Tray } from '@internxt/ui';
 import { TrayEmptyState } from './components/tray/tray-empty-state';
 import { formatEmailsToList } from '@/utils/format-emails';
 import { useListActionContext } from '@/hooks/mail/useListActionContext';
+import { usePreviewMailActions } from '@/hooks/mail/usePreviewMailActions';
+import ActionsBar from './components/mail-preview/actions-bar';
 
 interface MailViewProps {
   folder: FolderType;
@@ -22,31 +29,46 @@ interface MailViewProps {
 const MailView = ({ folder }: MailViewProps) => {
   const { translate } = useTranslationContext();
   const [activeMailId, setActiveMailId] = useState<string | undefined>(undefined);
+  const [updateReadStatus] = useUpdateReadStatusMutation();
+  const [moveToFolder] = useMoveToFolderMutation();
+  const [deleteEmails] = useDeleteMailsMutation();
 
+  const { data: activeMailData } = useGetMailMessageQuery({ emailId: activeMailId! }, { skip: !activeMailId });
+  const activeMail = activeMailId ? activeMailData : undefined;
   const {
     isLoadingListFolder,
     listFolderEmails,
     hasMoreEmails,
-    onLoadMore,
     isUnreadFilter,
+    listEmailsCount,
+    onLoadMore,
     toggleUnreadFilter,
-    applyUnreadFilter,
   } = useListFolderPaginated(folder);
+
   const { selectedEmails, selectAll, selectNone, selectRead, selectUnread, toggleSelectAll } =
     useMailSelection(listFolderEmails);
-  const { listActionContext, bulkActionContext } = useListActionContext(folder, {
+  const { listActionContext, bulkActionContext } = useListActionContext(folder, selectedEmails, {
     selectAll,
     selectNone,
     selectRead,
     selectUnread,
-    applyUnreadFilter,
+    deleteEmails: (emailIds) => deleteEmails({ emailIds, sourceMailbox: folder }).unwrap(),
+  });
+  const previewActions = usePreviewMailActions({
+    activeMailId,
+    folder,
+    clearActiveMail: () => setActiveMailId(undefined),
+    updateReadStatus: async (args) => {
+      await updateReadStatus(args).unwrap();
+    },
+    moveToFolder: async (args) => {
+      await moveToFolder(args).unwrap();
+    },
+    deleteEmails: async (args) => {
+      await deleteEmails(args).unwrap();
+    },
   });
   const { unreadByMailbox } = useUnreadByMailbox();
-
-  const listEmailsCount = listFolderEmails?.length;
-
-  const { data: activeMail } = useGetMailMessageQuery({ emailId: activeMailId! }, { skip: !activeMailId });
-  const [markAsRead] = useMarkAsReadMutation();
 
   const folderName = translate(`mail.${folder}`);
 
@@ -61,9 +83,10 @@ const MailView = ({ folder }: MailViewProps) => {
     if (isRead) return;
 
     try {
-      await markAsRead({
+      await updateReadStatus({
         emailId: id,
         mailbox: folder,
+        isRead: true,
       });
     } catch (error) {
       const err = ErrorService.instance.castError(error);
@@ -86,7 +109,7 @@ const MailView = ({ folder }: MailViewProps) => {
             selectedCount={selectedEmails.length}
             totalCount={listFolderEmails?.length ?? 0}
             onCheckboxClicked={toggleSelectAll}
-            onToggleUnreadFilter={folder !== 'sent' ? toggleUnreadFilter : undefined}
+            onToggleUnreadFilter={folder === 'sent' ? undefined : toggleUnreadFilter}
             onSearchEmailSelected={onSelectEmail}
           />
         </div>
@@ -105,7 +128,8 @@ const MailView = ({ folder }: MailViewProps) => {
       </div>
       {/* Mail Preview */}
       <div className="flex flex-col w-full">
-        <div className="flex w-full justify-end">
+        <div className="flex flex-row w-full pl-1 justify-between">
+          <ActionsBar isRead={activeMail?.isRead ?? false} optionsDisabled={!activeMailId} {...previewActions} />
           <Settings />
         </div>
 

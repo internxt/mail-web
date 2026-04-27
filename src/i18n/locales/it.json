@@ -6,10 +6,18 @@
     "logOut": "Esci",
     "newMessage": "Nuovo messaggio",
     "search": "Cerca",
+    "trashEmail": "Sposta nel cestino",
+    "forward": "Inoltra",
+    "reply": "Rispondi",
+    "replyAll": "Rispondi a tutti",
+    "flag": "Contrassegna",
+    "move": "Sposta",
+    "markAsRead": "Segna come letto",
+    "markAsUnread": "Segna come non letto",
     "trashAll": "Sposta tutto nel cestino",
     "emptyTrash": "Svuota il cestino",
     "archiveAll": "Sposta tutto nell'archivio",
-    "upgrade": "Aggiorna",
+    "upgrade": "Aggiorna piano",
     "send": "Invia"
   },
   "filter": {
@@ -130,7 +138,13 @@
       "passwordCheckFailed": "Si è verificato un errore durante la verifica della password",
       "setupFailed": "Si è verificato un errore durante la configurazione del tuo account"
     },
-    "downloadingDesktopApp": "Si è verificato un errore durante il download dell'app"
+    "downloadingDesktopApp": "Si è verificato un errore durante il download dell'app",
+    "mail": {
+      "markAsRead": "Si è verificato un errore durante la marcatura dell'e-mail come letta",
+      "markAsUnread": "Si è verificato un errore durante la marcatura dell'e-mail come non letta",
+      "trash": "Si è verificato un errore durante l'eliminazione dell'e-mail",
+      "move": "Si è verificato un errore durante lo spostamento dell'e-mail"
+    }
   },
   "modals": {
     "upgradePlanDialog": {
@@ -165,8 +179,8 @@
     "composeMessageDialog": {
       "title": "Nuovo messaggio",
       "to": "A",
-      "cc": "Cc",
-      "bcc": "Ccn",
+      "cc": "CC",
+      "bcc": "CCN",
       "subject": "Oggetto",
       "message": "Messaggio"
     },
@@ -201,5 +215,8 @@
     "spaceUsed": "{{space}}% di spazio utilizzato",
     "settings": "Impostazioni",
     "logout": "Esci"
+  },
+  "toastNotification": {
+    "textCopied": "Copiato negli appunti"
   }
 }

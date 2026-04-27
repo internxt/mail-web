@@ -6,10 +6,18 @@
     "logOut": "Cerrar sesión",
     "newMessage": "Nuevo mensaje",
     "search": "Buscar",
+    "trashEmail": "Mover a la papelera",
+    "forward": "Reenviar",
+    "reply": "Responder",
+    "replyAll": "Responder a todos",
+    "flag": "Marcar",
+    "move": "Mover",
+    "markAsRead": "Marcar como leído",
+    "markAsUnread": "Marcar como no leído",
     "trashAll": "Mover todo a la papelera",
     "emptyTrash": "Vaciar papelera",
     "archiveAll": "Mover todo al archivo",
-    "upgrade": "Mejorar",
+    "upgrade": "Mejorar plan",
     "send": "Enviar"
   },
   "filter": {
@@ -130,7 +138,13 @@
       "passwordCheckFailed": "Algo ha ido mal al verificar tu contraseña",
       "setupFailed": "Algo ha ido mal al configurar tu cuenta"
     },
-    "downloadingDesktopApp": "Algo ha ido mal al descargar la aplicación"
+    "downloadingDesktopApp": "Algo ha ido mal al descargar la aplicación",
+    "mail": {
+      "markAsRead": "Algo ha ido mal al marcar el correo como leído",
+      "markAsUnread": "Algo ha ido mal al marcar el correo como no leído",
+      "trash": "Algo ha ido mal al eliminar el correo",
+      "move": "Algo ha ido mal al mover el correo"
+    }
   },
   "modals": {
     "upgradePlanDialog": {
@@ -165,8 +179,8 @@
     "composeMessageDialog": {
       "title": "Nuevo mensaje",
       "to": "Para",
-      "cc": "Cc",
-      "bcc": "Cco",
+      "cc": "CC",
+      "bcc": "CCO",
       "subject": "Asunto",
       "message": "Mensaje"
     },
@@ -201,5 +215,8 @@
     "spaceUsed": "{{space}}% de espacio usado",
     "settings": "Configuración",
     "logout": "Cerrar sesión"
+  },
+  "toastNotification": {
+    "textCopied": "Copiado al portapapeles"
   }
 }
