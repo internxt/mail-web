@@ -130,7 +130,6 @@ export const mailApi = api.injectEndpoints({
         const patchMailboxes = dispatch(
           mailApi.util.updateQueryData('getMailboxesInfo', undefined, (draft) => {
             const entry = draft.find((m) => m.type === mailbox);
-
             if (entry) {
               const op = isRead ? entry.unreadEmails - 1 : entry.unreadEmails + 1;
               entry.unreadEmails = Math.max(0, op);
@@ -140,6 +139,7 @@ export const mailApi = api.injectEndpoints({
 
         try {
           await queryFulfilled;
+          dispatch(mailApi.util.invalidateTags([{ type: 'ListFolder', id: mailbox }]));
         } catch {
           patchEmailList.undo();
           patchMailboxes.undo();
