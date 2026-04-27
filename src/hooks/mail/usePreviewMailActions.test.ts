@@ -28,7 +28,6 @@ const makeParams = (overrides?: Record<string, unknown>) => ({
 
 describe('Preview Mail Actions - custom hook', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     vi.restoreAllMocks();
   });
 

@@ -3,6 +3,8 @@ import { useTranslationContext } from '@/i18n';
 import type { FolderType } from '@/types/mail';
 import { useCallback } from 'react';
 
+type MailAction = 'markAsRead' | 'markAsUnread' | 'trash' | 'move';
+
 interface UsePreviewMailActionsParams {
   activeMailId: string | undefined;
   folder: FolderType;
@@ -33,10 +35,10 @@ export const usePreviewMailActions = ({
   const { translate } = useTranslationContext();
 
   const notifyError = useCallback(
-    (action: string, messageKey: Parameters<typeof translate>[0], error: unknown) => {
+    (action: MailAction, error: unknown) => {
       const err = ErrorService.instance.castError(error);
       console.error(`Error while running ${action}: `, err);
-      ErrorService.instance.notifyUser(translate(messageKey));
+      ErrorService.instance.notifyUser(translate(`errors.mail.${action}` as Parameters<typeof translate>[0]));
     },
     [translate],
   );
@@ -47,11 +49,7 @@ export const usePreviewMailActions = ({
       try {
         await updateReadStatus({ emailId: activeMailId, mailbox: folder, isRead });
       } catch (error) {
-        notifyError(
-          isRead ? 'markAsRead' : 'markAsUnread',
-          isRead ? 'errors.mail.markAsRead' : 'errors.mail.markAsUnread',
-          error,
-        );
+        notifyError(isRead ? 'markAsRead' : 'markAsUnread', error);
       }
     },
     [activeMailId, folder, updateReadStatus, notifyError],
@@ -66,7 +64,7 @@ export const usePreviewMailActions = ({
       await deleteEmails({ emailIds: [activeMailId], sourceMailbox: folder });
       clearActiveMail();
     } catch (error) {
-      notifyError('trash', 'errors.mail.trash', error);
+      notifyError('trash', error);
     }
   }, [activeMailId, folder, deleteEmails, clearActiveMail, notifyError]);
 
@@ -77,7 +75,7 @@ export const usePreviewMailActions = ({
         await moveToFolder({ emailIds: [activeMailId], sourceMailbox: folder, targetMailbox });
         clearActiveMail();
       } catch (error) {
-        notifyError('move', 'errors.mail.move', error);
+        notifyError('move', error);
       }
     },
     [activeMailId, folder, moveToFolder, clearActiveMail, notifyError],

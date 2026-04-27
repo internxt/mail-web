@@ -1,19 +1,14 @@
-import { useTranslationContext } from '@/i18n';
 import {
   ArrowBendDoubleUpLeftIcon,
   ArrowBendUpLeftIcon,
   ArrowBendUpRightIcon,
   EnvelopeOpenIcon,
   TrashIcon,
-  TrayIcon,
-  WarningOctagonIcon,
 } from '@phosphor-icons/react';
 import MoveTo from '@/assets/icons/move-to.svg?react';
-import { Dropdown, type MenuItemType } from '@internxt/ui';
-import { isCurrentPath } from '@/utils/current-path';
-import { useLocation } from 'react-router-dom';
-import { useCallback, useMemo } from 'react';
+import { Dropdown } from '@internxt/ui';
 import type { FolderType } from '@/types/mail';
+import { useActionsBar } from '../../../../../hooks/mail/useActionsBar';
 
 interface ActionsBarProps {
   isRead: boolean;
@@ -40,46 +35,26 @@ const ActionsBar = ({
   onReplyAll,
   onForward,
 }: ActionsBarProps) => {
-  const { translate } = useTranslationContext();
-  const { pathname } = useLocation();
+  const { translate, moveToItems, toggleReadTitle, onToggleRead } = useActionsBar({
+    isRead,
+    optionsDisabled,
+    onMarkAsRead,
+    onMarkAsUnread,
+    onMove,
+    onTrash,
+  });
 
   const iconButtonClass =
     'flex items-center justify-center rounded-lg p-2 text-gray-60 transition-colors hover:bg-gray-5 hover:text-gray-80 disabled:pointer-events-none disabled:opacity-40';
-
-  const isActive = useCallback((path: string) => isCurrentPath(path, pathname), [pathname]);
-
-  const moveToItems: MenuItemType<unknown>[] = useMemo(
-    () => [
-      {
-        disabled: () => isActive('/inbox') || optionsDisabled,
-        name: translate('mail.inbox'),
-        icon: TrayIcon,
-        onClick: () => onMove('inbox'),
-      },
-      {
-        disabled: () => isActive('/spam') || optionsDisabled,
-        name: translate('mail.spam'),
-        icon: WarningOctagonIcon,
-        onClick: () => onMove('spam'),
-      },
-      {
-        disabled: () => isActive('/trash') || optionsDisabled,
-        name: translate('mail.trash'),
-        icon: TrashIcon,
-        onClick: () => onMove('trash'),
-      },
-    ],
-    [optionsDisabled, isActive, onMove, translate],
-  );
 
   return (
     <div className="flex items-center z-30 gap-5 pl-4">
       <button
         disabled={optionsDisabled}
         type="button"
-        title={isRead ? translate('actions.markAsUnread') : translate('actions.markAsRead')}
+        title={toggleReadTitle}
         className={iconButtonClass}
-        onClick={isRead ? onMarkAsUnread : onMarkAsRead}
+        onClick={onToggleRead}
       >
         <EnvelopeOpenIcon size={24} />
       </button>
@@ -96,7 +71,7 @@ const ActionsBar = ({
         </button>
         <Separator />
         <Dropdown
-          classButton={iconButtonClass}
+          classButton={`${iconButtonClass}${optionsDisabled ? ' pointer-events-none opacity-40' : ''}`}
           dropdownActionsContext={moveToItems}
           openDirection="left"
           classMenuItems="max-w-[224px] w-screen"
