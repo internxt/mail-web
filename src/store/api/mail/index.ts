@@ -11,6 +11,43 @@ import { MailService } from '@/services/sdk/mail';
 import type { FolderType } from '@/types/mail';
 import { batchProcess } from '@/utils/batch-processes';
 import type { EmailListResponse, EmailResponse, ListEmailsQuery, MailboxResponse } from '@internxt/sdk';
+import type { AppDispatch } from '@/store';
+
+const patchMailsAfterAction = async ({
+  dispatch,
+  sourceMailbox,
+  emailIds,
+  queryFulfilled,
+  onSuccess,
+}: {
+  dispatch: AppDispatch;
+  sourceMailbox: FolderType;
+  emailIds: string[];
+  queryFulfilled: Promise<unknown>;
+  onSuccess?: () => void;
+}) => {
+  let unreadCount = 0;
+
+  const patchEmailList = dispatch(
+    mailApi.util.updateQueryData('getListFolder', { mailbox: sourceMailbox }, (draft) => {
+      unreadCount = draft.emails.filter((m) => emailIds.includes(m.id) && !m.isRead).length;
+      draft.emails = draft.emails.filter((m) => !emailIds.includes(m.id));
+    }),
+  );
+  const patchMailbox = dispatch(
+    mailApi.util.updateQueryData('getMailboxesInfo', undefined, (draft) => {
+      const entry = draft.find((m) => m.type === sourceMailbox);
+      if (entry) entry.unreadEmails = Math.max(0, entry.unreadEmails - unreadCount);
+    }),
+  );
+  try {
+    await queryFulfilled;
+    onSuccess?.();
+  } catch {
+    patchEmailList.undo();
+    patchMailbox.undo();
+  }
+};
 
 export const mailApi = api.injectEndpoints({
   endpoints: (builder) => ({
@@ -120,27 +157,13 @@ export const mailApi = api.injectEndpoints({
         }
       },
       async onQueryStarted({ emailIds, sourceMailbox, targetMailbox }, { dispatch, queryFulfilled }) {
-        let unreadCount = 0;
-
-        const patchEmailList = dispatch(
-          mailApi.util.updateQueryData('getListFolder', { mailbox: sourceMailbox }, (draft) => {
-            unreadCount = draft.emails.filter((m) => emailIds.includes(m.id) && !m.isRead).length;
-            draft.emails = draft.emails.filter((m) => !emailIds.includes(m.id));
-          }),
-        );
-        const patchMailbox = dispatch(
-          mailApi.util.updateQueryData('getMailboxesInfo', undefined, (draft) => {
-            const entry = draft.find((m) => m.type === sourceMailbox);
-            if (entry) entry.unreadEmails = Math.max(0, entry.unreadEmails - unreadCount);
-          }),
-        );
-        try {
-          await queryFulfilled;
-          dispatch(mailApi.util.invalidateTags([{ type: 'ListFolder', id: targetMailbox }]));
-        } catch {
-          patchEmailList.undo();
-          patchMailbox.undo();
-        }
+        await patchMailsAfterAction({
+          emailIds,
+          queryFulfilled,
+          sourceMailbox,
+          dispatch,
+          onSuccess: () => dispatch(mailApi.util.invalidateTags([{ type: 'ListFolder', id: targetMailbox }])),
+        });
       },
     }),
     deleteMails: builder.mutation<null, { emailIds: string[]; sourceMailbox: FolderType }>({
@@ -155,27 +178,12 @@ export const mailApi = api.injectEndpoints({
       },
 
       async onQueryStarted({ emailIds, sourceMailbox }, { dispatch, queryFulfilled }) {
-        let unreadCount = 0;
-
-        const patchEmailList = dispatch(
-          mailApi.util.updateQueryData('getListFolder', { mailbox: sourceMailbox }, (draft) => {
-            unreadCount = draft.emails.filter((m) => emailIds.includes(m.id) && !m.isRead).length;
-            draft.emails = draft.emails.filter((m) => !emailIds.includes(m.id));
-          }),
-        );
-        const patchMailbox = dispatch(
-          mailApi.util.updateQueryData('getMailboxesInfo', undefined, (draft) => {
-            const entry = draft.find((m) => m.type === sourceMailbox);
-            if (entry) entry.unreadEmails = Math.max(0, entry.unreadEmails - unreadCount);
-          }),
-        );
-
-        try {
-          await queryFulfilled;
-        } catch {
-          patchEmailList.undo();
-          patchMailbox.undo();
-        }
+        await patchMailsAfterAction({
+          emailIds,
+          queryFulfilled,
+          sourceMailbox,
+          dispatch,
+        });
       },
     }),
   }),

@@ -6,9 +6,9 @@ interface UsePreviewMailActionsParams {
   activeMailId: string | undefined;
   folder: FolderType;
   clearActiveMail: () => void;
-  updateReadStatus: (args: { emailId: string; mailbox: FolderType; isRead: boolean }) => Promise<void>;
-  moveToFolder: (args: { emailIds: string[]; sourceMailbox: FolderType; targetMailbox: FolderType }) => Promise<void>;
-  deleteEmails: (args: { emailIds: string[]; sourceMailbox: FolderType }) => Promise<void>;
+  updateReadStatus: (args: { emailId: string; mailbox: FolderType; isRead: boolean }) => Promise<null>;
+  moveToFolder: (args: { emailIds: string[]; sourceMailbox: FolderType; targetMailbox: FolderType }) => Promise<null>;
+  deleteEmails: (args: { emailIds: string[]; sourceMailbox: FolderType }) => Promise<null>;
 }
 
 interface PreviewMailActions {

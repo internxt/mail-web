@@ -24,8 +24,8 @@ interface ActionsBarProps {
   onReply: () => void;
   onReplyAll: () => void;
   onForward: () => void;
-  onMove: (folder: FolderType) => void;
-  onTrash: () => void;
+  onMove: (folder: FolderType) => Promise<null> | void;
+  onTrash: () => Promise<null> | void;
 }
 
 const Separator = () => <div className="h-5 w-px bg-gray-10" />;
