@@ -148,7 +148,6 @@ describe('Mail Service', () => {
         publicKey: 'public-key',
         encryptionPrivateKey: 'encryption-private-key',
         recoveryPrivateKey: 'recovery-private-key',
-        salt: 'salt',
       },
     };
 
@@ -212,7 +211,6 @@ describe('Mail Service', () => {
         publicKey: 'pub',
         encryptionPrivateKey: 'enc',
         recoveryPrivateKey: 'rec',
-        salt: 'salt',
       };
 
       const mockMailClient = {

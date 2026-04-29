@@ -465,7 +465,6 @@ describe('Mail API', () => {
       publicKey: 'pub',
       encryptionPrivateKey: 'enc',
       recoveryPrivateKey: 'rec',
-      salt: 'salt',
     };
 
     test('When fetching the mail account keys, then it should return the keys', async () => {

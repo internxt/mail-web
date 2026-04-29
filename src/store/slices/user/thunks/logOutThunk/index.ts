@@ -5,6 +5,7 @@ import { NavigationService } from '@/services/navigation';
 import { AppView } from '@/routes/paths';
 import type { RootState } from '@/store';
 import { ErrorService } from '@/services/error';
+import { MailKeysService } from '@/services/mail-keys';
 
 export const logoutThunk = createAsyncThunk<void, void, { state: RootState }>(
   'user/logout',
@@ -16,6 +17,7 @@ export const logoutThunk = createAsyncThunk<void, void, { state: RootState }>(
       console.error('ERROR WHILE LOGGING OUT: ', castedError.message, castedError.requestId);
     }
 
+    MailKeysService.instance.clear();
     NavigationService.instance.navigate({ id: AppView.Welcome });
     dispatch(userActions.resetState());
   },

@@ -14,8 +14,9 @@ import type { SetupMailAccountPayload } from '@internxt/sdk';
 import { CryptoService } from '@/services/crypto';
 import { useTranslationContext } from '@/i18n';
 import { DEFAULT_USER_NAME } from '@/constants';
-import { createEncryptionAndRecoveryKeystores, uint8ArrayToBase64 } from 'internxt-crypto';
+import { createEncryptionAndRecoveryKeystores } from 'internxt-crypto';
 import { mailApi } from '@/store/api/mail';
+import { LocalStorageService } from '@/services/local-storage';
 
 type Step = 'updateEmail' | 'confirmPassword' | 'confirmChange';
 
@@ -29,7 +30,6 @@ const IdentitySetup = () => {
   });
   const [isConfirmingChange, setIsConfirmingChange] = useState<boolean>(false);
   const [hashedPassword, setHashedPassword] = useState<string>('');
-  const [userPassword, setUserPassword] = useState<string>('');
   const [step, setStep] = useState<Step>('updateEmail');
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.user);
@@ -51,7 +51,6 @@ const IdentitySetup = () => {
       }
 
       setHashedPassword(hashedPassword);
-      setUserPassword(password);
       setStep('confirmChange');
     } catch {
       ErrorService.instance.notifyUser(translate('errors.identitySetup.passwordCheckFailed'));
@@ -63,9 +62,16 @@ const IdentitySetup = () => {
 
     try {
       const mailboxEmail = `${newEmail.address}@${newEmail.domain}`;
-      const { encryptionKeystore, recoveryKeystore, salt } = await createEncryptionAndRecoveryKeystores(
+      const mnemonic = LocalStorageService.instance.getMnemonic();
+
+      if (!mnemonic) {
+        ErrorService.instance.notifyUser(translate('errors.identitySetup.setupFailed'));
+        return;
+      }
+
+      const { encryptionKeystore, recoveryKeystore } = await createEncryptionAndRecoveryKeystores(
         mailboxEmail,
-        userPassword,
+        mnemonic,
       );
 
       const confirmIdentitySetupPayload: SetupMailAccountPayload = {
@@ -77,7 +83,6 @@ const IdentitySetup = () => {
           publicKey: encryptionKeystore.publicKey,
           encryptionPrivateKey: encryptionKeystore.privateKeyEncrypted,
           recoveryPrivateKey: recoveryKeystore.privateKeyEncrypted,
-          salt: uint8ArrayToBase64(salt),
         },
       };
 
