@@ -32,7 +32,7 @@ export class MailService {
    * Gets the mail account keys for the given address.
    *
    * @param address - The mail address whose keys should be retrieved.
-   * @returns A promise that resolves with the encrypted keys and salt for the address.
+   * @returns A promise that resolves with the encrypted keys for the address.
    */
   async getMailAccountKeys(address: string): Promise<MailAccountKeysResponse> {
     return this.client.getMailAccountKeys(address);
