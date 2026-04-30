@@ -24,7 +24,7 @@
   "dependencies": {
     "@internxt/css-config": "^1.1.0",
     "@internxt/lib": "^1.4.1",
-    "@internxt/sdk": "^1.15.11",
+    "@internxt/sdk": "^1.15.12",
     "@internxt/ui": "^0.1.12",
     "@phosphor-icons/react": "^2.1.10",
     "@reduxjs/toolkit": "^2.11.2",
@@ -44,7 +44,7 @@
     "dompurify": "^3.3.3",
     "i18next": "^25.8.13",
     "idb": "^8.0.3",
-    "internxt-crypto": "^1.2.0",
+    "internxt-crypto": "^1.3.0",
     "prettysize": "^2.0.0",
     "react": "^19.2.0",
     "react-device-detect": "^2.2.3",
