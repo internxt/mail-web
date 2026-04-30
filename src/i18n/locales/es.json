@@ -14,9 +14,11 @@
     "move": "Mover",
     "markAsRead": "Marcar como leído",
     "markAsUnread": "Marcar como no leído",
-    "trashAll": "Mover todo a la papelera",
+    "moveAllToInbox": "Mover todo a la bandeja de entrada",
+    "moveAllToArchive": "Mover todo al archivo",
+    "moveAllToSpam": "Mover todo a spam",
+    "moveAllToTrash": "Mover todo a la papelera",
     "emptyTrash": "Vaciar papelera",
-    "archiveAll": "Mover todo al archivo",
     "upgrade": "Mejorar plan",
     "send": "Enviar"
   },
@@ -104,6 +106,7 @@
     "sent": "Enviados",
     "spam": "Spam",
     "trash": "Papelera",
+    "archive": "Archivo",
     "tray": {
       "isEmpty": "{{folderName}} está vacía"
     },
@@ -217,6 +220,9 @@
     "logout": "Cerrar sesión"
   },
   "toastNotification": {
-    "textCopied": "Copiado al portapapeles"
+    "textCopied": "Copiado al portapapeles",
+    "movedToFolder_one": "Conversación movida a \"{{folder}}\"",
+    "movedToFolder_many": "{{count}} conversaciones movidas a \"{{folder}}\"",
+    "undo": "Deshacer"
   }
 }

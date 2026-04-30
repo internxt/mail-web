@@ -1,1 +1,1 @@
-export type FolderType = 'inbox' | 'sent' | 'drafts' | 'spam' | 'trash';
+export type FolderType = 'inbox' | 'sent' | 'drafts' | 'spam' | 'trash' | 'archive';
