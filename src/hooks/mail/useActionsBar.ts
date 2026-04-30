@@ -3,7 +3,7 @@ import { isCurrentPath } from '@/utils/current-path';
 import { useLocation } from 'react-router-dom';
 import { useCallback, useMemo } from 'react';
 import type { FolderType } from '@/types/mail';
-import { TrayIcon, WarningOctagonIcon, TrashIcon } from '@phosphor-icons/react';
+import { ArchiveIcon, TrayIcon, WarningOctagonIcon, TrashIcon } from '@phosphor-icons/react';
 import type { MenuItemType } from '@internxt/ui';
 
 interface UseActionsBarParams {
@@ -35,6 +35,12 @@ export const useActionsBar = ({
         name: translate('mail.inbox'),
         icon: TrayIcon,
         onClick: () => onMove('inbox'),
+      },
+      {
+        disabled: () => isActive('/archive') || optionsDisabled,
+        name: translate('mail.archive'),
+        icon: ArchiveIcon,
+        onClick: () => onMove('archive'),
       },
       {
         disabled: () => isActive('/spam') || optionsDisabled,

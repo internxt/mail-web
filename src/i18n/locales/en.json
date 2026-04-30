@@ -14,9 +14,11 @@
     "move": "Move",
     "markAsRead": "Mark as read",
     "markAsUnread": "Mark as unread",
-    "trashAll": "Move all to trash",
+    "moveAllToInbox": "Move all to inbox",
+    "moveAllToArchive": "Move all to archive",
+    "moveAllToSpam": "Move all to spam",
+    "moveAllToTrash": "Move all to trash",
     "emptyTrash": "Empty trash",
-    "archiveAll": "Move all to archive",
     "upgrade": "Upgrade",
     "send": "Send"
   },
@@ -102,6 +104,7 @@
     "sent": "Sent",
     "spam": "Spam",
     "trash": "Trash",
+    "archive": "Archive",
     "tray": {
       "isEmpty": "{{folderName}} is empty"
     },
@@ -215,6 +218,9 @@
     "logout": "Log out"
   },
   "toastNotification": {
-    "textCopied": "Copied to clipboard"
+    "textCopied": "Copied to clipboard",
+    "movedToFolder_one": "Conversation moved to \"{{folder}}\"",
+    "movedToFolder_many": "{{count}} conversations moved to \"{{folder}}\"",
+    "undo": "Undo"
   }
 }

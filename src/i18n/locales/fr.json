@@ -14,9 +14,11 @@
     "move": "Déplacer",
     "markAsRead": "Marquer comme lu",
     "markAsUnread": "Marquer comme non lu",
-    "trashAll": "Tout déplacer vers la corbeille",
+    "moveAllToInbox": "Tout déplacer vers la boîte de réception",
+    "moveAllToArchive": "Tout déplacer vers les archives",
+    "moveAllToSpam": "Tout déplacer vers les spams",
+    "moveAllToTrash": "Tout déplacer vers la corbeille",
     "emptyTrash": "Vider la corbeille",
-    "archiveAll": "Tout déplacer vers les archives",
     "upgrade": "Mettre à niveau",
     "send": "Envoyer"
   },
@@ -104,6 +106,7 @@
     "sent": "Envoyés",
     "spam": "Spam",
     "trash": "Corbeille",
+    "archive": "Archives",
     "tray": {
       "isEmpty": "{{folderName}} est vide"
     },
@@ -217,6 +220,9 @@
     "logout": "Se déconnecter"
   },
   "toastNotification": {
-    "textCopied": "Copié dans le presse-papiers"
+    "textCopied": "Copié dans le presse-papiers",
+    "movedToFolder_one": "Conversation déplacée vers « {{folder}} »",
+    "movedToFolder_many": "{{count}} conversations déplacées vers « {{folder}} »",
+    "undo": "Annuler"
   }
 }

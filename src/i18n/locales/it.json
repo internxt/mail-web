@@ -14,9 +14,11 @@
     "move": "Sposta",
     "markAsRead": "Segna come letto",
     "markAsUnread": "Segna come non letto",
-    "trashAll": "Sposta tutto nel cestino",
+    "moveAllToInbox": "Sposta tutto nella posta in arrivo",
+    "moveAllToArchive": "Sposta tutto nell'archivio",
+    "moveAllToSpam": "Sposta tutto nello spam",
+    "moveAllToTrash": "Sposta tutto nel cestino",
     "emptyTrash": "Svuota il cestino",
-    "archiveAll": "Sposta tutto nell'archivio",
     "upgrade": "Aggiorna piano",
     "send": "Invia"
   },
@@ -104,6 +106,7 @@
     "sent": "Inviati",
     "spam": "Spam",
     "trash": "Cestino",
+    "archive": "Archivio",
     "tray": {
       "isEmpty": "{{folderName}} è vuota"
     },
@@ -217,6 +220,9 @@
     "logout": "Esci"
   },
   "toastNotification": {
-    "textCopied": "Copiato negli appunti"
+    "textCopied": "Copiato negli appunti",
+    "movedToFolder_one": "Conversazione spostata in \"{{folder}}\"",
+    "movedToFolder_many": "{{count}} conversazioni spostate in \"{{folder}}\"",
+    "undo": "Annulla"
   }
 }
