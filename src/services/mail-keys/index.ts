@@ -3,6 +3,8 @@ import type { HybridKeyPair } from 'internxt-crypto';
 export class MailKeysService {
   public static readonly instance: MailKeysService = new MailKeysService();
 
+  private constructor() {}
+
   private current: { address: string; keys: HybridKeyPair } | null = null;
 
   set(address: string, keys: HybridKeyPair): void {
