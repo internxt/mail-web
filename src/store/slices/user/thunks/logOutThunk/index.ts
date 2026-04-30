@@ -6,6 +6,7 @@ import { AppView } from '@/routes/paths';
 import type { RootState } from '@/store';
 import { ErrorService } from '@/services/error';
 import { MailKeysService } from '@/services/mail-keys';
+import { mailApi } from '@/store/api/mail';
 
 export const logoutThunk = createAsyncThunk<void, void, { state: RootState }>(
   'user/logout',
@@ -18,6 +19,7 @@ export const logoutThunk = createAsyncThunk<void, void, { state: RootState }>(
     }
 
     MailKeysService.instance.clear();
+    dispatch(mailApi.util.resetApiState());
     NavigationService.instance.navigate({ id: AppView.Welcome });
     dispatch(userActions.resetState());
   },

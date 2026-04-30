@@ -24,7 +24,7 @@ export const useMailAccountGuard = (): { status: MailAccountGuardStatus } => {
 
   useEffect(() => {
     if (!address || !publicKey || !encryptionPrivateKey) return;
-    if (lastStartedAddress.current === address) return;
+    if (lastStartedAddress.current === address && !decryptError) return;
 
     lastStartedAddress.current = address;
 
@@ -40,6 +40,7 @@ export const useMailAccountGuard = (): { status: MailAccountGuardStatus } => {
 
       const mnemonic = LocalStorageService.instance.getMnemonic();
       if (!mnemonic) {
+        lastStartedAddress.current = null;
         setDecryptError(true);
         return;
       }
@@ -57,12 +58,13 @@ export const useMailAccountGuard = (): { status: MailAccountGuardStatus } => {
         MailKeysService.instance.set(address, keys);
         setIsDecrypted(true);
       } catch {
+        lastStartedAddress.current = null;
         setDecryptError(true);
       }
     };
 
     void decrypt();
-  }, [address, publicKey, encryptionPrivateKey]);
+  }, [address, publicKey, encryptionPrivateKey, decryptError]);
 
   if (!userEmail || isLoading || isFetching) return { status: 'loading' };
   if (error instanceof MailNotSetupError) return { status: 'not-setup' };

@@ -74,6 +74,21 @@ describe('useMailAccountGuard', () => {
     await waitFor(() => expect(result.current.status).toBe('error'));
   });
 
+  test('When decryption fails once, then it should retry decryption for the same address', async () => {
+    vi.spyOn(MailService.instance, 'getMailAccountKeys').mockResolvedValue(mockKeys);
+    vi.spyOn(LocalStorageService.instance, 'getMnemonic').mockReturnValue('mnemonic');
+    const decryptedKeys = { publicKey: new Uint8Array([1]), secretKey: new Uint8Array([2]) };
+    mockedOpenKeystore.mockRejectedValueOnce(new Error('bad keystore')).mockResolvedValueOnce(decryptedKeys);
+    const user = getMockedUser({ email: 'jane@inxt.me' });
+    const store = createTestStore({ user: { isAuthenticated: true, user } });
+
+    const { result } = renderHook(() => useMailAccountGuard(), { wrapper: createWrapper(store) });
+
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    expect(mockedOpenKeystore).toHaveBeenCalledTimes(2);
+    expect(MailKeysService.instance.get(mockKeys.address)).toBe(decryptedKeys);
+  });
+
   test('When the user has not set up a mail account, then the status should be not-setup', async () => {
     vi.spyOn(MailService.instance, 'getMailAccountKeys').mockRejectedValue(new Error('Forbidden'));
     vi.spyOn(ErrorService.instance, 'castError').mockReturnValue({
