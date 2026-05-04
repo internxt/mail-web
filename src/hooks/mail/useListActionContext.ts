@@ -91,7 +91,9 @@ export const useListActionContext = (
                 emailIds: g.emailIds,
                 sourceMailbox: target,
                 targetMailbox: g.sourceMailbox,
-              }).catch(() => undefined);
+              }).catch(() => {
+                notificationsService.show({ text: translate('errors.mail.move'), type: ToastType.Error });
+              });
             });
           },
         },
@@ -113,7 +115,8 @@ export const useListActionContext = (
         }
         showMovedToast(groups, target);
       } catch {
-        // empty
+        const key = target === 'trash' ? 'errors.mail.trash' : 'errors.mail.move';
+        notificationsService.show({ text: translate(key), type: ToastType.Error });
       } finally {
         selectNone();
       }
@@ -136,8 +139,13 @@ export const useListActionContext = (
     () => ({
       name: translate('actions.emptyTrash'),
       action: async () => {
-        await deleteEmails(selectedMails);
-        selectNone();
+        try {
+          await deleteEmails(selectedMails);
+        } catch {
+          notificationsService.show({ text: translate('errors.mail.trash'), type: ToastType.Error });
+        } finally {
+          selectNone();
+        }
       },
       icon: TrashIcon,
       disabled: isSelectionEmpty,

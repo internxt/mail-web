@@ -176,7 +176,7 @@ describe('List actions - custom hook', () => {
       });
     });
 
-    test('When the bulk move fails, then no toast is shown but selection is cleared', async () => {
+    test('When the bulk move fails, then an error toast is shown and selection is cleared', async () => {
       const ids = ['mail-1'];
       const params = makeParams();
       params.deleteEmails = vi.fn().mockRejectedValue(new Error('boom'));
@@ -185,7 +185,8 @@ describe('List actions - custom hook', () => {
 
       await findByName(bulk, 'actions.moveAllToTrash').action?.(undefined);
 
-      expect(showMock).not.toHaveBeenCalled();
+      expect(showMock).toHaveBeenCalledOnce();
+      expect(showMock.mock.calls[0][0]).toMatchObject({ text: 'errors.mail.trash', type: 'error' });
       expect(params.selectNone).toHaveBeenCalledOnce();
     });
   });
