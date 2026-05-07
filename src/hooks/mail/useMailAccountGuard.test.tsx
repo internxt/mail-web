@@ -100,6 +100,33 @@ describe('useMailAccountGuard', () => {
     await waitFor(() => expect(result.current.status).toBe('not-setup'));
   });
 
+  test('When decrypted keys are already cached for the address, then it should not call openEncryptionKeystore and be ready', async () => {
+    vi.spyOn(MailService.instance, 'getMailAccountKeys').mockResolvedValue(mockKeys);
+    const getMnemonicSpy = vi.spyOn(LocalStorageService.instance, 'getMnemonic').mockReturnValue('mnemonic');
+    const cachedKeys = { publicKey: new Uint8Array([9]), secretKey: new Uint8Array([8]) };
+    MailKeysService.instance.set(mockKeys.address, cachedKeys);
+    const store = createTestStore();
+
+    const { result } = renderHook(() => useMailAccountGuard(), { wrapper: createWrapper(store) });
+
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    expect(mockedOpenKeystore).not.toHaveBeenCalled();
+    expect(getMnemonicSpy).not.toHaveBeenCalled();
+    expect(MailKeysService.instance.get(mockKeys.address)).toBe(cachedKeys);
+  });
+
+  test('When the mnemonic is missing, then the status should be error and openEncryptionKeystore should not be called', async () => {
+    vi.spyOn(MailService.instance, 'getMailAccountKeys').mockResolvedValue(mockKeys);
+    vi.spyOn(LocalStorageService.instance, 'getMnemonic').mockReturnValue(null as unknown as string);
+    const store = createTestStore();
+
+    const { result } = renderHook(() => useMailAccountGuard(), { wrapper: createWrapper(store) });
+
+    await waitFor(() => expect(result.current.status).toBe('error'));
+    expect(mockedOpenKeystore).not.toHaveBeenCalled();
+    expect(MailKeysService.instance.get(mockKeys.address)).toBeNull();
+  });
+
   test('When fetching keys fails for another reason, then the status should be error', async () => {
     vi.spyOn(MailService.instance, 'getMailAccountKeys').mockRejectedValue(new Error('Network error'));
     vi.spyOn(ErrorService.instance, 'castError').mockReturnValue({
