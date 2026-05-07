@@ -467,12 +467,23 @@ describe('Mail API', () => {
       recoveryPrivateKey: 'rec',
     };
 
-    test('When fetching the mail account keys, then it should return the keys', async () => {
-      vi.spyOn(MailService.instance, 'getMailAccountKeys').mockResolvedValue(mockKeys);
+    test('When fetching the mail account keys without an address, then it should call the service without one and return the keys', async () => {
+      const spy = vi.spyOn(MailService.instance, 'getMailAccountKeys').mockResolvedValue(mockKeys);
+      const store = createTestStore();
+
+      const result = await store.dispatch(mailApi.endpoints.getMailAccountKeys.initiate());
+
+      expect(spy).toHaveBeenCalledWith(undefined);
+      expect(result.data).toStrictEqual(mockKeys);
+    });
+
+    test('When fetching the mail account keys with an explicit address, then it should forward the address to the service', async () => {
+      const spy = vi.spyOn(MailService.instance, 'getMailAccountKeys').mockResolvedValue(mockKeys);
       const store = createTestStore();
 
       const result = await store.dispatch(mailApi.endpoints.getMailAccountKeys.initiate({ address }));
 
+      expect(spy).toHaveBeenCalledWith(address);
       expect(result.data).toStrictEqual(mockKeys);
     });
 
@@ -486,7 +497,7 @@ describe('Mail API', () => {
       } as never);
       const store = createTestStore();
 
-      const result = await store.dispatch(mailApi.endpoints.getMailAccountKeys.initiate({ address }));
+      const result = await store.dispatch(mailApi.endpoints.getMailAccountKeys.initiate());
 
       expect(result.error).toBeInstanceOf(MailNotSetupError);
     });
@@ -500,7 +511,7 @@ describe('Mail API', () => {
       } as never);
       const store = createTestStore();
 
-      const result = await store.dispatch(mailApi.endpoints.getMailAccountKeys.initiate({ address }));
+      const result = await store.dispatch(mailApi.endpoints.getMailAccountKeys.initiate());
 
       expect(result.error).toBeInstanceOf(FetchMailAccountKeysError);
     });

@@ -1,8 +1,6 @@
-import { skipToken } from '@reduxjs/toolkit/query';
 import { useEffect, useRef, useState } from 'react';
 import { KeystoreType, openEncryptionKeystore } from 'internxt-crypto';
 import { useGetMailAccountKeysQuery } from '@/store/api/mail';
-import { useAppSelector } from '@/store/hooks';
 import { MailNotSetupError } from '@/errors';
 import { LocalStorageService } from '@/services/local-storage';
 import { MailKeysService } from '@/services/mail-keys';
@@ -10,10 +8,7 @@ import { MailKeysService } from '@/services/mail-keys';
 export type MailAccountGuardStatus = 'loading' | 'ready' | 'not-setup' | 'error';
 
 export const useMailAccountGuard = (): { status: MailAccountGuardStatus } => {
-  const userEmail = useAppSelector((state) => state.user.user?.email);
-  const { data, error, isLoading, isFetching } = useGetMailAccountKeysQuery(
-    userEmail ? { address: userEmail } : skipToken,
-  );
+  const { data, error, isLoading, isFetching } = useGetMailAccountKeysQuery();
   const lastStartedAddress = useRef<string | null>(null);
   const [isDecrypted, setIsDecrypted] = useState(false);
   const [decryptError, setDecryptError] = useState(false);
@@ -66,7 +61,7 @@ export const useMailAccountGuard = (): { status: MailAccountGuardStatus } => {
     void decrypt();
   }, [address, publicKey, encryptionPrivateKey, decryptError]);
 
-  if (!userEmail || isLoading || isFetching) return { status: 'loading' };
+  if (isLoading || isFetching) return { status: 'loading' };
   if (error instanceof MailNotSetupError) return { status: 'not-setup' };
   if (error || decryptError) return { status: 'error' };
   if (isDecrypted) return { status: 'ready' };
