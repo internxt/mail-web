@@ -8,7 +8,7 @@ import type {
   SearchFiltersQuery,
   SetupMailAccountPayload,
   UpdateEmailRequest,
-} from '@internxt/sdk';
+} from '@internxt/sdk/dist/mail/types';
 import { SdkManager } from '..';
 
 export class MailService {

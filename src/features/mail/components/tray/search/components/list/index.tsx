@@ -1,5 +1,5 @@
 import { formatEmailsToList } from '@/utils/format-emails';
-import type { EmailListResponse } from '@internxt/sdk';
+import type { EmailListResponse } from '@internxt/sdk/dist/mail/types';
 import { InfiniteScroll, MessageCheap, MessageCheapSkeleton } from '@internxt/ui';
 
 interface SearchEmailListProps {

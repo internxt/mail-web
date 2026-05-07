@@ -2,7 +2,7 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { useEmailSearch } from './useEmailSearch';
 import { MailService } from '@/services/sdk/mail';
-import type { EmailResponse } from '@internxt/sdk';
+import type { EmailResponse } from '@internxt/sdk/dist/mail/types';
 
 vi.mock('@/services/sdk/mail', () => ({
   MailService: {

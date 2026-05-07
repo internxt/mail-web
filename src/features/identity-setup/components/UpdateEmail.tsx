@@ -2,7 +2,7 @@ import { useTranslationContext } from '@/i18n';
 import { Avatar, Button } from '@internxt/ui';
 import { useState } from 'react';
 import SelectMailInput from './SelectMailInput';
-import type { EmailDomainsResponse } from '@internxt/sdk';
+import type { EmailDomainsResponse } from '@internxt/sdk/dist/mail/types';
 
 interface UpdateEmailProps {
   userFullName: string;

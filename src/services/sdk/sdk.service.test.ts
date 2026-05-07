@@ -1,4 +1,4 @@
-import { Auth, Drive, Mail } from '@internxt/sdk';
+import { Auth, Drive, MailApi } from '@internxt/sdk';
 import { beforeEach, describe, expect, test, vi, afterEach } from 'vitest';
 import { SdkManager } from '.';
 import { ConfigService } from '../config';
@@ -55,7 +55,7 @@ vi.mock('@internxt/sdk', () => ({
       })),
     },
   },
-  Mail: {
+  MailApi: {
     client: vi.fn().mockImplementation((baseUrl, appDetails, security) => ({
       baseUrl,
       appDetails,
@@ -271,7 +271,7 @@ describe('SDK Manager', () => {
 
       expect(paymentsClient).toBeDefined();
       expect(LocalStorageService.instance.getToken).toHaveBeenCalled();
-      expect(Mail.client).toHaveBeenCalledWith(
+      expect(MailApi.client).toHaveBeenCalledWith(
         config.MAIL_API_URL,
         expect.objectContaining({
           clientName: 'mail-web',
@@ -288,7 +288,7 @@ describe('SDK Manager', () => {
       SdkManager.instance.getMail();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const securityArg = (Mail.client as any).mock.calls[0][2];
+      const securityArg = (MailApi.client as any).mock.calls[0][2];
       securityArg.unauthorizedCallback();
 
       expect(store.dispatch).toHaveBeenCalled();

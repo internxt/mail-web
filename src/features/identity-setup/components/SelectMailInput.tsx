@@ -1,4 +1,4 @@
-import type { EmailDomainsResponse } from '@internxt/sdk';
+import type { EmailDomainsResponse } from '@internxt/sdk/dist/mail/types';
 import { Dropdown } from '@internxt/ui';
 import { CaretDownIcon, CaretUpIcon, CheckIcon } from '@phosphor-icons/react';
 import { useState } from 'react';

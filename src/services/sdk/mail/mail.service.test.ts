@@ -3,7 +3,7 @@ import { beforeEach, afterEach, describe, expect, test, vi } from 'vitest';
 import { SdkManager } from '..';
 import { MailService } from '.';
 import { getMockedMails, getMockedMailBoxes, getMockedMail } from '@/test-utils/fixtures';
-import type { SetupMailAccountPayload } from '@internxt/sdk';
+import type { SetupMailAccountPayload } from '@internxt/sdk/dist/mail/types';
 
 describe('Mail Service', () => {
   beforeEach(() => {
