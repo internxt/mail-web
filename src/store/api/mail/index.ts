@@ -60,12 +60,12 @@ const patchMailsAfterAction = async ({
 
 export const mailApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    getMailAccountKeys: builder.query<MailAccountKeysResponse, { address: string }>({
-      async queryFn({
-        address,
-      }): Promise<{ data: MailAccountKeysResponse } | { error: MailNotSetupError | FetchMailAccountKeysError }> {
+    getMailAccountKeys: builder.query<MailAccountKeysResponse, { address?: string } | void>({
+      async queryFn(
+        arg,
+      ): Promise<{ data: MailAccountKeysResponse } | { error: MailNotSetupError | FetchMailAccountKeysError }> {
         try {
-          const keys = await MailService.instance.getMailAccountKeys(address);
+          const keys = await MailService.instance.getMailAccountKeys(arg?.address);
           return { data: keys };
         } catch (error) {
           const err = ErrorService.instance.castError(error);

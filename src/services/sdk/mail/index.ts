@@ -29,12 +29,13 @@ export class MailService {
   }
 
   /**
-   * Gets the mail account keys for the given address.
+   * Gets the mail account keys. When `address` is omitted the backend returns
+   * the keys for the caller's default address.
    *
-   * @param address - The mail address whose keys should be retrieved.
+   * @param address - Optional. The mail address whose keys should be retrieved.
    * @returns A promise that resolves with the encrypted keys for the address.
    */
-  async getMailAccountKeys(address: string): Promise<MailAccountKeysResponse> {
+  async getMailAccountKeys(address?: string): Promise<MailAccountKeysResponse> {
     return this.client.getMailAccountKeys(address);
   }
 
