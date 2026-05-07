@@ -45,14 +45,13 @@ describe('useMailKeys', () => {
   });
 
   test('When the address has no cached keys, then it should return null even after data loads', async () => {
-    vi.spyOn(MailService.instance, 'getMailAccountKeys').mockResolvedValue(mockKeys);
+    const fetchSpy = vi.spyOn(MailService.instance, 'getMailAccountKeys').mockResolvedValue(mockKeys);
     const store = createTestStore();
 
     const { result, rerender } = renderHook(() => useMailKeys(), { wrapper: createWrapper(store) });
 
-    await waitFor(() => {
-      rerender();
-      expect(result.current).toBeNull();
-    });
+    await waitFor(() => expect(fetchSpy).toHaveBeenCalled());
+    rerender();
+    expect(result.current).toBeNull();
   });
 });

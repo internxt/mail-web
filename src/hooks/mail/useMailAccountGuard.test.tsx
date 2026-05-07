@@ -100,7 +100,7 @@ describe('useMailAccountGuard', () => {
     await waitFor(() => expect(result.current.status).toBe('not-setup'));
   });
 
-  test('When decrypted keys are already cached for the address, then it should not call openEncryptionKeystore and be ready', async () => {
+  test('When decrypted keys are already cached for the address, then it should not attempt to load a keystore and should be ready', async () => {
     vi.spyOn(MailService.instance, 'getMailAccountKeys').mockResolvedValue(mockKeys);
     const getMnemonicSpy = vi.spyOn(LocalStorageService.instance, 'getMnemonic').mockReturnValue('mnemonic');
     const cachedKeys = { publicKey: new Uint8Array([9]), secretKey: new Uint8Array([8]) };
@@ -115,7 +115,7 @@ describe('useMailAccountGuard', () => {
     expect(MailKeysService.instance.get(mockKeys.address)).toBe(cachedKeys);
   });
 
-  test('When the mnemonic is missing, then the status should be error and openEncryptionKeystore should not be called', async () => {
+  test('When the mnemonic is missing, then the status should be error and no keystore should be loaded', async () => {
     vi.spyOn(MailService.instance, 'getMailAccountKeys').mockResolvedValue(mockKeys);
     vi.spyOn(LocalStorageService.instance, 'getMnemonic').mockReturnValue(null as unknown as string);
     const store = createTestStore();
