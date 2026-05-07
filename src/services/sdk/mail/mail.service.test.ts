@@ -224,6 +224,24 @@ describe('Mail Service', () => {
       expect(mockMailClient.getMailAccountKeys).toHaveBeenCalledWith(address);
     });
 
+    test('When fetching keys without an address, then the client should be called without one', async () => {
+      const mockKeys = {
+        address: 'jane@internxt.com',
+        publicKey: 'pub',
+        encryptionPrivateKey: 'enc',
+        recoveryPrivateKey: 'rec',
+      };
+      const mockMailClient = {
+        getMailAccountKeys: vi.fn().mockResolvedValue(mockKeys),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      const result = await MailService.instance.getMailAccountKeys();
+
+      expect(result).toStrictEqual(mockKeys);
+      expect(mockMailClient.getMailAccountKeys).toHaveBeenCalledWith(undefined);
+    });
+
     test('When fetching keys fails, then an error should be thrown', async () => {
       const unexpectedError = new Error('Unexpected error');
       const mockMailClient = {
