@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { EmailListResponse } from '@internxt/sdk';
+import type { EmailListResponse } from '@internxt/sdk/dist/mail/types';
 
 export const useMailSelection = (emails: EmailListResponse['emails'] | undefined) => {
   const [selectedEmails, setSelectedEmails] = useState<string[]>([]);

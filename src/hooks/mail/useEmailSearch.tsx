@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import type { SearchFiltersQuery, EmailListResponse } from '@internxt/sdk';
+import type { SearchFiltersQuery, EmailListResponse } from '@internxt/sdk/dist/mail/types';
 import { MailService } from '@/services/sdk/mail';
 import { useDebounce } from '../useDebounce';
 

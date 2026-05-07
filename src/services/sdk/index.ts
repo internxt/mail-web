@@ -1,4 +1,4 @@
-import { Auth, Drive, Mail } from '@internxt/sdk';
+import { Auth, Drive, MailApi } from '@internxt/sdk';
 import type { ApiSecurity, AppDetails } from '@internxt/sdk/dist/shared';
 import packageJson from '../../../package.json';
 import { ConfigService } from '../config';
@@ -75,11 +75,11 @@ export class SdkManager {
     return Drive.Payments.client(this.paymentsApiUrl, appDetails, apiSecurity);
   }
 
-  getMail(): Mail {
+  getMail(): MailApi {
     const apiSecurity = this.getNewTokenApiSecurity();
     const appDetails = SdkManager.getAppDetails();
 
-    return Mail.client(this.mailApiUrl, appDetails, apiSecurity);
+    return MailApi.client(this.mailApiUrl, appDetails, apiSecurity);
   }
 
   get driveApiUrl(): string {

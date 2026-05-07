@@ -14,7 +14,7 @@ import { MailService } from '@/services/sdk/mail';
 import { getMockedMail, getMockedMailBoxes, getMockedMails } from '@/test-utils/fixtures';
 import { mailApi } from '.';
 import { DEFAULT_FOLDER_LIMIT } from '@/constants';
-import type { ListEmailsQuery } from '@internxt/sdk';
+import type { ListEmailsQuery } from '@internxt/sdk/dist/mail/types';
 import { createTestStore } from '@/test-utils/createTestStore';
 import type { RootState } from '@/store';
 

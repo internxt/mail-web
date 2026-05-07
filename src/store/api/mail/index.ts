@@ -19,7 +19,7 @@ import type {
   ListEmailsQuery,
   MailAccountKeysResponse,
   MailboxResponse,
-} from '@internxt/sdk';
+} from '@internxt/sdk/dist/mail/types';
 import type { AppDispatch } from '@/store';
 
 const patchMailsAfterAction = async ({

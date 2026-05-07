@@ -1,5 +1,5 @@
 import { DateService } from '@/services/date';
-import type { EmailListResponse } from '@internxt/sdk';
+import type { EmailListResponse } from '@internxt/sdk/dist/mail/types';
 
 export const formatEmailsToList = (listFolderEmails?: EmailListResponse['emails']) => {
   return listFolderEmails?.map((mail) => ({

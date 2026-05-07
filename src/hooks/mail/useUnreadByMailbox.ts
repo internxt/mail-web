@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { MailboxResponse } from '@internxt/sdk';
+import type { MailboxResponse } from '@internxt/sdk/dist/mail/types';
 import { useGetMailboxesInfoQuery } from '@/store/api/mail';
 
 type UnreadByMailbox = Record<Exclude<MailboxResponse['type'], null>, number | undefined>;

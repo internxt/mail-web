@@ -15,9 +15,7 @@ describe('User Service', () => {
       const mockedUserClient = {
         refreshUser: vi.fn().mockResolvedValue(mockedUser),
       };
-      vi.spyOn(SdkManager.instance, 'getUsers').mockReturnValue(
-        mockedUserClient as any,
-      );
+      vi.spyOn(SdkManager.instance, 'getUsers').mockReturnValue(mockedUserClient as any);
 
       const result = await UserService.instance.getUser();
 
@@ -36,9 +34,7 @@ describe('User Service', () => {
       const mockedUserClient = {
         refreshUser: vi.fn().mockResolvedValue(mockedUser),
       };
-      vi.spyOn(SdkManager.instance, 'getUsers').mockReturnValue(
-        mockedUserClient as any,
-      );
+      vi.spyOn(SdkManager.instance, 'getUsers').mockReturnValue(mockedUserClient as any);
 
       const result = await UserService.instance.refreshUserAndTokens();
 

@@ -2,7 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { useUnreadByMailbox } from './useUnreadByMailbox';
 import { useGetMailboxesInfoQuery } from '@/store/api/mail';
-import type { MailboxResponse } from '@internxt/sdk';
+import type { MailboxResponse } from '@internxt/sdk/dist/mail/types';
 
 vi.mock('@/store/api/mail', () => ({
   useGetMailboxesInfoQuery: vi.fn(),

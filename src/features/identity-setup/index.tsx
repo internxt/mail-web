@@ -10,7 +10,7 @@ import { ConfirmChange } from './components/ConfirmChange';
 import { MailService } from '@/services/sdk/mail';
 import { AuthService } from '@/services/sdk/auth';
 import { ErrorService } from '@/services/error';
-import type { SetupMailAccountPayload } from '@internxt/sdk';
+import type { SetupMailAccountPayload } from '@internxt/sdk/dist/mail/types';
 import { CryptoService } from '@/services/crypto';
 import { useTranslationContext } from '@/i18n';
 import { DEFAULT_USER_NAME } from '@/constants';

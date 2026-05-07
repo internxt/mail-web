@@ -4,7 +4,7 @@ import type { Tier } from '@internxt/sdk/dist/drive/payments/types/tiers';
 import type { UserSubscription } from '@internxt/sdk/dist/drive/payments/types/types';
 import type { AppSumoDetails } from '@internxt/sdk/dist/shared/types/appsumo';
 import { faker } from '@faker-js/faker';
-import type { EmailListResponse, EmailResponse, MailboxResponse } from '@internxt/sdk';
+import type { EmailListResponse, EmailResponse, MailboxResponse } from '@internxt/sdk/dist/mail/types';
 
 export const getMockedUser = (params?: Partial<LoginCredentials['user']>): LoginCredentials['user'] => {
   return {
