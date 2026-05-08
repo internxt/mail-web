@@ -22,6 +22,10 @@
     "upgrade": "Mettre à niveau",
     "send": "Envoyer"
   },
+  "mailDowngraded": {
+    "message": "Vous êtes passé à un plan qui ne prend pas en charge Internxt Mail. Votre compte sera supprimé dans {{days}} jours.",
+    "upgrade": "Mettre à niveau"
+  },
   "filter": {
     "all": "Tous",
     "none": "Aucun",

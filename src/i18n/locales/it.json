@@ -22,6 +22,10 @@
     "upgrade": "Aggiorna piano",
     "send": "Invia"
   },
+  "mailDowngraded": {
+    "message": "Sei passato a un piano che non supporta Internxt Mail. Il tuo account verrà eliminato tra {{days}} giorni.",
+    "upgrade": "Aggiorna piano"
+  },
   "filter": {
     "all": "Tutti",
     "none": "Nessuno",
