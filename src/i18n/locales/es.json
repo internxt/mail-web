@@ -22,6 +22,10 @@
     "upgrade": "Mejorar plan",
     "send": "Enviar"
   },
+  "mailDowngraded": {
+    "message": "Has bajado a un plan que no incluye Internxt Mail. Tu cuenta se eliminará en {{days}} días.",
+    "upgrade": "Mejorar plan"
+  },
   "filter": {
     "all": "Todos",
     "none": "Ninguno",

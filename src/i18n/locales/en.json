@@ -22,6 +22,10 @@
     "upgrade": "Upgrade",
     "send": "Send"
   },
+  "mailDowngraded": {
+    "message": "You downgraded to a plan that doesn't support Internxt Mail. Your account will be deleted in {{days}} days.",
+    "upgrade": "Upgrade"
+  },
   "filter": {
     "all": "All",
     "none": "None",
