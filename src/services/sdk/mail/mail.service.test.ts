@@ -3,7 +3,7 @@ import { beforeEach, afterEach, describe, expect, test, vi } from 'vitest';
 import { SdkManager } from '..';
 import { MailService } from '.';
 import { getMockedMails, getMockedMailBoxes, getMockedMail } from '@/test-utils/fixtures';
-import type { SetupMailAccountPayload } from '@internxt/sdk/dist/mail/types';
+import type { MailAccountResponse, SetupMailAccountPayload } from '@internxt/sdk/dist/mail/types';
 
 describe('Mail Service', () => {
   beforeEach(() => {
@@ -12,6 +12,53 @@ describe('Mail Service', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  describe('Get me', () => {
+    test('When fetching the mail account and it is active, then the account should be returned', async () => {
+      const mockAccount: MailAccountResponse = {
+        id: 'account-1',
+        defaultAddress: 'jane@inxt.me',
+        status: 'active',
+      };
+      const mockMailClient = {
+        getMailAccount: vi.fn().mockResolvedValue(mockAccount),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      const result = await MailService.instance.getMe();
+
+      expect(result).toStrictEqual(mockAccount);
+      expect(mockMailClient.getMailAccount).toHaveBeenCalledOnce();
+    });
+
+    test('When fetching the mail account and it is suspended, then suspendedAt and deletionAt should be present', async () => {
+      const mockAccount: MailAccountResponse = {
+        id: 'account-1',
+        defaultAddress: 'jane@inxt.me',
+        status: 'suspended',
+        suspendedAt: '2026-05-01T00:00:00.000Z',
+        deletionAt: '2026-06-01T00:00:00.000Z',
+      };
+      const mockMailClient = {
+        getMailAccount: vi.fn().mockResolvedValue(mockAccount),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      const result = await MailService.instance.getMe();
+
+      expect(result).toStrictEqual(mockAccount);
+    });
+
+    test('When fetching the mail account fails, then an error should be thrown', async () => {
+      const unexpectedError = new Error('Unauthorized');
+      const mockMailClient = {
+        getMailAccount: vi.fn().mockRejectedValue(unexpectedError),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      await expect(MailService.instance.getMe()).rejects.toThrow(unexpectedError);
+    });
   });
 
   describe('Get mailboxes info', () => {

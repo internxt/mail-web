@@ -10,8 +10,10 @@ import { HUNDRED_TB } from '@/constants';
 import { useSuiteLauncher } from '@/hooks/navigation/useSuiteLauncher';
 import { useSidenavNavigation } from '@/hooks/navigation/useSidenavNavigation';
 import { useGetStorageLimitQuery, useGetStorageUsageQuery } from '@/store/api/storage';
+import { useGetMailMeQuery } from '@/store/api/mail';
 import { useAppSelector } from '@/store/hooks';
 import { bytesToString } from '@/utils/bytes-to-string';
+import { getDaysUntil } from '@/utils/days-until';
 import { ActionDialog, useActionDialog } from '@/context/dialog-manager';
 
 const Sidenav = () => {
@@ -19,6 +21,9 @@ const Sidenav = () => {
   const { userSubscription: subscription } = useAppSelector((state: RootState) => state.user);
   const { isLoading: isLoadingPlanLimit, data: planLimit = 1 } = useGetStorageLimitQuery();
   const { isLoading: isLoadingPlanUsage, data: planUsage = 0 } = useGetStorageUsageQuery();
+  const { data: mailMe } = useGetMailMeQuery();
+  const isMailDisabled = mailMe?.status === 'suspended';
+  const daysUntilDeletion = getDaysUntil(mailMe?.deletionAt);
   const storagePercentage = planLimit > 0 ? Math.min((planUsage / planLimit) * 100, 100) : 0;
   const { openDialog } = useActionDialog();
 
@@ -64,9 +69,19 @@ const Sidenav = () => {
           className: '!pt-0 pb-3',
         }}
         primaryAction={
-          <Button className="w-full" variant="primary" onClick={onPrimaryActionClicked}>
+          <Button className="w-full" variant="primary" onClick={onPrimaryActionClicked} disabled={isMailDisabled}>
             {translate('actions.newMessage')}
           </Button>
+        }
+        notification={
+          isMailDisabled
+            ? {
+                message: translate('mailDowngraded.message', { days: daysUntilDeletion ?? '--' }),
+                actionLabel: translate('mailDowngraded.upgrade'),
+                onAction: () => {},
+                type: 'warning',
+              }
+            : undefined
         }
         suiteLauncher={{
           suiteArray: suiteArray,
