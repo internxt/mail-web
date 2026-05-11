@@ -5,6 +5,7 @@ import {
   FetchListFolderError,
   FetchMailAccountKeysError,
   FetchMailboxesInfoError,
+  FetchMailMeError,
   FetchMessageError,
   MAIL_NOT_SETUP_CODE,
   MailNotSetupError,
@@ -58,6 +59,45 @@ const getCacheState = (store: ReturnType<typeof createTestStore>) => {
 describe('Mail API', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  describe('Get Mail Me', () => {
+    test('When fetching the mail account and it is active, then it should return the account data', async () => {
+      const mockAccount = { id: 'account-1', defaultAddress: 'jane@inxt.me', status: 'active' as const };
+      vi.spyOn(MailService.instance, 'getMe').mockResolvedValue(mockAccount);
+      const store = createTestStore();
+
+      const result = await store.dispatch(mailApi.endpoints.getMailMe.initiate());
+
+      expect(result.data).toStrictEqual(mockAccount);
+    });
+
+    test('When fetching the mail account and it is suspended, then it should return the suspended account', async () => {
+      const mockAccount = {
+        id: 'account-1',
+        defaultAddress: 'jane@inxt.me',
+        status: 'suspended' as const,
+        suspendedAt: '2026-05-01T00:00:00.000Z',
+        deletionAt: '2026-06-01T00:00:00.000Z',
+      };
+      vi.spyOn(MailService.instance, 'getMe').mockResolvedValue(mockAccount);
+      const store = createTestStore();
+
+      const result = await store.dispatch(mailApi.endpoints.getMailMe.initiate());
+
+      expect(result.data).toStrictEqual(mockAccount);
+    });
+
+    test('When fetching the mail account fails, then a FetchMailMeError should be returned', async () => {
+      vi.spyOn(MailService.instance, 'getMe').mockRejectedValue(new Error('Network error'));
+      const castErrorSpy = vi.spyOn(ErrorService.instance, 'castError');
+      const store = createTestStore();
+
+      const result = await store.dispatch(mailApi.endpoints.getMailMe.initiate());
+
+      expect(castErrorSpy).toHaveBeenCalledOnce();
+      expect(result.error).toBeInstanceOf(FetchMailMeError);
+    });
   });
 
   describe('Get Mailboxes', () => {

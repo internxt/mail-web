@@ -2,6 +2,7 @@ import { api } from '../base';
 import {
   FetchMailAccountKeysError,
   FetchMailboxesInfoError,
+  FetchMailMeError,
   FetchMessageError,
   FetchListFolderError,
   MAIL_NOT_SETUP_CODE,
@@ -10,7 +11,7 @@ import {
   DeleteEmailError,
 } from '@/errors';
 import { ErrorService } from '@/services/error';
-import { MailService } from '@/services/sdk/mail';
+import { MailService, type MailMeResponse } from '@/services/sdk/mail';
 import type { FolderType } from '@/types/mail';
 import { batchProcess } from '@/utils/batch-processes';
 import type {
@@ -76,6 +77,18 @@ export const mailApi = api.injectEndpoints({
         }
       },
       providesTags: ['MailAccountKeys'],
+    }),
+    getMailMe: builder.query<MailMeResponse, void>({
+      async queryFn(): Promise<{ data: MailMeResponse } | { error: FetchMailMeError }> {
+        try {
+          const me = await MailService.instance.getMe();
+          return { data: me };
+        } catch (error) {
+          const err = ErrorService.instance.castError(error);
+          return { error: new FetchMailMeError(err.message, err.requestId) };
+        }
+      },
+      providesTags: ['MailMe'],
     }),
     getMailboxesInfo: builder.query<MailboxResponse[], void>({
       async queryFn(): Promise<{ data: MailboxResponse[] } | { error: FetchMailboxesInfoError }> {
@@ -217,6 +230,7 @@ export const mailApi = api.injectEndpoints({
 
 export const {
   useGetMailAccountKeysQuery,
+  useGetMailMeQuery,
   useGetMailboxesInfoQuery,
   useGetListFolderQuery,
   useGetMailMessageQuery,

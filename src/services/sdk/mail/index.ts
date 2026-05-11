@@ -4,6 +4,7 @@ import type {
   EmailResponse,
   ListEmailsQuery,
   MailAccountKeysResponse,
+  MailAccountResponse,
   MailboxResponse,
   SearchFiltersQuery,
   SetupMailAccountPayload,
@@ -11,11 +12,22 @@ import type {
 } from '@internxt/sdk/dist/mail/types';
 import { SdkManager } from '..';
 
+export type MailMeResponse = MailAccountResponse;
+
 export class MailService {
   public static readonly instance: MailService = new MailService();
 
   get client() {
     return SdkManager.instance.getMail();
+  }
+
+  /**
+   * Returns the current mail account for the logged in user.
+   * When the account has been suspended due to a plan downgrade, `state` is
+   * `suspended` and `deletionAt` holds the scheduled UTC deletion timestamp.
+   */
+  async getMe(): Promise<MailMeResponse> {
+    return this.client.getMailAccount();
   }
 
   /**

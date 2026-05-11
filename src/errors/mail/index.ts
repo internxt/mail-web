@@ -64,6 +64,17 @@ export class FetchMailAccountKeysError extends Error {
   }
 }
 
+export class FetchMailMeError extends Error {
+  constructor(
+    errorMsg?: string,
+    public requestId?: string,
+  ) {
+    super('Error while fetching mail account status: ' + errorMsg);
+
+    Object.setPrototypeOf(this, FetchMailMeError.prototype);
+  }
+}
+
 export class DeleteEmailError extends Error {
   constructor(
     errorMsg?: string,
