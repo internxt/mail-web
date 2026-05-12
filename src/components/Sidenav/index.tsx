@@ -6,25 +6,26 @@ import { useTranslationContext } from '@/i18n';
 import { NavigationService } from '@/services/navigation';
 import { AppView } from '@/routes/paths';
 import type { RootState } from '@/store';
-import { HUNDRED_TB } from '@/constants';
+import { HUNDRED_TB, INTERNXT_BASE_URL } from '@/constants';
 import { useSuiteLauncher } from '@/hooks/navigation/useSuiteLauncher';
 import { useSidenavNavigation } from '@/hooks/navigation/useSidenavNavigation';
-import { useGetStorageLimitQuery, useGetStorageUsageQuery } from '@/store/api/storage';
-import { useGetMailMeQuery } from '@/store/api/mail';
 import { useAppSelector } from '@/store/hooks';
 import { bytesToString } from '@/utils/bytes-to-string';
-import { getDaysUntil } from '@/utils/days-until';
 import { ActionDialog, useActionDialog } from '@/context/dialog-manager';
+import { useSidenavData } from './useSidenavData';
 
 const Sidenav = () => {
   const { translate } = useTranslationContext();
   const { userSubscription: subscription } = useAppSelector((state: RootState) => state.user);
-  const { isLoading: isLoadingPlanLimit, data: planLimit = 1 } = useGetStorageLimitQuery();
-  const { isLoading: isLoadingPlanUsage, data: planUsage = 0 } = useGetStorageUsageQuery();
-  const { data: mailMe } = useGetMailMeQuery();
-  const isMailDisabled = mailMe?.status === 'suspended';
-  const daysUntilDeletion = getDaysUntil(mailMe?.deletionAt);
-  const storagePercentage = planLimit > 0 ? Math.min((planUsage / planLimit) * 100, 100) : 0;
+  const {
+    isMailDisabled,
+    daysUntilDeletion,
+    planLimit,
+    planUsage,
+    isLoadingPlanLimit,
+    isLoadingPlanUsage,
+    storagePercentage,
+  } = useSidenavData();
   const { openDialog } = useActionDialog();
 
   const { itemsNavigation } = useSidenavNavigation();
@@ -78,7 +79,7 @@ const Sidenav = () => {
             ? {
                 message: translate('mailDowngraded.message', { days: daysUntilDeletion ?? '--' }),
                 actionLabel: translate('mailDowngraded.upgrade'),
-                onAction: () => {},
+                onAction: () => window.open(`${INTERNXT_BASE_URL}/pricing`, '_blank', 'noopener'),
                 type: 'warning',
               }
             : undefined
