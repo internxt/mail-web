@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { matchPath, useLocation } from 'react-router-dom';
 import { TrashIcon, TrayIcon, PaperPlaneTiltIcon, FileIcon, WarningOctagonIcon } from '@phosphor-icons/react';
-import type { SidenavOption } from '@internxt/ui/dist/components/sidenav/SidenavOptions';
+import type { SidenavOption } from '@internxt/ui';
 import { useTranslationContext } from '@/i18n';
 import { AppView } from '@/routes/paths';
 import { NavigationService } from '@/services/navigation';
