@@ -3,7 +3,7 @@ import { useGetMailMeQuery } from '@/store/api/mail';
 import { getDaysUntil } from '@/utils/days-until';
 
 export const useSidenavData = () => {
-  const { isLoading: isLoadingPlanLimit, data: planLimit = 1 } = useGetStorageLimitQuery();
+  const { isLoading: isLoadingPlanLimit, data: planLimit = 0 } = useGetStorageLimitQuery();
   const { isLoading: isLoadingPlanUsage, data: planUsage = 0 } = useGetStorageUsageQuery();
   const { data: mailMe } = useGetMailMeQuery();
 
