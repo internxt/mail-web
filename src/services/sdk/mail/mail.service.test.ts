@@ -32,7 +32,7 @@ describe('Mail Service', () => {
       expect(mockMailClient.getMailAccount).toHaveBeenCalledOnce();
     });
 
-    test('When fetching the mail account and it is suspended, then suspendedAt and deletionAt should be present', async () => {
+    test('When fetching the mail account and it is suspended, then its scheduled deletion date and suspension date should be present', async () => {
       const mockAccount: MailAccountResponse = {
         id: 'account-1',
         defaultAddress: 'jane@inxt.me',
