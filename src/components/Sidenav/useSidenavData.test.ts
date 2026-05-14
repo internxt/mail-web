@@ -166,5 +166,23 @@ describe('useSidenavData', () => {
       expect(result.current.planUsage).toBe(200);
       expect(result.current.planLimit).toBe(800);
     });
+
+    test('When the storage information is missing, then the reported usage is zero percent and the values fall back to safe defaults', () => {
+      mockUseGetStorageLimitQuery.mockReturnValue({ data: undefined, isLoading: false } as unknown as ReturnType<
+        typeof useGetStorageLimitQuery
+      >);
+      mockUseGetStorageUsageQuery.mockReturnValue({ data: undefined, isLoading: false } as unknown as ReturnType<
+        typeof useGetStorageUsageQuery
+      >);
+      mockUseGetMailMeQuery.mockReturnValue({ data: undefined } as unknown as ReturnType<typeof useGetMailMeQuery>);
+
+      const { result } = renderHook(() => useSidenavData());
+
+      expect(result.current.storagePercentage).toBe(0);
+      expect(result.current.planUsage).toBe(0);
+      expect(result.current.planLimit).toBe(0);
+      expect(result.current.isLoadingPlanLimit).toBe(false);
+      expect(result.current.isLoadingPlanUsage).toBe(false);
+    });
   });
 });
