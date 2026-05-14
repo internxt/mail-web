@@ -88,7 +88,7 @@ describe('Mail API', () => {
       expect(result.data).toStrictEqual(mockAccount);
     });
 
-    test('When fetching the mail account fails, then a FetchMailMeError should be returned', async () => {
+    test('When fetching the mail account fails, then an error indicating so is thrown', async () => {
       vi.spyOn(MailService.instance, 'getMe').mockRejectedValue(new Error('Network error'));
       const castErrorSpy = vi.spyOn(ErrorService.instance, 'castError');
       const store = createTestStore();
