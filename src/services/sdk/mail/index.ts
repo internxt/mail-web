@@ -3,6 +3,7 @@ import type {
   EmailListResponse,
   EmailResponse,
   ListEmailsQuery,
+  LookupRecipientKeysResponse,
   MailAccountKeysResponse,
   MailAccountResponse,
   MailboxResponse,
@@ -115,5 +116,17 @@ export class MailService {
    */
   async trashEmail(emailId: string): Promise<void> {
     return this.client.deleteEmail(emailId);
+  }
+
+  /**
+   * Looks up the public encryption keys for a batch of recipient addresses.
+   * Returns `publicKey: null` for external or unknown addresses, which the
+   * caller should treat as a signal to fall back to cleartext.
+   *
+   * @param addresses - 1-50 email addresses
+   * @returns A list of `{ address, publicKey | null }`
+   */
+  async lookupRecipientKeys(addresses: string[]): Promise<LookupRecipientKeysResponse> {
+    return this.client.lookupRecipientKeys(addresses);
   }
 }

@@ -1,16 +1,18 @@
 import { api } from '../base';
 import {
+  DeleteEmailError,
+  FetchListFolderError,
   FetchMailAccountKeysError,
   FetchMailboxesInfoError,
   FetchMailMeError,
   FetchMessageError,
-  FetchListFolderError,
+  FetchRecipientKeysError,
   MAIL_NOT_SETUP_CODE,
   MailNotSetupError,
   UpdateMailError,
-  DeleteEmailError,
 } from '@/errors';
 import { ErrorService } from '@/services/error';
+import { RecipientKeysService } from '@/services/recipient-keys';
 import { MailService, type MailMeResponse } from '@/services/sdk/mail';
 import type { FolderType } from '@/types/mail';
 import { batchProcess } from '@/utils/batch-processes';
@@ -18,8 +20,10 @@ import type {
   EmailListResponse,
   EmailResponse,
   ListEmailsQuery,
+  LookupRecipientKeysResponse,
   MailAccountKeysResponse,
   MailboxResponse,
+  RecipientKey,
 } from '@internxt/sdk/dist/mail/types';
 import type { AppDispatch } from '@/store';
 
@@ -225,6 +229,27 @@ export const mailApi = api.injectEndpoints({
         });
       },
     }),
+    lookupRecipientKeys: builder.query<RecipientKey[], { addresses: string[] }>({
+      serializeQueryArgs: ({ queryArgs }) => ({
+        addresses: [...queryArgs.addresses]
+          .map((a) => a.toLowerCase())
+          .sort()
+          .join(','),
+      }),
+      async queryFn({ addresses }): Promise<{ data: RecipientKey[] } | { error: FetchRecipientKeysError }> {
+        try {
+          const res: LookupRecipientKeysResponse = await MailService.instance.lookupRecipientKeys(addresses);
+          for (const r of res.recipients) {
+            if (r.publicKey) RecipientKeysService.instance.set(r.address, r.publicKey);
+          }
+          return { data: res.recipients };
+        } catch (error) {
+          const err = ErrorService.instance.castError(error);
+          return { error: new FetchRecipientKeysError(err.message, err.requestId) };
+        }
+      },
+      providesTags: ['RecipientKeys'],
+    }),
   }),
 });
 
@@ -237,4 +262,6 @@ export const {
   useUpdateReadStatusMutation,
   useDeleteMailsMutation,
   useMoveToFolderMutation,
+  useLookupRecipientKeysQuery,
+  useLazyLookupRecipientKeysQuery,
 } = mailApi;

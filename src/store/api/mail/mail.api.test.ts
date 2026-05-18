@@ -7,10 +7,12 @@ import {
   FetchMailboxesInfoError,
   FetchMailMeError,
   FetchMessageError,
+  FetchRecipientKeysError,
   MAIL_NOT_SETUP_CODE,
   MailNotSetupError,
   UpdateMailError,
 } from '@/errors';
+import { RecipientKeysService } from '@/services/recipient-keys';
 import { MailService } from '@/services/sdk/mail';
 import { getMockedMail, getMockedMailBoxes, getMockedMails } from '@/test-utils/fixtures';
 import { mailApi } from '.';
@@ -554,6 +556,35 @@ describe('Mail API', () => {
       const result = await store.dispatch(mailApi.endpoints.getMailAccountKeys.initiate());
 
       expect(result.error).toBeInstanceOf(FetchMailAccountKeysError);
+    });
+  });
+
+  describe('Lookup recipient keys', () => {
+    test('When looking up keys, then it returns the recipient list and writes through to the cache', async () => {
+      RecipientKeysService.instance.clear();
+      const recipients = [
+        { address: 'alice@inxt.me', publicKey: 'pk-alice' },
+        { address: 'bob@gmail.com', publicKey: null },
+      ];
+      vi.spyOn(MailService.instance, 'lookupRecipientKeys').mockResolvedValue({ recipients });
+      const store = createTestStore();
+
+      const result = await store.dispatch(
+        mailApi.endpoints.lookupRecipientKeys.initiate({ addresses: ['alice@inxt.me', 'bob@gmail.com'] }),
+      );
+
+      expect(result.data).toStrictEqual(recipients);
+      expect(RecipientKeysService.instance.get('alice@inxt.me')?.publicKey).toBe('pk-alice');
+      expect(RecipientKeysService.instance.get('bob@gmail.com')).toBeNull();
+    });
+
+    test('When lookup fails, then a FetchRecipientKeysError should be returned', async () => {
+      vi.spyOn(MailService.instance, 'lookupRecipientKeys').mockRejectedValue(new Error('boom'));
+      const store = createTestStore();
+
+      const result = await store.dispatch(mailApi.endpoints.lookupRecipientKeys.initiate({ addresses: ['x@inxt.me'] }));
+
+      expect(result.error).toBeInstanceOf(FetchRecipientKeysError);
     });
   });
 });
