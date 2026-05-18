@@ -300,6 +300,34 @@ describe('Mail Service', () => {
     });
   });
 
+  describe('Lookup recipient keys', () => {
+    test('When looking up keys, then the addresses should be forwarded and recipients returned', async () => {
+      const recipients = [
+        { address: 'alice@inxt.me', publicKey: 'pk-alice' },
+        { address: 'bob@external.com', publicKey: null },
+      ];
+      const mockMailClient = {
+        lookupRecipientKeys: vi.fn().mockResolvedValue({ recipients }),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      const result = await MailService.instance.lookupRecipientKeys(['alice@inxt.me', 'bob@external.com']);
+
+      expect(result).toStrictEqual({ recipients });
+      expect(mockMailClient.lookupRecipientKeys).toHaveBeenCalledWith(['alice@inxt.me', 'bob@external.com']);
+    });
+
+    test('When lookup fails, then an error should be thrown', async () => {
+      const unexpectedError = new Error('Unexpected error');
+      const mockMailClient = {
+        lookupRecipientKeys: vi.fn().mockRejectedValue(unexpectedError),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      await expect(MailService.instance.lookupRecipientKeys(['a@inxt.me'])).rejects.toThrow(unexpectedError);
+    });
+  });
+
   describe('Trashing email', () => {
     test('When trashing email, then the client should be called with the correct params', async () => {
       const mockMailClient = {

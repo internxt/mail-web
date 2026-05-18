@@ -85,3 +85,14 @@ export class DeleteEmailError extends Error {
     Object.setPrototypeOf(this, DeleteEmailError.prototype);
   }
 }
+
+export class FetchRecipientKeysError extends Error {
+  constructor(
+    errorMsg?: string,
+    public requestId?: string,
+  ) {
+    super('Error while fetching recipient keys: ' + errorMsg);
+
+    Object.setPrototypeOf(this, FetchRecipientKeysError.prototype);
+  }
+}
