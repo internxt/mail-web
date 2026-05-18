@@ -250,7 +250,7 @@ export const mailApi = api.injectEndpoints({
       serializeQueryArgs: ({ queryArgs }) => ({
         addresses: [...queryArgs.addresses]
           .map((a) => a.toLowerCase())
-          .sort()
+          .sort((a, b) => a.localeCompare(b))
           .join(','),
       }),
       async queryFn({ addresses }): Promise<{ data: RecipientKey[] } | { error: FetchRecipientKeysError }> {
