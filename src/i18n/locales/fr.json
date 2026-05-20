@@ -118,6 +118,8 @@
       "to": "À",
       "cc": "CC",
       "bcc": "CCI",
+      "decrypting": "Déchiffrement du message…",
+      "decryptFailed": "Impossible de déchiffrer ce message",
       "emptyEmail": {
         "unreadEmails": {
           "title": "Messages non lus",
@@ -189,7 +191,15 @@
       "cc": "Cc",
       "bcc": "Cci",
       "subject": "Objet",
-      "message": "Message"
+      "message": "Message",
+      "encryptedBadge": "Chiffré de bout en bout",
+      "cleartextBadge": "Non chiffré",
+      "encryptedPlaceholderSubject": "Message chiffré",
+      "errors": {
+        "noRecipients": "Ajoutez au moins un destinataire avant d'envoyer",
+        "sendFailed": "Impossible d'envoyer le courriel",
+        "keyLookupFailed": "Impossible de récupérer les clés du destinataire"
+      }
     },
     "preferences": {
       "title": "Préférences",

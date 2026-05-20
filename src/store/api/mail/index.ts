@@ -1,6 +1,7 @@
 import { api } from '../base';
 import {
   DeleteEmailError,
+  FetchActiveDomainsError,
   FetchListFolderError,
   FetchMailAccountKeysError,
   FetchMailboxesInfoError,
@@ -9,6 +10,7 @@ import {
   FetchRecipientKeysError,
   MAIL_NOT_SETUP_CODE,
   MailNotSetupError,
+  SendEmailError,
   UpdateMailError,
 } from '@/errors';
 import { ErrorService } from '@/services/error';
@@ -17,6 +19,8 @@ import { MailService, type MailMeResponse } from '@/services/sdk/mail';
 import type { FolderType } from '@/types/mail';
 import { batchProcess } from '@/utils/batch-processes';
 import type {
+  EmailCreatedResponse,
+  EmailDomainsResponse,
   EmailListResponse,
   EmailResponse,
   ListEmailsQuery,
@@ -24,6 +28,7 @@ import type {
   MailAccountKeysResponse,
   MailboxResponse,
   RecipientKey,
+  SendEmailRequest,
 } from '@internxt/sdk/dist/mail/types';
 import type { AppDispatch } from '@/store';
 
@@ -229,6 +234,18 @@ export const mailApi = api.injectEndpoints({
         });
       },
     }),
+    getActiveDomains: builder.query<EmailDomainsResponse, void>({
+      async queryFn(): Promise<{ data: EmailDomainsResponse } | { error: FetchActiveDomainsError }> {
+        try {
+          const domains = await MailService.instance.getActiveDomains();
+          return { data: domains };
+        } catch (error) {
+          const err = ErrorService.instance.castError(error);
+          return { error: new FetchActiveDomainsError(err.message, err.requestId) };
+        }
+      },
+      providesTags: ['ActiveDomains'],
+    }),
     lookupRecipientKeys: builder.query<RecipientKey[], { addresses: string[] }>({
       serializeQueryArgs: ({ queryArgs }) => ({
         addresses: [...queryArgs.addresses]
@@ -250,6 +267,18 @@ export const mailApi = api.injectEndpoints({
       },
       providesTags: ['RecipientKeys'],
     }),
+    sendEmail: builder.mutation<EmailCreatedResponse, SendEmailRequest>({
+      async queryFn(payload): Promise<{ data: EmailCreatedResponse } | { error: SendEmailError }> {
+        try {
+          const result = await MailService.instance.sendEmail(payload);
+          return { data: result };
+        } catch (error) {
+          const err = ErrorService.instance.castError(error);
+          return { error: new SendEmailError(err.message, err.requestId) };
+        }
+      },
+      invalidatesTags: [{ type: 'ListFolder', id: 'sent' }, 'Mailbox'],
+    }),
   }),
 });
 
@@ -262,6 +291,8 @@ export const {
   useUpdateReadStatusMutation,
   useDeleteMailsMutation,
   useMoveToFolderMutation,
+  useGetActiveDomainsQuery,
   useLookupRecipientKeysQuery,
   useLazyLookupRecipientKeysQuery,
+  useSendEmailMutation,
 } = mailApi;

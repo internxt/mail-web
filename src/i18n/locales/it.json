@@ -118,6 +118,8 @@
       "to": "A",
       "cc": "CC",
       "bcc": "CCN",
+      "decrypting": "Decrittazione del messaggio…",
+      "decryptFailed": "Impossibile decrittare questo messaggio",
       "emptyEmail": {
         "unreadEmails": {
           "title": "Messaggi non letti",
@@ -189,7 +191,15 @@
       "cc": "CC",
       "bcc": "CCN",
       "subject": "Oggetto",
-      "message": "Messaggio"
+      "message": "Messaggio",
+      "encryptedBadge": "Crittografia end-to-end",
+      "cleartextBadge": "Non crittografato",
+      "encryptedPlaceholderSubject": "Messaggio crittografato",
+      "errors": {
+        "noRecipients": "Aggiungi almeno un destinatario prima di inviare",
+        "sendFailed": "Impossibile inviare l'email",
+        "keyLookupFailed": "Impossibile recuperare le chiavi del destinatario"
+      }
     },
     "preferences": {
       "title": "Preferenze",

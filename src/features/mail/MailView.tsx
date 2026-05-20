@@ -13,6 +13,7 @@ import { ErrorService } from '@/services/error';
 import useListFolderPaginated from '@/hooks/mail/useListFolderPaginated';
 import { useUnreadByMailbox } from '@/hooks/mail/useUnreadByMailbox';
 import { useMailSelection } from '@/hooks/mail/useMailSelection';
+import { useDecryptedMail } from '@/hooks/mail/useDecryptedMail';
 import PreviewEmailEmptyState from './components/mail-preview/preview-empty-state';
 import TrayHeader from './components/tray/header';
 import { Tray } from '@internxt/ui';
@@ -35,6 +36,7 @@ const MailView = ({ folder }: MailViewProps) => {
 
   const { data: activeMailData } = useGetMailMessageQuery({ emailId: activeMailId! }, { skip: !activeMailId });
   const activeMail = activeMailId ? activeMailData : undefined;
+  const decrypted = useDecryptedMail(activeMail);
   const {
     isLoadingListFolder,
     listFolderEmails,
@@ -145,9 +147,12 @@ const MailView = ({ folder }: MailViewProps) => {
             cc={cc.map((u) => ({ name: u.name ?? '', email: u.email }))}
             bcc={bcc.map((u) => ({ name: u.name ?? '', email: u.email }))}
             mail={{
-              subject: activeMail.subject,
+              subject: decrypted.subject || activeMail.subject,
               receivedAt: activeMail.receivedAt,
-              htmlBody: activeMail.htmlBody ?? '',
+              htmlBody: decrypted.htmlBody,
+              isEncrypted: decrypted.isEncrypted,
+              isDecrypting: decrypted.isDecrypting,
+              decryptError: decrypted.decryptError,
             }}
           />
         )}

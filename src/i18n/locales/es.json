@@ -118,6 +118,8 @@
       "to": "Para",
       "cc": "CC",
       "bcc": "CCO",
+      "decrypting": "Descifrando mensaje…",
+      "decryptFailed": "No se pudo descifrar este mensaje",
       "emptyEmail": {
         "unreadEmails": {
           "title": "Mensajes sin leer",
@@ -189,7 +191,15 @@
       "cc": "CC",
       "bcc": "CCO",
       "subject": "Asunto",
-      "message": "Mensaje"
+      "message": "Mensaje",
+      "encryptedBadge": "Cifrado de extremo a extremo",
+      "cleartextBadge": "Sin cifrar",
+      "encryptedPlaceholderSubject": "Mensaje cifrado",
+      "errors": {
+        "noRecipients": "Agrega al menos un destinatario antes de enviar",
+        "sendFailed": "No se pudo enviar el correo",
+        "keyLookupFailed": "No se pudieron obtener las claves del destinatario"
+      }
     },
     "preferences": {
       "title": "Preferencias",

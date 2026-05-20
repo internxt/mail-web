@@ -2,6 +2,7 @@ import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { ErrorService } from '@/services/error';
 import {
   DeleteEmailError,
+  FetchActiveDomainsError,
   FetchListFolderError,
   FetchMailAccountKeysError,
   FetchMailboxesInfoError,
@@ -10,6 +11,7 @@ import {
   FetchRecipientKeysError,
   MAIL_NOT_SETUP_CODE,
   MailNotSetupError,
+  SendEmailError,
   UpdateMailError,
 } from '@/errors';
 import { RecipientKeysService } from '@/services/recipient-keys';
@@ -559,6 +561,35 @@ describe('Mail API', () => {
     });
   });
 
+  describe('Get active domains', () => {
+    test('When fetching active domains, then the service should be called and the list returned', async () => {
+      const domains = [
+        {
+          id: '1',
+          domain: 'inxt.me',
+          status: 'active',
+          createdAt: '2026-05-18T00:00:00.000Z',
+          updatedAt: '2026-05-18T00:00:00.000Z',
+        },
+      ];
+      vi.spyOn(MailService.instance, 'getActiveDomains').mockResolvedValue(domains);
+      const store = createTestStore();
+
+      const result = await store.dispatch(mailApi.endpoints.getActiveDomains.initiate());
+
+      expect(result.data).toStrictEqual(domains);
+    });
+
+    test('When fetching active domains fails, then a FetchActiveDomainsError should be returned', async () => {
+      vi.spyOn(MailService.instance, 'getActiveDomains').mockRejectedValue(new Error('boom'));
+      const store = createTestStore();
+
+      const result = await store.dispatch(mailApi.endpoints.getActiveDomains.initiate());
+
+      expect(result.error).toBeInstanceOf(FetchActiveDomainsError);
+    });
+  });
+
   describe('Lookup recipient keys', () => {
     test('When looking up keys, then it returns the recipient list and writes through to the cache', async () => {
       RecipientKeysService.instance.clear();
@@ -585,6 +616,37 @@ describe('Mail API', () => {
       const result = await store.dispatch(mailApi.endpoints.lookupRecipientKeys.initiate({ addresses: ['x@inxt.me'] }));
 
       expect(result.error).toBeInstanceOf(FetchRecipientKeysError);
+    });
+  });
+
+  describe('Send email', () => {
+    test('When sending succeeds, then it returns the created email id', async () => {
+      vi.spyOn(MailService.instance, 'sendEmail').mockResolvedValue({ id: 'mail-1' });
+      const store = createTestStore();
+
+      const result = await store.dispatch(
+        mailApi.endpoints.sendEmail.initiate({
+          to: [{ email: 'bob@inxt.me' }],
+          subject: 'hi',
+          textBody: 'hello',
+        }),
+      );
+
+      expect('data' in result && result.data).toStrictEqual({ id: 'mail-1' });
+    });
+
+    test('When sending fails, then a SendEmailError should be returned', async () => {
+      vi.spyOn(MailService.instance, 'sendEmail').mockRejectedValue(new Error('boom'));
+      const store = createTestStore();
+
+      const result = await store.dispatch(
+        mailApi.endpoints.sendEmail.initiate({
+          to: [{ email: 'bob@inxt.me' }],
+          subject: 'hi',
+        }),
+      );
+
+      expect('error' in result && result.error).toBeInstanceOf(SendEmailError);
     });
   });
 });

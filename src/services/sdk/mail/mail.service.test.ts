@@ -300,6 +300,61 @@ describe('Mail Service', () => {
     });
   });
 
+  describe('Send email', () => {
+    test('When sending a cleartext email, then the client should be called with the payload', async () => {
+      const payload = {
+        to: [{ email: 'bob@inxt.me' }],
+        subject: 'hi',
+        textBody: 'hello',
+      };
+      const mockMailClient = {
+        sendEmail: vi.fn().mockResolvedValue({ id: 'mail-1' }),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      const result = await MailService.instance.sendEmail(payload);
+
+      expect(result).toStrictEqual({ id: 'mail-1' });
+      expect(mockMailClient.sendEmail).toHaveBeenCalledWith(payload);
+    });
+
+    test('When sending an encrypted email, then the encryption block should be forwarded', async () => {
+      const payload = {
+        to: [{ email: 'bob@inxt.me' }],
+        subject: 'Encrypted message',
+        encryption: {
+          version: 'v1' as const,
+          encryptedSubject: 'enc-subj',
+          encryptedText: 'enc-text',
+          wrappedKeys: {
+            'bob@inxt.me': { hybridCiphertext: 'ct', encryptedKey: 'ek' },
+          },
+        },
+      };
+      const mockMailClient = {
+        sendEmail: vi.fn().mockResolvedValue({ id: 'mail-2' }),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      const result = await MailService.instance.sendEmail(payload);
+
+      expect(result).toStrictEqual({ id: 'mail-2' });
+      expect(mockMailClient.sendEmail).toHaveBeenCalledWith(payload);
+    });
+
+    test('When sending fails, then an error should be thrown', async () => {
+      const unexpectedError = new Error('Unexpected error');
+      const mockMailClient = {
+        sendEmail: vi.fn().mockRejectedValue(unexpectedError),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      await expect(MailService.instance.sendEmail({ to: [{ email: 'x@inxt.me' }], subject: 's' })).rejects.toThrow(
+        unexpectedError,
+      );
+    });
+  });
+
   describe('Lookup recipient keys', () => {
     test('When looking up keys, then the addresses should be forwarded and recipients returned', async () => {
       const recipients = [
