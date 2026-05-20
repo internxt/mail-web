@@ -12,6 +12,7 @@ export const api = createApi({
     'StorageUsage',
     'StorageLimit',
     'RecipientKeys',
+    'ActiveDomains',
   ],
   endpoints: () => ({}),
 });

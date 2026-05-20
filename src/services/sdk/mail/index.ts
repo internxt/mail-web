@@ -1,4 +1,5 @@
 import type {
+  EmailCreatedResponse,
   EmailDomainsResponse,
   EmailListResponse,
   EmailResponse,
@@ -8,6 +9,7 @@ import type {
   MailAccountResponse,
   MailboxResponse,
   SearchFiltersQuery,
+  SendEmailRequest,
   SetupMailAccountPayload,
   UpdateEmailRequest,
 } from '@internxt/sdk/dist/mail/types';
@@ -116,6 +118,17 @@ export class MailService {
    */
   async trashEmail(emailId: string): Promise<void> {
     return this.client.deleteEmail(emailId);
+  }
+
+  /**
+   * Sends an email. The recipient/encryption decision is made by the caller —
+   * pass `encryption` for an end-to-end-encrypted send, omit it for cleartext.
+   *
+   * @param payload - The send request (recipients, subject, body, optional encryption block)
+   * @returns The id of the created email
+   */
+  async sendEmail(payload: SendEmailRequest): Promise<EmailCreatedResponse> {
+    return this.client.sendEmail(payload);
   }
 
   /**

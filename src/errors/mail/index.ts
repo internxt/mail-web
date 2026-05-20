@@ -86,6 +86,17 @@ export class DeleteEmailError extends Error {
   }
 }
 
+export class SendEmailError extends Error {
+  constructor(
+    errorMsg?: string,
+    public requestId?: string,
+  ) {
+    super('Error while sending email: ' + errorMsg);
+
+    Object.setPrototypeOf(this, SendEmailError.prototype);
+  }
+}
+
 export class FetchRecipientKeysError extends Error {
   constructor(
     errorMsg?: string,
@@ -94,5 +105,16 @@ export class FetchRecipientKeysError extends Error {
     super('Error while fetching recipient keys: ' + errorMsg);
 
     Object.setPrototypeOf(this, FetchRecipientKeysError.prototype);
+  }
+}
+
+export class FetchActiveDomainsError extends Error {
+  constructor(
+    errorMsg?: string,
+    public requestId?: string,
+  ) {
+    super('Error while fetching active domains: ' + errorMsg);
+
+    Object.setPrototypeOf(this, FetchActiveDomainsError.prototype);
   }
 }
