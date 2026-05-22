@@ -24,6 +24,22 @@ describe('Auth Service', () => {
     expect(mockedAuthClient.logout).toHaveBeenCalledWith(mockedToken);
   });
 
+  test('When logging out, then the auth client is built with a no-op unauthorizedCallback to avoid a 401 logout loop', async () => {
+    const mockedAuthClient = {
+      logout: vi.fn().mockResolvedValue(undefined),
+    } as any;
+
+    vi.spyOn(LocalStorageService.instance, 'getToken').mockReturnValue('random-token');
+    const getAuthSpy = vi.spyOn(SdkManager.instance, 'getAuth').mockReturnValue(mockedAuthClient);
+
+    await AuthService.instance.logOut();
+
+    expect(getAuthSpy).toHaveBeenCalledTimes(1);
+    const unauthorizedCallback = getAuthSpy.mock.calls[0][0];
+    expect(unauthorizedCallback).toBeTypeOf('function');
+    expect(unauthorizedCallback?.()).toBeUndefined();
+  });
+
   describe('Check if the credentials are correct', () => {
     const mockedSalt = 'abcdef1234567890';
     const mockedHash = 'hashed-pw';

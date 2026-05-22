@@ -6,6 +6,7 @@ import { AuthService } from '@/services/sdk/auth';
 import { NavigationService } from '@/services/navigation';
 import { AppView } from '@/routes/paths';
 import { logoutThunk } from '.';
+import { v4 } from 'uuid';
 
 describe('Logging out the user', () => {
   beforeEach(() => {
@@ -28,6 +29,29 @@ describe('Logging out the user', () => {
     expect(navigateSpy).toHaveBeenCalledWith({ id: AppView.Welcome });
     expect(store.getState().user).toStrictEqual(initialUserState);
     expect(store.getState().user.isAuthenticated).toBeFalsy();
+  });
+
+  test('When logout is triggered repeatedly (e.g. by concurrent 401s), then logOut runs only once', async () => {
+    const store = createTestStore({
+      user: {
+        user: { name: 'Test', uuid: v4(), email: 'test@example' } as UserSettings,
+        isAuthenticated: true,
+      },
+    });
+    const logoutSpy = vi.spyOn(AuthService.instance, 'logOut').mockResolvedValue();
+    vi.spyOn(NavigationService.instance, 'navigate').mockImplementation(() => undefined);
+
+    await Promise.all([
+      store.dispatch(logoutThunk()),
+      store.dispatch(logoutThunk()),
+      store.dispatch(logoutThunk()),
+    ]);
+
+    expect(logoutSpy).toHaveBeenCalledTimes(1);
+    expect(store.getState().user.isAuthenticated).toBeFalsy();
+
+    await store.dispatch(logoutThunk());
+    expect(logoutSpy).toHaveBeenCalledTimes(1);
   });
 
   test('When logging out fails, then state is still reset and navigates to welcome', async () => {
