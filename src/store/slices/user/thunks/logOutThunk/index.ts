@@ -13,24 +13,23 @@ let isLoggingOut = false;
 export const logoutThunk = createAsyncThunk<void, void, { state: RootState }>(
   'user/logout',
   async (_: void, { dispatch }) => {
+    isLoggingOut = true;
     try {
-      await AuthService.instance.logOut().catch((err: unknown) => {
-        const castedError = ErrorService.instance.castError(err);
-        console.error('ERROR WHILE LOGGING OUT: ', castedError.message, castedError.requestId);
-      });
-
+      await AuthService.instance.logOut();
+    } catch (err: unknown) {
+      const castedError = ErrorService.instance.castError(err);
+      console.error('ERROR WHILE LOGGING OUT: ', castedError.message, castedError.requestId);
+    } finally {
       MailKeysService.instance.clear();
       dispatch(mailApi.util.resetApiState());
       NavigationService.instance.navigate({ id: AppView.Welcome });
       dispatch(userActions.resetState());
-    } finally {
       isLoggingOut = false;
     }
   },
   {
     condition: (_: void, { getState }) => {
       if (isLoggingOut || !getState().user.isAuthenticated) return false;
-      isLoggingOut = true;
       return true;
     },
   },
