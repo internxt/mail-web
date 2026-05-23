@@ -6,7 +6,6 @@ import { AuthService } from '@/services/sdk/auth';
 import { NavigationService } from '@/services/navigation';
 import { AppView } from '@/routes/paths';
 import { logoutThunk } from '.';
-import { v4 } from 'uuid';
 
 describe('Logging out the user', () => {
   beforeEach(() => {
@@ -34,7 +33,7 @@ describe('Logging out the user', () => {
   test('When logout is triggered repeatedly (e.g. by concurrent 401s), then logOut runs only once', async () => {
     const store = createTestStore({
       user: {
-        user: { name: 'Test', uuid: v4(), email: 'test@example' } as UserSettings,
+        user: { name: 'Test', uuid: 'test-uuid-1', email: 'test@example' } as UserSettings,
         isAuthenticated: true,
       },
     });
