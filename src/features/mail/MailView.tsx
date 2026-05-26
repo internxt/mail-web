@@ -14,6 +14,7 @@ import useListFolderPaginated from '@/hooks/mail/useListFolderPaginated';
 import { useUnreadByMailbox } from '@/hooks/mail/useUnreadByMailbox';
 import { useMailSelection } from '@/hooks/mail/useMailSelection';
 import { useDecryptedMail } from '@/hooks/mail/useDecryptedMail';
+import { useDecryptedPreviews } from '@/hooks/mail/useDecryptedPreviews';
 import PreviewEmailEmptyState from './components/mail-preview/preview-empty-state';
 import TrayHeader from './components/tray/header';
 import { Tray } from '@internxt/ui';
@@ -97,7 +98,8 @@ const MailView = ({ folder }: MailViewProps) => {
     }
   };
 
-  const formattedMails = formatEmailsToList(listFolderEmails) ?? [];
+  const decryptedPreviews = useDecryptedPreviews(listFolderEmails);
+  const formattedMails = formatEmailsToList(listFolderEmails, decryptedPreviews) ?? [];
 
   return (
     <div className="flex flex-row w-full h-full">
@@ -140,9 +142,9 @@ const MailView = ({ folder }: MailViewProps) => {
           <PreviewEmailEmptyState unreadEmailsCount={unreadByMailbox[folder]} />
         </Activity>
 
-        {activeMail && from && (
+        {activeMail && (
           <PreviewMail
-            from={{ name: from.name ?? '', email: from.email }}
+            from={{ name: from?.name ?? from?.email ?? '', email: from?.email ?? '' }}
             to={to.map((u) => ({ name: u.name ?? '', email: u.email }))}
             cc={cc.map((u) => ({ name: u.name ?? '', email: u.email }))}
             bcc={bcc.map((u) => ({ name: u.name ?? '', email: u.email }))}
