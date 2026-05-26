@@ -194,7 +194,6 @@
       "message": "Message",
       "encryptedBadge": "Chiffré de bout en bout",
       "cleartextBadge": "Non chiffré",
-      "encryptedPlaceholderSubject": "Message chiffré",
       "errors": {
         "noRecipients": "Ajoutez au moins un destinataire avant d'envoyer",
         "sendFailed": "Impossible d'envoyer le courriel",

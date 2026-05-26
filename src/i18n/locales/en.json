@@ -192,7 +192,6 @@
       "message": "Message",
       "encryptedBadge": "End-to-end encrypted",
       "cleartextBadge": "Not encrypted",
-      "encryptedPlaceholderSubject": "Encrypted message",
       "errors": {
         "noRecipients": "Add at least one recipient before sending",
         "sendFailed": "Could not send the email",

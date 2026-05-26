@@ -114,14 +114,14 @@ export const ComposeMessageDialog = () => {
             { address: senderKeys.address, publicKey: senderKeys.publicKey },
           ];
           const encryption = await buildEncryptionBlock(
-            { subject: subjectValue, text: htmlBody || textBody },
+            { body: htmlBody || textBody, previewText: textBody },
             recipientsWithKeys,
           );
           await sendEmail({
             to: toRecipients.map(toEmailAddress),
             cc: ccRecipients.length ? ccRecipients.map(toEmailAddress) : undefined,
             bcc: bccRecipients.length ? bccRecipients.map(toEmailAddress) : undefined,
-            subject: translate('modals.composeMessageDialog.encryptedPlaceholderSubject'),
+            subject: subjectValue,
             encryption,
           }).unwrap();
         } else {

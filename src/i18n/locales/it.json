@@ -194,7 +194,6 @@
       "message": "Messaggio",
       "encryptedBadge": "Crittografia end-to-end",
       "cleartextBadge": "Non crittografato",
-      "encryptedPlaceholderSubject": "Messaggio crittografato",
       "errors": {
         "noRecipients": "Aggiungi almeno un destinatario prima di inviare",
         "sendFailed": "Impossibile inviare l'email",

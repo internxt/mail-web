@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { EmailResponse } from '@internxt/sdk/dist/mail/types';
 import { useMailKeys } from './useMailKeys';
-import { useGetMailAccountKeysQuery } from '@/store/api/mail';
 import { decryptEnvelope, isEncryptedEmailBody, parseEncryptionBlock } from '@/services/mail-encryption';
 
 type State = {
@@ -20,27 +19,26 @@ const EMPTY: State = {
   decryptError: false,
 };
 
-type CachedResult = { mailId: string; ok: true; subject: string; text: string } | { mailId: string; ok: false };
+type CachedResult = { mailId: string; ok: true; text: string } | { mailId: string; ok: false };
 
 export const useDecryptedMail = (mail: EmailResponse | undefined): State => {
   const senderKeys = useMailKeys();
-  const { data: account } = useGetMailAccountKeysQuery();
 
   const isEncrypted = mail ? isEncryptedEmailBody(mail.textBody) : false;
-  const canDecrypt = Boolean(isEncrypted && senderKeys && account?.address);
+  const canDecrypt = Boolean(isEncrypted && senderKeys);
 
   const [cached, setCached] = useState<CachedResult | null>(null);
 
   useEffect(() => {
-    if (!canDecrypt || !mail || !senderKeys || !account?.address) return;
+    if (!canDecrypt || !mail || !senderKeys) return;
 
     let cancelled = false;
     (async () => {
       try {
         const envelope = parseEncryptionBlock(mail.textBody as string);
-        const plaintext = await decryptEnvelope(envelope, account.address, senderKeys);
+        const text = await decryptEnvelope(envelope, senderKeys);
         if (!cancelled) {
-          setCached({ mailId: mail.id, ok: true, subject: plaintext.subject, text: plaintext.text });
+          setCached({ mailId: mail.id, ok: true, text });
         }
       } catch {
         if (!cancelled) setCached({ mailId: mail.id, ok: false });
@@ -50,7 +48,7 @@ export const useDecryptedMail = (mail: EmailResponse | undefined): State => {
     return () => {
       cancelled = true;
     };
-  }, [canDecrypt, mail, senderKeys, account?.address]);
+  }, [canDecrypt, mail, senderKeys]);
 
   return useMemo<State>(() => {
     if (!mail) return EMPTY;
@@ -76,7 +74,7 @@ export const useDecryptedMail = (mail: EmailResponse | undefined): State => {
     }
 
     return {
-      subject: fresh.subject,
+      subject: mail.subject,
       htmlBody: fresh.text,
       isEncrypted: true,
       isDecrypting: false,

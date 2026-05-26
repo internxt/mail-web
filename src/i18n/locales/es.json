@@ -194,7 +194,6 @@
       "message": "Mensaje",
       "encryptedBadge": "Cifrado de extremo a extremo",
       "cleartextBadge": "Sin cifrar",
-      "encryptedPlaceholderSubject": "Mensaje cifrado",
       "errors": {
         "noRecipients": "Agrega al menos un destinatario antes de enviar",
         "sendFailed": "No se pudo enviar el correo",
