@@ -321,14 +321,11 @@ describe('Mail Service', () => {
     test('When sending an encrypted email, then the encryption block should be forwarded', async () => {
       const payload = {
         to: [{ email: 'bob@inxt.me' }],
-        subject: 'Encrypted message',
+        subject: 'Weekly sync notes',
         encryption: {
           version: 'v1' as const,
-          encryptedSubject: 'enc-subj',
           encryptedText: 'enc-text',
-          wrappedKeys: {
-            'bob@inxt.me': { hybridCiphertext: 'ct', encryptedKey: 'ek' },
-          },
+          wrappedKeys: [{ hybridCiphertext: 'ct', encryptedKey: 'ek' }],
         },
       };
       const mockMailClient = {

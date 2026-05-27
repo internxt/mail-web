@@ -1,4 +1,5 @@
 import { formatEmailsToList } from '@/utils/format-emails';
+import { useDecryptedPreviews } from '@/hooks/mail/useDecryptedPreviews';
 import type { EmailListResponse } from '@internxt/sdk/dist/mail/types';
 import { InfiniteScroll, MessageCheap, MessageCheapSkeleton } from '@internxt/ui';
 
@@ -11,7 +12,8 @@ interface SearchEmailListProps {
 }
 
 const SearchEmailList = ({ mails, hasMoreItems, loading, onLoadMore, onMailSelected }: SearchEmailListProps) => {
-  const formattedMails = formatEmailsToList(mails) ?? [];
+  const decryptedPreviews = useDecryptedPreviews(mails);
+  const formattedMails = formatEmailsToList(mails, decryptedPreviews) ?? [];
   const loader = (
     <div className="flex flex-col">
       {new Array(3).fill(0).map((_, index) => (

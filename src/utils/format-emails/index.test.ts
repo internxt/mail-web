@@ -32,4 +32,17 @@ describe('Formatting emails to list format', () => {
       expect(DateService.formatMailTimestamp).toHaveBeenCalledWith(emails[0].receivedAt);
     });
   });
+
+  test('When a row is encrypted, then it uses the decrypted preview when available and never the ciphertext', () => {
+    const { emails } = getMockedMails(2);
+    emails.forEach((e) => {
+      (e as { encryption?: unknown }).encryption = { encryptedPreview: 'ep', wrappedKeys: [] };
+    });
+
+    const result = formatEmailsToList(emails, { [emails[0].id]: 'decrypted snippet' });
+
+    expect(result?.[0].body).toBe('decrypted snippet');
+    expect(result?.[1].body).toBe('');
+    expect(result?.[1].body).not.toBe(emails[1].preview);
+  });
 });

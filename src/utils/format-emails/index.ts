@@ -1,7 +1,10 @@
 import { DateService } from '@/services/date';
 import type { EmailListResponse } from '@internxt/sdk/dist/mail/types';
 
-export const formatEmailsToList = (listFolderEmails?: EmailListResponse['emails']) => {
+export const formatEmailsToList = (
+  listFolderEmails?: EmailListResponse['emails'],
+  decryptedPreviews?: Record<string, string>,
+) => {
   return listFolderEmails?.map((mail) => ({
     id: mail.id,
     from: {
@@ -10,7 +13,7 @@ export const formatEmailsToList = (listFolderEmails?: EmailListResponse['emails'
     },
     subject: mail.subject,
     createdAt: DateService.formatMailTimestamp(mail.receivedAt),
-    body: mail.preview,
+    body: decryptedPreviews?.[mail.id] ?? (mail.encryption ? '' : mail.preview),
     read: mail.isRead,
   }));
 };
