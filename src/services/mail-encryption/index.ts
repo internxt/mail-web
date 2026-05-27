@@ -1,60 +1,83 @@
+import { base64ToUint8Array, type HybridKeyPair } from 'internxt-crypto';
 import {
-  base64ToUint8Array,
-  decryptEmailHybrid,
-  encryptEmailHybridForMultipleRecipients,
-  type EmailBody,
-  type HybridEncryptedEmail,
-  type HybridKeyPair,
-} from 'internxt-crypto';
+  decryptEmailBody,
+  decryptKeysHybrid,
+  encryptEmailBody,
+  encryptEmailBodyWithKey,
+  encryptKeysHybrid,
+} from 'internxt-crypto/email-crypto';
 import type { EncryptionBlock } from '@internxt/sdk/dist/mail/types';
 
 export type RecipientPublicKey = { address: string; publicKey: string };
+export type EmailContent = { body: string; previewText: string };
+type WrappedKey = EncryptionBlock['wrappedKeys'][number];
+export type EncryptedSummary = { encryptedPreview: string; wrappedKeys: WrappedKey[] };
+const PREVIEW_PLAINTEXT_LENGTH = 256;
+
+function buildPreviewSnippet(previewText: string): string {
+  return previewText.replace(/\s+/g, ' ').trim().slice(0, PREVIEW_PLAINTEXT_LENGTH);
+}
+
+function secureShuffle<T>(items: T[]): T[] {
+  const rand = new Uint32Array(1);
+  for (let i = items.length - 1; i > 0; i--) {
+    const range = i + 1;
+    const limit = Math.floor(0x1_00_00_00_00 / range) * range;
+    let value: number;
+    do {
+      crypto.getRandomValues(rand);
+      value = rand[0];
+    } while (value >= limit);
+    const j = value % range;
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items;
+}
 
 /**
- * Builds the on-the-wire encryption bundle for a send. All recipients share
- * the same symmetric body ciphertext; each gets their own wrapped key.
+ * Only the body and preview are encrypted; the subject travels as cleartext so
+ * the backend can index it.
  *
- * `publicKey` is the recipient's hybrid (X25519 + ML-KEM-768 / X-Wing) key,
- * base64-encoded as returned by the backend lookup endpoint.
+ * The wrapped keys ship as a de-identified, order-randomized array carrying no
+ * recipient address, so the envelope hides the recipient set (Bcc included) —
+ * each recipient finds their entry by trial decryption (see `decryptEnvelope`).
  */
 export async function buildEncryptionBlock(
-  email: EmailBody,
+  content: EmailContent,
   recipients: RecipientPublicKey[],
 ): Promise<EncryptionBlock> {
   if (recipients.length === 0) {
     throw new Error('At least one recipient is required to build the encryption block');
   }
 
-  const recipientsWithBytes = recipients.map((r) => ({
-    email: r.address,
-    publicHybridKey: base64ToUint8Array(r.publicKey),
-  }));
+  const { encEmailBody, encryptionKey } = await encryptEmailBody({ text: content.body });
 
-  const sealed = await encryptEmailHybridForMultipleRecipients(email, recipientsWithBytes);
+  const { encText: encryptedPreview } = await encryptEmailBodyWithKey(
+    { text: buildPreviewSnippet(content.previewText) },
+    encryptionKey,
+  );
 
-  const wrappedKeys: EncryptionBlock['wrappedKeys'] = {};
-  for (const s of sealed) {
-    wrappedKeys[s.encryptedKey.encryptedForEmail] = {
-      hybridCiphertext: s.encryptedKey.hybridCiphertext,
-      encryptedKey: s.encryptedKey.encryptedKey,
-    };
-  }
+  const wrapped = await Promise.all(
+    recipients.map(async (r) => {
+      const enc = await encryptKeysHybrid(encryptionKey, {
+        email: r.address,
+        publicHybridKey: base64ToUint8Array(r.publicKey),
+      });
+      return { hybridCiphertext: enc.hybridCiphertext, encryptedKey: enc.encryptedKey };
+    }),
+  );
+  const wrappedKeys: WrappedKey[] = secureShuffle(wrapped);
 
   return {
     version: 'v1',
-    encryptedSubject: sealed[0].encEmailBody.encSubject,
-    encryptedText: sealed[0].encEmailBody.encText,
+    encryptedText: encEmailBody.encText,
+    encryptedPreview,
     wrappedKeys,
   };
 }
 
 export const ENCRYPTED_EMAIL_PREFIX = 'INTERNXT-ENCRYPTED-EMAIL-v1';
 
-/**
- * Detects the encryption envelope marker in a body. The backend wraps every
- * encrypted send as `INTERNXT-ENCRYPTED-EMAIL-v1\n<base64(json)>` (see
- * `mail/src/modules/email/email.service.ts`).
- */
 export function isEncryptedEmailBody(textBody: string | null | undefined): boolean {
   if (!textBody) return false;
   return textBody.startsWith(`${ENCRYPTED_EMAIL_PREFIX}\n`);
@@ -67,28 +90,32 @@ export function parseEncryptionBlock(textBody: string): EncryptionBlock {
 }
 
 /**
- * Decrypts an envelope using the recipient's hybrid keypair. The recipient
- * address must match one of the wrappedKeys entries.
+ * Trial-decrypts a ciphertext sealed with the shared body key. The wrapped keys
+ * carry no recipient identifier, so we try each one and keep the entry whose key
+ * yields a valid AEAD tag.
+ *
+ * @throws if none decrypt — the caller is not a recipient or holds the wrong key.
  */
-export async function decryptEnvelope(
-  envelope: EncryptionBlock,
-  recipientAddress: string,
-  keypair: HybridKeyPair,
-): Promise<EmailBody> {
-  const wrapped = envelope.wrappedKeys[recipientAddress];
-  if (!wrapped) {
-    throw new Error(`No wrapped key found for ${recipientAddress}`);
+async function trialDecrypt(wrappedKeys: WrappedKey[], ciphertextB64: string, keypair: HybridKeyPair): Promise<string> {
+  for (const wrapped of wrappedKeys) {
+    try {
+      const bodyKey = await decryptKeysHybrid(
+        { hybridCiphertext: wrapped.hybridCiphertext, encryptedKey: wrapped.encryptedKey, encryptedForEmail: '' },
+        keypair.secretKey,
+      );
+      const { text } = await decryptEmailBody({ encText: ciphertextB64 }, bodyKey);
+      return text;
+    } catch {
+      // No op, try the next one.
+    }
   }
-  const sealed: HybridEncryptedEmail = {
-    encryptedKey: {
-      hybridCiphertext: wrapped.hybridCiphertext,
-      encryptedKey: wrapped.encryptedKey,
-      encryptedForEmail: recipientAddress,
-    },
-    encEmailBody: {
-      encText: envelope.encryptedText,
-      encSubject: envelope.encryptedSubject,
-    },
-  };
-  return decryptEmailHybrid(sealed, keypair.secretKey);
+  throw new Error('Cannot decrypt envelope: not a recipient or wrong key');
+}
+
+export function decryptEnvelope(envelope: EncryptionBlock, keypair: HybridKeyPair): Promise<string> {
+  return trialDecrypt(envelope.wrappedKeys, envelope.encryptedText, keypair);
+}
+
+export function decryptSummaryPreview(summary: EncryptedSummary, keypair: HybridKeyPair): Promise<string> {
+  return trialDecrypt(summary.wrappedKeys, summary.encryptedPreview, keypair);
 }
