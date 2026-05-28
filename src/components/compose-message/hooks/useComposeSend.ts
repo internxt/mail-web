@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import type { Editor } from '@tiptap/react';
-import type { EmailAddress, SendEmailRequest } from '@internxt/sdk/dist/mail/types';
+import type { EmailAddress, RecipientKey, SendEmailRequest } from '@internxt/sdk/dist/mail/types';
 import {
   useGetActiveDomainsQuery,
   useGetMailAccountKeysQuery,
@@ -13,7 +13,7 @@ import notificationsService, { ToastType } from '@/services/notifications';
 import { useTranslationContext } from '@/i18n';
 import type { Recipient } from '../types';
 
-export type EncryptionState = 'none' | 'encrypted' | 'cleartext';
+export type EncryptionState = 'none' | 'unknown' | 'encrypted' | 'cleartext';
 
 const toEmailAddress = (r: Recipient): EmailAddress => (r.name ? { name: r.name, email: r.email } : { email: r.email });
 
@@ -59,7 +59,7 @@ export const useComposeSend = ({
 
   const encryptionState = useMemo<EncryptionState>(() => {
     if (allRecipients.length === 0) return 'none';
-    if (!activeDomains) return 'none';
+    if (!activeDomains) return 'unknown';
     return classifyRecipients(
       allRecipients.map((r) => r.email),
       activeDomains,
@@ -73,6 +73,14 @@ export const useComposeSend = ({
       notificationsService.show({
         text: translate('errors.mail.noRecipients'),
         type: ToastType.Warning,
+      });
+      return;
+    }
+
+    if (encryptionState === 'unknown') {
+      notificationsService.show({
+        text: translate('errors.mail.encryptionUnavailable'),
+        type: ToastType.Error,
       });
       return;
     }
@@ -98,7 +106,16 @@ export const useComposeSend = ({
           return;
         }
         const uniqueAddresses = uniqueEmailAddresses(allRecipients.map((r) => r.email));
-        const lookup = await triggerLookup({ addresses: uniqueAddresses }).unwrap();
+        let lookup: RecipientKey[];
+        try {
+          lookup = await triggerLookup({ addresses: uniqueAddresses }).unwrap();
+        } catch {
+          notificationsService.show({
+            text: translate('errors.mail.keyLookupFailed'),
+            type: ToastType.Error,
+          });
+          return;
+        }
         const usable = lookup.filter((r): r is { address: string; publicKey: string } => Boolean(r.publicKey));
 
         if (usable.length !== uniqueAddresses.length) {

@@ -155,7 +155,8 @@
       "move": "Une erreur s'est produite lors du déplacement de l'e-mail",
       "noRecipients": "Ajoutez au moins un destinataire avant d'envoyer",
       "sendFailed": "Impossible d'envoyer le courriel",
-      "keyLookupFailed": "Impossible de récupérer les clés du destinataire"
+      "keyLookupFailed": "Impossible de récupérer les clés du destinataire",
+      "encryptionUnavailable": "Le chiffrement n'est pas encore prêt. Veuillez réessayer dans un instant."
     }
   },
   "modals": {

@@ -7,7 +7,7 @@ export class RecipientKeysService {
 
   private constructor() {}
 
-  private cache = new Map<string, CachedKey>();
+  private readonly cache = new Map<string, CachedKey>();
 
   private normalize(address: string): string {
     return address.trim().toLowerCase();
@@ -17,6 +17,10 @@ export class RecipientKeysService {
     this.cache.set(this.normalize(address), { publicKey, fetchedAt: Date.now() });
   }
 
+  /**
+   * Returns a defensive copy of the cached entry for `address`, or null when it was
+   * never looked up or the entry is older than `ttlMs` (expired entries are evicted).
+   */
   get(address: string, ttlMs: number = DEFAULT_TTL_MS): CachedKey | null {
     const entry = this.cache.get(this.normalize(address));
     if (!entry) return null;

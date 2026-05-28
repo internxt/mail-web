@@ -119,10 +119,20 @@ export class MailEncryptionService {
     throw new EnvelopeDecryptionError();
   }
 
+  /**
+   * Decrypts the email body from its envelope using the caller's keypair.
+   * @returns the cleartext body.
+   * @throws {EnvelopeDecryptionError} if the caller is not a recipient (see `trialDecrypt`).
+   */
   decryptEnvelope(envelope: EncryptionBlock, keypair: HybridKeyPair): Promise<string> {
     return this.trialDecrypt(envelope.wrappedKeys, envelope.encryptedText, keypair);
   }
 
+  /**
+   * Decrypts the list preview snippet from an encrypted summary using the caller's keypair.
+   * @returns the cleartext preview snippet.
+   * @throws {EnvelopeDecryptionError} if the caller is not a recipient (see `trialDecrypt`).
+   */
   decryptSummaryPreview(summary: EncryptedSummary, keypair: HybridKeyPair): Promise<string> {
     return this.trialDecrypt(summary.wrappedKeys, summary.encryptedPreview, keypair);
   }

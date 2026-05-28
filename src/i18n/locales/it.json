@@ -155,7 +155,8 @@
       "move": "Si è verificato un errore durante lo spostamento dell'e-mail",
       "noRecipients": "Aggiungi almeno un destinatario prima di inviare",
       "sendFailed": "Impossibile inviare l'email",
-      "keyLookupFailed": "Impossibile recuperare le chiavi del destinatario"
+      "keyLookupFailed": "Impossibile recuperare le chiavi del destinatario",
+      "encryptionUnavailable": "La crittografia non è ancora pronta. Riprova tra un momento."
     }
   },
   "modals": {
