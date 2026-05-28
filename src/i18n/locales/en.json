@@ -153,7 +153,8 @@
       "move": "Something went wrong while moving the email",
       "noRecipients": "Add at least one recipient before sending",
       "sendFailed": "Could not send the email",
-      "keyLookupFailed": "Could not fetch recipient keys"
+      "keyLookupFailed": "Could not fetch recipient keys",
+      "encryptionUnavailable": "Encryption isn't ready yet. Please try again in a moment."
     }
   },
   "modals": {
