@@ -325,6 +325,7 @@ describe('Mail Service', () => {
         encryption: {
           version: 'v1' as const,
           encryptedText: 'enc-text',
+          encryptedPreview: 'enc-preview',
           wrappedKeys: [{ hybridCiphertext: 'ct', encryptedKey: 'ek' }],
         },
       };
