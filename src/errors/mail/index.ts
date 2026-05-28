@@ -118,3 +118,19 @@ export class FetchActiveDomainsError extends Error {
     Object.setPrototypeOf(this, FetchActiveDomainsError.prototype);
   }
 }
+
+export class BuildEncryptionBlockError extends Error {
+  constructor() {
+    super('At least one recipient is required to build the encryption block');
+
+    Object.setPrototypeOf(this, BuildEncryptionBlockError.prototype);
+  }
+}
+
+export class EnvelopeDecryptionError extends Error {
+  constructor() {
+    super('Cannot decrypt envelope: not a recipient or wrong key');
+
+    Object.setPrototypeOf(this, EnvelopeDecryptionError.prototype);
+  }
+}

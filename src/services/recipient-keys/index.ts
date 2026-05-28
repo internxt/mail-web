@@ -1,6 +1,6 @@
 const DEFAULT_TTL_MS = 5 * 60 * 1000;
 
-type CachedKey = { publicKey: string; fetchedAt: number };
+type CachedKey = { publicKey: string | null; fetchedAt: number };
 
 export class RecipientKeysService {
   public static readonly instance: RecipientKeysService = new RecipientKeysService();
@@ -13,7 +13,7 @@ export class RecipientKeysService {
     return address.trim().toLowerCase();
   }
 
-  set(address: string, publicKey: string): void {
+  set(address: string, publicKey: string | null): void {
     this.cache.set(this.normalize(address), { publicKey, fetchedAt: Date.now() });
   }
 
@@ -24,7 +24,7 @@ export class RecipientKeysService {
       this.cache.delete(this.normalize(address));
       return null;
     }
-    return entry;
+    return { ...entry };
   }
 
   has(address: string, ttlMs: number = DEFAULT_TTL_MS): boolean {

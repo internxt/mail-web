@@ -9,7 +9,6 @@ import { MailEncryptionService } from '@/services/mail-encryption';
 vi.mock('./useMailKeys', () => ({ useMailKeys: vi.fn() }));
 
 const mockKeys = vi.mocked(useMailKeys);
-const mockDecrypt = vi.spyOn(MailEncryptionService.instance, 'decryptSummaryPreview');
 
 type Summary = EmailListResponse['emails'][number];
 
@@ -18,9 +17,13 @@ const encryptedSummary = (id: string): Summary =>
   ({ id, encryption: { encryptedPreview: 'ep', wrappedKeys: [] } }) as unknown as Summary;
 const plainSummary = (id: string): Summary => ({ id }) as unknown as Summary;
 
+const spyOnPreviewDecrypt = () => vi.spyOn(MailEncryptionService.instance, 'decryptSummaryPreview');
+let mockDecrypt: ReturnType<typeof spyOnPreviewDecrypt>;
+
 describe('useDecryptedPreviews', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
+    mockDecrypt = spyOnPreviewDecrypt();
     mockKeys.mockReturnValue(keypair);
   });
 

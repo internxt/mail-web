@@ -150,7 +150,10 @@
       "markAsRead": "Something went wrong while marking the email as read",
       "markAsUnread": "Something went wrong while marking the email as unread",
       "trash": "Something went wrong while deleting the email",
-      "move": "Something went wrong while moving the email"
+      "move": "Something went wrong while moving the email",
+      "noRecipients": "Add at least one recipient before sending",
+      "sendFailed": "Could not send the email",
+      "keyLookupFailed": "Could not fetch recipient keys"
     }
   },
   "modals": {
@@ -191,12 +194,7 @@
       "subject": "Subject",
       "message": "Message",
       "encryptedBadge": "End-to-end encrypted",
-      "cleartextBadge": "Not encrypted",
-      "errors": {
-        "noRecipients": "Add at least one recipient before sending",
-        "sendFailed": "Could not send the email",
-        "keyLookupFailed": "Could not fetch recipient keys"
-      }
+      "cleartextBadge": "Not encrypted"
     },
     "preferences": {
       "title": "Preferences",

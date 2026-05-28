@@ -3,6 +3,7 @@ import { RecipientKeysService } from '.';
 
 describe('RecipientKeysService', () => {
   beforeEach(() => {
+    vi.restoreAllMocks();
     RecipientKeysService.instance.clear();
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-05-18T00:00:00Z'));
@@ -26,6 +27,22 @@ describe('RecipientKeysService', () => {
     RecipientKeysService.instance.set('alice@inxt.me', 'pk');
     vi.advanceTimersByTime(5 * 60 * 1000 + 1);
     expect(RecipientKeysService.instance.get('alice@inxt.me')).toBeNull();
+  });
+
+  test('When an address resolves to no key, then the miss is cached and reported as present', () => {
+    RecipientKeysService.instance.set('stranger@gmail.com', null);
+
+    expect(RecipientKeysService.instance.get('stranger@gmail.com')?.publicKey).toBeNull();
+    expect(RecipientKeysService.instance.has('stranger@gmail.com')).toBe(true);
+  });
+
+  test('When the entry returned by get is mutated, then the cached entry stays unchanged', () => {
+    RecipientKeysService.instance.set('alice@inxt.me', 'pk');
+
+    const entry = RecipientKeysService.instance.get('alice@inxt.me');
+    if (entry) entry.publicKey = 'tampered';
+
+    expect(RecipientKeysService.instance.get('alice@inxt.me')?.publicKey).toBe('pk');
   });
 
   test('When clear is called, then all previously cached keys are removed', () => {

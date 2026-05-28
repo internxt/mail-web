@@ -1,5 +1,5 @@
 import { LockKeyIcon, PaperclipIcon, WarningIcon, XIcon } from '@phosphor-icons/react';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import type { Recipient } from './types';
 import { RecipientInput } from './components/RecipientInput';
 import { Button, Input } from '@internxt/ui';
@@ -8,18 +8,9 @@ import { EditorBar } from './components/editorBar';
 import { ActionDialog, useActionDialog } from '@/context/dialog-manager';
 import { useTranslationContext } from '@/i18n';
 import useComposeMessage from './hooks/useComposeMessage';
+import useComposeSend from './hooks/useComposeSend';
 import { useEditor } from '@tiptap/react';
 import { EDITOR_CONFIG } from './config';
-import {
-  useGetActiveDomainsQuery,
-  useGetMailAccountKeysQuery,
-  useLazyLookupRecipientKeysQuery,
-  useSendEmailMutation,
-} from '@/store/api/mail';
-import { classifyRecipients, uniqueEmailAddresses } from '@/utils/domain';
-import { MailEncryptionService, type RecipientPublicKey } from '@/services/mail-encryption';
-import notificationsService, { ToastType } from '@/services/notifications';
-import type { EmailAddress, SendEmailRequest } from '@internxt/sdk/dist/mail/types';
 
 export interface DraftMessage {
   subject?: string;
@@ -28,8 +19,6 @@ export interface DraftMessage {
   bcc?: Recipient[];
   body?: string;
 }
-
-const toEmailAddress = (r: Recipient): EmailAddress => (r.name ? { name: r.name, email: r.email } : { email: r.email });
 
 export const ComposeMessageDialog = () => {
   const { translate } = useTranslationContext();
@@ -57,111 +46,18 @@ export const ComposeMessageDialog = () => {
   const title = draft.subject ?? translate('modals.composeMessageDialog.title');
   const editor = useEditor(EDITOR_CONFIG);
 
-  const { data: activeDomains } = useGetActiveDomainsQuery();
-  const { data: senderKeys } = useGetMailAccountKeysQuery();
-  const [triggerLookup] = useLazyLookupRecipientKeysQuery();
-  const [sendEmail, { isLoading: isSending }] = useSendEmailMutation();
-
-  const allRecipients = useMemo(
-    () => [...toRecipients, ...ccRecipients, ...bccRecipients],
-    [toRecipients, ccRecipients, bccRecipients],
-  );
-
-  const encryptionState = useMemo<'none' | 'encrypted' | 'cleartext'>(() => {
-    if (allRecipients.length === 0) return 'none';
-    if (!activeDomains) return 'none';
-    return classifyRecipients(
-      allRecipients.map((r) => r.email),
-      activeDomains,
-    ).allInternxt
-      ? 'encrypted'
-      : 'cleartext';
-  }, [allRecipients, activeDomains]);
-
   const onClose = useCallback(() => {
     onComposeMessageDialogClose(ActionDialog.ComposeMessage);
   }, [onComposeMessageDialogClose]);
 
-  const handlePrimaryAction = useCallback(async () => {
-    if (allRecipients.length === 0) {
-      notificationsService.show({
-        text: translate('modals.composeMessageDialog.errors.noRecipients'),
-        type: ToastType.Warning,
-      });
-      return;
-    }
-
-    const htmlBody = editor?.getHTML() ?? '';
-    const textBody = editor?.getText() ?? '';
-    const cleartextPayload: SendEmailRequest = {
-      to: toRecipients.map(toEmailAddress),
-      cc: ccRecipients.length ? ccRecipients.map(toEmailAddress) : undefined,
-      bcc: bccRecipients.length ? bccRecipients.map(toEmailAddress) : undefined,
-      subject: subjectValue,
-      textBody: textBody || undefined,
-      htmlBody: htmlBody || undefined,
-    };
-
-    try {
-      if (encryptionState === 'encrypted') {
-        if (!senderKeys?.address || !senderKeys.publicKey) {
-          notificationsService.show({
-            text: translate('modals.composeMessageDialog.errors.keyLookupFailed'),
-            type: ToastType.Error,
-          });
-          return;
-        }
-        const uniqueAddresses = uniqueEmailAddresses(allRecipients.map((r) => r.email));
-        const lookup = await triggerLookup({ addresses: uniqueAddresses }).unwrap();
-        const usable = lookup.filter((r): r is { address: string; publicKey: string } => Boolean(r.publicKey));
-
-        if (usable.length !== uniqueAddresses.length) {
-          notificationsService.show({
-            text: translate('modals.composeMessageDialog.errors.keyLookupFailed'),
-            type: ToastType.Error,
-          });
-          return;
-        }
-
-        const recipientsWithKeys: RecipientPublicKey[] = [
-          ...usable,
-          { address: senderKeys.address, publicKey: senderKeys.publicKey },
-        ];
-        const encryption = await MailEncryptionService.instance.buildEncryptionBlock(
-          { body: htmlBody || textBody, previewText: textBody },
-          recipientsWithKeys,
-        );
-        await sendEmail({
-          to: toRecipients.map(toEmailAddress),
-          cc: ccRecipients.length ? ccRecipients.map(toEmailAddress) : undefined,
-          bcc: bccRecipients.length ? bccRecipients.map(toEmailAddress) : undefined,
-          subject: subjectValue,
-          encryption,
-        }).unwrap();
-      } else {
-        await sendEmail(cleartextPayload).unwrap();
-      }
-      onClose();
-    } catch {
-      notificationsService.show({
-        text: translate('modals.composeMessageDialog.errors.sendFailed'),
-        type: ToastType.Error,
-      });
-    }
-  }, [
-    allRecipients,
-    editor,
+  const { encryptionState, isSending, send } = useComposeSend({
     toRecipients,
     ccRecipients,
     bccRecipients,
-    subjectValue,
-    encryptionState,
-    senderKeys,
-    triggerLookup,
-    sendEmail,
-    onClose,
-    translate,
-  ]);
+    subject: subjectValue,
+    editor,
+    onSent: onClose,
+  });
 
   if (!editor) return null;
 
@@ -264,7 +160,7 @@ export const ComposeMessageDialog = () => {
           <Button variant="ghost" onClick={() => {}} disabled={isSending}>
             <PaperclipIcon size={24} />
           </Button>
-          <Button onClick={handlePrimaryAction} loading={isSending} disabled={isSending} variant={'primary'}>
+          <Button onClick={send} loading={isSending} disabled={isSending} variant={'primary'}>
             {translate('actions.send')}
           </Button>
         </div>

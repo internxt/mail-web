@@ -1,9 +1,13 @@
-import { describe, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { generateEmailKeys, uint8ArrayToBase64 } from 'internxt-crypto';
 import { ENCRYPTED_EMAIL_PREFIX, MailEncryptionService, type RecipientPublicKey } from '.';
 
 const mailEncryption = MailEncryptionService.instance;
 const content = (body: string, previewText = body) => ({ body, previewText });
+
+beforeEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('buildEncryptionBlock + decryptEnvelope', () => {
   test('When a message is encrypted for one recipient, then that recipient can read the original body', async () => {

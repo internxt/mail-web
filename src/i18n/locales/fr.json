@@ -152,7 +152,10 @@
       "markAsRead": "Une erreur s'est produite lors du marquage de l'e-mail comme lu",
       "markAsUnread": "Une erreur s'est produite lors du marquage de l'e-mail comme non lu",
       "trash": "Une erreur s'est produite lors de la suppression de l'e-mail",
-      "move": "Une erreur s'est produite lors du déplacement de l'e-mail"
+      "move": "Une erreur s'est produite lors du déplacement de l'e-mail",
+      "noRecipients": "Ajoutez au moins un destinataire avant d'envoyer",
+      "sendFailed": "Impossible d'envoyer le courriel",
+      "keyLookupFailed": "Impossible de récupérer les clés du destinataire"
     }
   },
   "modals": {
@@ -193,12 +196,7 @@
       "subject": "Objet",
       "message": "Message",
       "encryptedBadge": "Chiffré de bout en bout",
-      "cleartextBadge": "Non chiffré",
-      "errors": {
-        "noRecipients": "Ajoutez au moins un destinataire avant d'envoyer",
-        "sendFailed": "Impossible d'envoyer le courriel",
-        "keyLookupFailed": "Impossible de récupérer les clés du destinataire"
-      }
+      "cleartextBadge": "Non chiffré"
     },
     "preferences": {
       "title": "Préférences",
