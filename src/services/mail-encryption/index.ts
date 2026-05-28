@@ -1,9 +1,9 @@
 import { base64ToUint8Array, type HybridKeyPair } from 'internxt-crypto';
 import {
-  decryptEmailBody,
+  decryptEmail,
   decryptKeysHybrid,
-  encryptEmailBody,
-  encryptEmailBodyWithKey,
+  encryptEmail,
+  encryptEmailWithKey,
   encryptKeysHybrid,
 } from 'internxt-crypto/email-crypto';
 import type { EncryptionBlock } from '@internxt/sdk/dist/mail/types';
@@ -50,9 +50,9 @@ export async function buildEncryptionBlock(
     throw new Error('At least one recipient is required to build the encryption block');
   }
 
-  const { encEmailBody, encryptionKey } = await encryptEmailBody({ text: content.body });
+  const { encEmail, encryptionKey } = await encryptEmail({ text: content.body });
 
-  const { encText: encryptedPreview } = await encryptEmailBodyWithKey(
+  const { encText: encryptedPreview } = await encryptEmailWithKey(
     { text: buildPreviewSnippet(content.previewText) },
     encryptionKey,
   );
@@ -70,7 +70,7 @@ export async function buildEncryptionBlock(
 
   return {
     version: 'v1',
-    encryptedText: encEmailBody.encText,
+    encryptedText: encEmail.encText,
     encryptedPreview,
     wrappedKeys,
   };
@@ -103,7 +103,7 @@ async function trialDecrypt(wrappedKeys: WrappedKey[], ciphertextB64: string, ke
         { hybridCiphertext: wrapped.hybridCiphertext, encryptedKey: wrapped.encryptedKey, encryptedForEmail: '' },
         keypair.secretKey,
       );
-      const { text } = await decryptEmailBody({ encText: ciphertextB64 }, bodyKey);
+      const { text } = await decryptEmail({ encText: ciphertextB64 }, bodyKey);
       return text;
     } catch {
       // No op, try the next one.
