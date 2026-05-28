@@ -4,22 +4,17 @@ import type { HybridKeyPair } from 'internxt-crypto';
 import type { EmailResponse } from '@internxt/sdk/dist/mail/types';
 import { useDecryptedMail } from './useDecryptedMail';
 import { useMailKeys } from './useMailKeys';
-import { decryptEnvelope, isEncryptedEmailBody, parseEncryptionBlock } from '@/services/mail-encryption';
+import { MailEncryptionService } from '@/services/mail-encryption';
 
 vi.mock('./useMailKeys', () => ({ useMailKeys: vi.fn() }));
-vi.mock('@/services/mail-encryption', () => ({
-  isEncryptedEmailBody: vi.fn(),
-  parseEncryptionBlock: vi.fn(),
-  decryptEnvelope: vi.fn(),
-}));
 
 const mockKeys = vi.mocked(useMailKeys);
-const mockIsEncrypted = vi.mocked(isEncryptedEmailBody);
-const mockParse = vi.mocked(parseEncryptionBlock);
-const mockDecrypt = vi.mocked(decryptEnvelope);
+const mockIsEncrypted = vi.spyOn(MailEncryptionService.instance, 'isEncryptedEmailBody');
+const mockParse = vi.spyOn(MailEncryptionService.instance, 'parseEncryptionBlock');
+const mockDecrypt = vi.spyOn(MailEncryptionService.instance, 'decryptEnvelope');
 
 const keypair = {} as HybridKeyPair;
-const envelope = { version: 'v1' } as ReturnType<typeof parseEncryptionBlock>;
+const envelope = { version: 'v1' } as ReturnType<MailEncryptionService['parseEncryptionBlock']>;
 
 const buildMail = (overrides: Partial<EmailResponse> = {}): EmailResponse =>
   ({

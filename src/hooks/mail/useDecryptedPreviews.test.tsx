@@ -4,13 +4,12 @@ import type { HybridKeyPair } from 'internxt-crypto';
 import type { EmailListResponse } from '@internxt/sdk/dist/mail/types';
 import { useDecryptedPreviews } from './useDecryptedPreviews';
 import { useMailKeys } from './useMailKeys';
-import { decryptSummaryPreview } from '@/services/mail-encryption';
+import { MailEncryptionService } from '@/services/mail-encryption';
 
 vi.mock('./useMailKeys', () => ({ useMailKeys: vi.fn() }));
-vi.mock('@/services/mail-encryption', () => ({ decryptSummaryPreview: vi.fn() }));
 
 const mockKeys = vi.mocked(useMailKeys);
-const mockDecrypt = vi.mocked(decryptSummaryPreview);
+const mockDecrypt = vi.spyOn(MailEncryptionService.instance, 'decryptSummaryPreview');
 
 type Summary = EmailListResponse['emails'][number];
 

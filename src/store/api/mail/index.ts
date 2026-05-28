@@ -32,6 +32,18 @@ import type {
 } from '@internxt/sdk/dist/mail/types';
 import type { AppDispatch } from '@/store';
 
+const normalizeLookupAddresses = (addresses: string[]): string[] => {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of addresses) {
+    const normalized = raw.trim().toLowerCase();
+    if (!normalized || seen.has(normalized)) continue;
+    seen.add(normalized);
+    out.push(normalized);
+  }
+  return out.sort((a, b) => a.localeCompare(b));
+};
+
 const patchMailsAfterAction = async ({
   dispatch,
   sourceMailbox,
@@ -248,14 +260,13 @@ export const mailApi = api.injectEndpoints({
     }),
     lookupRecipientKeys: builder.query<RecipientKey[], { addresses: string[] }>({
       serializeQueryArgs: ({ queryArgs }) => ({
-        addresses: [...queryArgs.addresses]
-          .map((a) => a.toLowerCase())
-          .sort((a, b) => a.localeCompare(b))
-          .join(','),
+        addresses: normalizeLookupAddresses(queryArgs.addresses).join(','),
       }),
       async queryFn({ addresses }): Promise<{ data: RecipientKey[] } | { error: FetchRecipientKeysError }> {
+        const normalized = normalizeLookupAddresses(addresses);
+        if (normalized.length === 0) return { data: [] };
         try {
-          const res: LookupRecipientKeysResponse = await MailService.instance.lookupRecipientKeys(addresses);
+          const res: LookupRecipientKeysResponse = await MailService.instance.lookupRecipientKeys(normalized);
           for (const r of res.recipients) {
             if (r.publicKey) RecipientKeysService.instance.set(r.address, r.publicKey);
           }

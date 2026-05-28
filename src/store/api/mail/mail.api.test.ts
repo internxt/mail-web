@@ -617,6 +617,39 @@ describe('Mail API', () => {
 
       expect(result.error).toBeInstanceOf(FetchRecipientKeysError);
     });
+
+    test('When addresses include whitespace, case variants, and duplicates, then the backend is called once with a normalized unique list', async () => {
+      RecipientKeysService.instance.clear();
+      const recipients = [
+        { address: 'alice@inxt.me', publicKey: 'pk-alice' },
+        { address: 'bob@inxt.me', publicKey: 'pk-bob' },
+      ];
+      const spy = vi.spyOn(MailService.instance, 'lookupRecipientKeys').mockResolvedValue({ recipients });
+      const store = createTestStore();
+
+      const result = await store.dispatch(
+        mailApi.endpoints.lookupRecipientKeys.initiate({
+          addresses: [' Alice@inxt.me ', 'alice@INXT.me', 'Bob@inxt.me', 'bob@inxt.me'],
+        }),
+      );
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith(['alice@inxt.me', 'bob@inxt.me']);
+      expect(result.data).toStrictEqual(recipients);
+      expect(RecipientKeysService.instance.get('alice@inxt.me')?.publicKey).toBe('pk-alice');
+      expect(RecipientKeysService.instance.get('bob@inxt.me')?.publicKey).toBe('pk-bob');
+    });
+
+    test('When the addresses array is empty, then it returns an empty list and does not call the backend', async () => {
+      RecipientKeysService.instance.clear();
+      const spy = vi.spyOn(MailService.instance, 'lookupRecipientKeys');
+      const store = createTestStore();
+
+      const result = await store.dispatch(mailApi.endpoints.lookupRecipientKeys.initiate({ addresses: [] }));
+
+      expect(spy).not.toHaveBeenCalled();
+      expect(result.data).toStrictEqual([]);
+    });
   });
 
   describe('Send email', () => {
