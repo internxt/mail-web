@@ -268,7 +268,7 @@ export const mailApi = api.injectEndpoints({
         try {
           const res: LookupRecipientKeysResponse = await MailService.instance.lookupRecipientKeys(normalized);
           for (const r of res.recipients) {
-            if (r.publicKey) RecipientKeysService.instance.set(r.address, r.publicKey);
+            RecipientKeysService.instance.set(r.address, r.publicKey);
           }
           return { data: res.recipients };
         } catch (error) {

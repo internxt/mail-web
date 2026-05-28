@@ -591,7 +591,7 @@ describe('Mail API', () => {
   });
 
   describe('Lookup recipient keys', () => {
-    test('When looking up keys, then it returns the recipient list and writes through to the cache', async () => {
+    test('When looking up keys, then it returns the recipient list and writes through to the cache, including misses', async () => {
       RecipientKeysService.instance.clear();
       const recipients = [
         { address: 'alice@inxt.me', publicKey: 'pk-alice' },
@@ -606,7 +606,8 @@ describe('Mail API', () => {
 
       expect(result.data).toStrictEqual(recipients);
       expect(RecipientKeysService.instance.get('alice@inxt.me')?.publicKey).toBe('pk-alice');
-      expect(RecipientKeysService.instance.get('bob@gmail.com')).toBeNull();
+      expect(RecipientKeysService.instance.get('bob@gmail.com')?.publicKey).toBeNull();
+      expect(RecipientKeysService.instance.has('bob@gmail.com')).toBe(true);
     });
 
     test('When lookup fails, then a FetchRecipientKeysError should be returned', async () => {

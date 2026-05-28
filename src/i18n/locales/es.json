@@ -152,7 +152,10 @@
       "markAsRead": "Algo ha ido mal al marcar el correo como leído",
       "markAsUnread": "Algo ha ido mal al marcar el correo como no leído",
       "trash": "Algo ha ido mal al eliminar el correo",
-      "move": "Algo ha ido mal al mover el correo"
+      "move": "Algo ha ido mal al mover el correo",
+      "noRecipients": "Agrega al menos un destinatario antes de enviar",
+      "sendFailed": "No se pudo enviar el correo",
+      "keyLookupFailed": "No se pudieron obtener las claves del destinatario"
     }
   },
   "modals": {
@@ -193,12 +196,7 @@
       "subject": "Asunto",
       "message": "Mensaje",
       "encryptedBadge": "Cifrado de extremo a extremo",
-      "cleartextBadge": "Sin cifrar",
-      "errors": {
-        "noRecipients": "Agrega al menos un destinatario antes de enviar",
-        "sendFailed": "No se pudo enviar el correo",
-        "keyLookupFailed": "No se pudieron obtener las claves del destinatario"
-      }
+      "cleartextBadge": "Sin cifrar"
     },
     "preferences": {
       "title": "Preferencias",

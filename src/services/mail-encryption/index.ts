@@ -7,6 +7,7 @@ import {
   encryptKeysHybrid,
 } from 'internxt-crypto/email-crypto';
 import type { EncryptionBlock } from '@internxt/sdk/dist/mail/types';
+import { BuildEncryptionBlockError, EnvelopeDecryptionError } from '@/errors/mail';
 
 export type RecipientPublicKey = { address: string; publicKey: string };
 export type EmailContent = { body: string; previewText: string };
@@ -51,7 +52,7 @@ export class MailEncryptionService {
    */
   async buildEncryptionBlock(content: EmailContent, recipients: RecipientPublicKey[]): Promise<EncryptionBlock> {
     if (recipients.length === 0) {
-      throw new Error('At least one recipient is required to build the encryption block');
+      throw new BuildEncryptionBlockError();
     }
 
     const { encEmail, encryptionKey } = await encryptEmail({ text: content.body });
@@ -115,7 +116,7 @@ export class MailEncryptionService {
         // No op, try the next one.
       }
     }
-    throw new Error('Cannot decrypt envelope: not a recipient or wrong key');
+    throw new EnvelopeDecryptionError();
   }
 
   decryptEnvelope(envelope: EncryptionBlock, keypair: HybridKeyPair): Promise<string> {

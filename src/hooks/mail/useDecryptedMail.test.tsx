@@ -9,12 +9,17 @@ import { MailEncryptionService } from '@/services/mail-encryption';
 vi.mock('./useMailKeys', () => ({ useMailKeys: vi.fn() }));
 
 const mockKeys = vi.mocked(useMailKeys);
-const mockIsEncrypted = vi.spyOn(MailEncryptionService.instance, 'isEncryptedEmailBody');
-const mockParse = vi.spyOn(MailEncryptionService.instance, 'parseEncryptionBlock');
-const mockDecrypt = vi.spyOn(MailEncryptionService.instance, 'decryptEnvelope');
 
 const keypair = {} as HybridKeyPair;
 const envelope = { version: 'v1' } as ReturnType<MailEncryptionService['parseEncryptionBlock']>;
+
+const spyOnEncryption = () => ({
+  isEncrypted: vi.spyOn(MailEncryptionService.instance, 'isEncryptedEmailBody'),
+  parse: vi.spyOn(MailEncryptionService.instance, 'parseEncryptionBlock'),
+  decrypt: vi.spyOn(MailEncryptionService.instance, 'decryptEnvelope'),
+});
+
+let mailEncryption: ReturnType<typeof spyOnEncryption>;
 
 const buildMail = (overrides: Partial<EmailResponse> = {}): EmailResponse =>
   ({
@@ -27,13 +32,14 @@ const buildMail = (overrides: Partial<EmailResponse> = {}): EmailResponse =>
 
 describe('useDecryptedMail', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
+    mailEncryption = spyOnEncryption();
     mockKeys.mockReturnValue(keypair);
-    mockParse.mockReturnValue(envelope);
+    mailEncryption.parse.mockReturnValue(envelope);
   });
 
   test('When there is no mail, then it reports an empty, non-encrypted state', () => {
-    mockIsEncrypted.mockReturnValue(false);
+    mailEncryption.isEncrypted.mockReturnValue(false);
 
     const { result } = renderHook(() => useDecryptedMail(undefined));
 
@@ -47,7 +53,7 @@ describe('useDecryptedMail', () => {
   });
 
   test('When the mail is not encrypted, then it returns the original content without decrypting', () => {
-    mockIsEncrypted.mockReturnValue(false);
+    mailEncryption.isEncrypted.mockReturnValue(false);
     const mail = buildMail();
 
     const { result } = renderHook(() => useDecryptedMail(mail));
@@ -55,12 +61,12 @@ describe('useDecryptedMail', () => {
     expect(result.current.subject).toBe('Weekly sync notes');
     expect(result.current.htmlBody).toBe('<p>plain html</p>');
     expect(result.current.isEncrypted).toBe(false);
-    expect(mockDecrypt).not.toHaveBeenCalled();
+    expect(mailEncryption.decrypt).not.toHaveBeenCalled();
   });
 
   test('When an encrypted mail is decrypted successfully, then it returns the decrypted body and clears the decrypting state', async () => {
-    mockIsEncrypted.mockReturnValue(true);
-    mockDecrypt.mockResolvedValue('the secret body');
+    mailEncryption.isEncrypted.mockReturnValue(true);
+    mailEncryption.decrypt.mockResolvedValue('the secret body');
     const mail = buildMail();
 
     const { result } = renderHook(() => useDecryptedMail(mail));
@@ -72,8 +78,8 @@ describe('useDecryptedMail', () => {
   });
 
   test('When an encrypted mail cannot be decrypted, then it surfaces a decrypt error', async () => {
-    mockIsEncrypted.mockReturnValue(true);
-    mockDecrypt.mockRejectedValue(new Error('not a recipient'));
+    mailEncryption.isEncrypted.mockReturnValue(true);
+    mailEncryption.decrypt.mockRejectedValue(new Error('not a recipient'));
     const mail = buildMail();
 
     const { result } = renderHook(() => useDecryptedMail(mail));
@@ -84,8 +90,8 @@ describe('useDecryptedMail', () => {
   });
 
   test('While an encrypted mail is being decrypted, then it reports the decrypting state with the cleartext subject', () => {
-    mockIsEncrypted.mockReturnValue(true);
-    mockDecrypt.mockReturnValue(new Promise(() => undefined));
+    mailEncryption.isEncrypted.mockReturnValue(true);
+    mailEncryption.decrypt.mockReturnValue(new Promise(() => undefined));
     const mail = buildMail();
 
     const { result } = renderHook(() => useDecryptedMail(mail));
