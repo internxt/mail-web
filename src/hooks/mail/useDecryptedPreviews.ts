@@ -1,9 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import type { EmailListResponse } from '@internxt/sdk/dist/mail/types';
+import type { HybridKeyPair } from 'internxt-crypto';
 import { useMailKeys } from './useMailKeys';
 import { decryptSummaryPreview } from '@/services/mail-encryption';
 
 type Summary = EmailListResponse['emails'][number];
+
+const decryptPendingPreviews = async (pending: Summary[], keypair: HybridKeyPair): Promise<Record<string, string>> => {
+  const resolved: Record<string, string> = {};
+  for (const summary of pending) {
+    try {
+      resolved[summary.id] = await decryptSummaryPreview(summary.encryption!, keypair);
+    } catch (error) {
+      console.error('Failed to decrypt mail preview', { mailId: summary.id, error });
+    }
+  }
+  return resolved;
+};
 
 /**
  * Decrypts the preview snippet for the encrypted rows on a list page. The
@@ -28,19 +41,11 @@ export const useDecryptedPreviews = (summaries: Summary[] | undefined): Record<s
     pending.forEach((s) => attempted.current.add(s.id));
 
     let cancelled = false;
-    (async () => {
-      const resolved: Record<string, string> = {};
-      for (const summary of pending) {
-        try {
-          resolved[summary.id] = await decryptSummaryPreview(summary.encryption!, keypair);
-        } catch {
-          // Not decryptable
-        }
-      }
+    decryptPendingPreviews(pending, keypair).then((resolved) => {
       if (!cancelled && Object.keys(resolved).length) {
         setPreviews((prev) => ({ ...prev, ...resolved }));
       }
-    })();
+    });
 
     return () => {
       cancelled = true;
