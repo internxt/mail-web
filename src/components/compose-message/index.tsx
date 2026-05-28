@@ -17,7 +17,7 @@ import {
   useSendEmailMutation,
 } from '@/store/api/mail';
 import { classifyRecipients, uniqueEmailAddresses } from '@/utils/domain';
-import { buildEncryptionBlock, type RecipientPublicKey } from '@/services/mail-encryption';
+import { MailEncryptionService, type RecipientPublicKey } from '@/services/mail-encryption';
 import notificationsService, { ToastType } from '@/services/notifications';
 import type { EmailAddress, SendEmailRequest } from '@internxt/sdk/dist/mail/types';
 
@@ -103,30 +103,41 @@ export const ComposeMessageDialog = () => {
     };
 
     try {
-      if (encryptionState === 'encrypted' && senderKeys?.address && senderKeys.publicKey) {
+      if (encryptionState === 'encrypted') {
+        if (!senderKeys?.address || !senderKeys.publicKey) {
+          notificationsService.show({
+            text: translate('modals.composeMessageDialog.errors.keyLookupFailed'),
+            type: ToastType.Error,
+          });
+          return;
+        }
         const uniqueAddresses = uniqueEmailAddresses(allRecipients.map((r) => r.email));
         const lookup = await triggerLookup({ addresses: uniqueAddresses }).unwrap();
         const usable = lookup.filter((r): r is { address: string; publicKey: string } => Boolean(r.publicKey));
 
-        if (usable.length === uniqueAddresses.length) {
-          const recipientsWithKeys: RecipientPublicKey[] = [
-            ...usable,
-            { address: senderKeys.address, publicKey: senderKeys.publicKey },
-          ];
-          const encryption = await buildEncryptionBlock(
-            { body: htmlBody || textBody, previewText: textBody },
-            recipientsWithKeys,
-          );
-          await sendEmail({
-            to: toRecipients.map(toEmailAddress),
-            cc: ccRecipients.length ? ccRecipients.map(toEmailAddress) : undefined,
-            bcc: bccRecipients.length ? bccRecipients.map(toEmailAddress) : undefined,
-            subject: subjectValue,
-            encryption,
-          }).unwrap();
-        } else {
-          await sendEmail(cleartextPayload).unwrap();
+        if (usable.length !== uniqueAddresses.length) {
+          notificationsService.show({
+            text: translate('modals.composeMessageDialog.errors.keyLookupFailed'),
+            type: ToastType.Error,
+          });
+          return;
         }
+
+        const recipientsWithKeys: RecipientPublicKey[] = [
+          ...usable,
+          { address: senderKeys.address, publicKey: senderKeys.publicKey },
+        ];
+        const encryption = await MailEncryptionService.instance.buildEncryptionBlock(
+          { body: htmlBody || textBody, previewText: textBody },
+          recipientsWithKeys,
+        );
+        await sendEmail({
+          to: toRecipients.map(toEmailAddress),
+          cc: ccRecipients.length ? ccRecipients.map(toEmailAddress) : undefined,
+          bcc: bccRecipients.length ? bccRecipients.map(toEmailAddress) : undefined,
+          subject: subjectValue,
+          encryption,
+        }).unwrap();
       } else {
         await sendEmail(cleartextPayload).unwrap();
       }

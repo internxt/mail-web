@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { EmailListResponse } from '@internxt/sdk/dist/mail/types';
 import type { HybridKeyPair } from 'internxt-crypto';
 import { useMailKeys } from './useMailKeys';
-import { decryptSummaryPreview } from '@/services/mail-encryption';
+import { MailEncryptionService } from '@/services/mail-encryption';
 
 type Summary = EmailListResponse['emails'][number];
 
@@ -10,7 +10,7 @@ const decryptPendingPreviews = async (pending: Summary[], keypair: HybridKeyPair
   const resolved: Record<string, string> = {};
   for (const summary of pending) {
     try {
-      resolved[summary.id] = await decryptSummaryPreview(summary.encryption!, keypair);
+      resolved[summary.id] = await MailEncryptionService.instance.decryptSummaryPreview(summary.encryption!, keypair);
     } catch (error) {
       console.error('Failed to decrypt mail preview', { mailId: summary.id, error });
     }
