@@ -57,7 +57,7 @@ const Preview = ({ mailId, subject, body, attachments }: PreviewProps) => {
       link.href = url;
       link.download = attachment.name;
       link.click();
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 0);
     } catch {
       notificationsService.show({
         text: translate('mail.preview.errors.downloadAttachmentFailed'),

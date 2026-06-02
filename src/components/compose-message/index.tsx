@@ -9,7 +9,7 @@ import { EditorBar } from './components/editorBar';
 import { ActionDialog, useActionDialog } from '@/context/dialog-manager';
 import { useTranslationContext } from '@/i18n';
 import useComposeMessage from './hooks/useComposeMessage';
-import useAttachments from './hooks/useAttachments';
+import useAttachments, { type AttachmentTask } from './hooks/useAttachments';
 import { useEditor } from '@tiptap/react';
 import { EDITOR_CONFIG } from './config';
 import {
@@ -112,9 +112,9 @@ export const ComposeMessageDialog = () => {
     }
 
     const attachmentsToSend: SendEmailRequest['attachments'] = attachments
-      .filter((a) => a.status === 'done' && a.blobId)
+      .filter((a): a is AttachmentTask & { blobId: string } => a.status === 'done' && !!a.blobId)
       .map((a) => ({
-        blobId: a.blobId as string,
+        blobId: a.blobId,
         name: a.name,
         size: a.size,
         type: a.type,

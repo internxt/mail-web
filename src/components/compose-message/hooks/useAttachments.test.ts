@@ -140,11 +140,12 @@ describe('Attachments - custom hook', () => {
   });
 
   describe('clear', () => {
-    test('When clear is called, then every attachment is removed from the manager and state', () => {
+    test('When clear is called, then every attachment is removed from the manager and state', async () => {
       const { result } = renderHook(() => useAttachments());
       act(() => result.current.addFiles([fileOfSize(10, '1.txt'), fileOfSize(20, '2.txt')]));
 
       act(() => result.current.clear());
+      await new Promise<void>((res) => queueMicrotask(res));
 
       expect(remove).toHaveBeenCalledTimes(2);
       expect(remove).toHaveBeenCalledWith('id-0');

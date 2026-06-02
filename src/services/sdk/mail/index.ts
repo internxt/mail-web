@@ -16,6 +16,7 @@ import type {
   UploadAttachmentResponse,
 } from '@internxt/sdk/dist/mail/types';
 import { SdkManager } from '..';
+import type { RequestCanceler } from '@internxt/sdk/dist/shared/http/types';
 
 export type MailMeResponse = MailAccountResponse;
 
@@ -145,7 +146,10 @@ export class MailService {
     return this.client.lookupRecipientKeys(addresses);
   }
 
-  async uploadAttachment(file: File): Promise<UploadAttachmentResponse> {
+  uploadAttachment(file: File): {
+    promise: Promise<UploadAttachmentResponse>;
+    requestCanceler: RequestCanceler;
+  } {
     return this.client.uploadAttachment(file);
   }
 

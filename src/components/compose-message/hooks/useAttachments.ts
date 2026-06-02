@@ -69,9 +69,12 @@ const useAttachments = () => {
   }, []);
 
   const clear = useCallback(() => {
-    attachments.forEach((a) => UploadManager.instance.remove(a.id));
-    setAttachments([]);
-  }, [attachments]);
+    setAttachments((prev) => {
+      const ids = prev.map((a) => a.id);
+      queueMicrotask(() => ids.forEach((id) => UploadManager.instance.remove(id)));
+      return [];
+    });
+  }, []);
 
   return { attachments, totalSize, isUploading, hasErrors, addFiles, retry, remove, clear };
 };
