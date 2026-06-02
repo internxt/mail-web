@@ -1,10 +1,10 @@
 import { ArrowClockwiseIcon, PaperclipIcon, SpinnerIcon, WarningIcon, XIcon } from '@phosphor-icons/react';
 import { bytesToString } from '@/utils/bytes-to-string';
 import { useTranslationContext } from '@/i18n';
-import { MAX_TOTAL_ATTACHMENT_BYTES, type Attachment } from '../hooks/useAttachments';
+import { MAX_TOTAL_ATTACHMENT_BYTES, type AttachmentTask } from '../hooks/useAttachments';
 
 interface AttachmentListProps {
-  attachments: Attachment[];
+  attachments: AttachmentTask[];
   totalSize: number;
   onRemove: (id: string) => void;
   onRetry: (id: string) => void;

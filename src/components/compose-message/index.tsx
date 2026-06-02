@@ -117,7 +117,7 @@ export const ComposeMessageDialog = () => {
         blobId: a.blobId as string,
         name: a.name,
         size: a.size,
-        type: a.mimeType,
+        type: a.type,
       }));
 
     const htmlBody = editor?.getHTML() ?? '';

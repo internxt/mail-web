@@ -2,23 +2,21 @@ import { useCallback, useMemo, useState } from 'react';
 import { useTranslationContext } from '@/i18n';
 import notificationsService, { ToastType } from '@/services/notifications';
 import { UploadManager, type UploadAttachmentCallbacks } from '@/services/upload-manager';
+import type { AttachmentRef } from '@internxt/sdk/dist/mail/types';
 
 export type AttachmentStatus = 'uploading' | 'done' | 'error';
 
-export type Attachment = {
+export interface AttachmentTask extends Omit<AttachmentRef, 'blobId'> {
   id: string;
-  name: string;
-  size: number;
-  mimeType: string;
   status: AttachmentStatus;
   blobId?: string;
-};
+}
 
 export const MAX_TOTAL_ATTACHMENT_BYTES = 25 * 1024 * 1024;
 
 const useAttachments = () => {
   const { translate } = useTranslationContext();
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [attachments, setAttachments] = useState<AttachmentTask[]>([]);
 
   const totalSize = useMemo(() => attachments.reduce((s, a) => s + a.size, 0), [attachments]);
   const isUploading = useMemo(() => attachments.some((a) => a.status === 'uploading'), [attachments]);
@@ -45,11 +43,11 @@ const useAttachments = () => {
         return;
       }
       const handles = UploadManager.instance.run(list, callbacks);
-      const pending: Attachment[] = handles.map(({ id, file }) => ({
+      const pending: AttachmentTask[] = handles.map(({ id, file }) => ({
         id,
         name: file.name,
         size: file.size,
-        mimeType: file.type || 'application/octet-stream',
+        type: file.type ?? 'application/octet-stream',
         status: 'uploading',
       }));
       setAttachments((prev) => [...prev, ...pending]);
