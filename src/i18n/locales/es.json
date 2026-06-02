@@ -120,6 +120,9 @@
       "bcc": "CCO",
       "decrypting": "Descifrando mensaje…",
       "decryptFailed": "No se pudo descifrar este mensaje",
+      "errors": {
+        "downloadAttachmentFailed": "No se pudo descargar el adjunto"
+      },
       "emptyEmail": {
         "unreadEmails": {
           "title": "Mensajes sin leer",
@@ -197,7 +200,16 @@
       "subject": "Asunto",
       "message": "Mensaje",
       "encryptedBadge": "Cifrado de extremo a extremo",
-      "cleartextBadge": "Sin cifrar"
+      "cleartextBadge": "Sin cifrar",
+      "errors": {
+        "noRecipients": "Agrega al menos un destinatario antes de enviar",
+        "sendFailed": "No se pudo enviar el correo",
+        "keyLookupFailed": "No se pudieron obtener las claves del destinatario",
+        "attachmentsTooLarge": "Los adjuntos superan el límite de 25 MB"
+      },
+      "attachments": {
+        "totalSize": "{{used}} de {{max}}"
+      }
     },
     "preferences": {
       "title": "Preferencias",

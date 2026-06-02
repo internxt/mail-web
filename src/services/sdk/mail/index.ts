@@ -1,4 +1,5 @@
 import type {
+  DownloadAttachmentResponse,
   EmailCreatedResponse,
   EmailDomainsResponse,
   EmailListResponse,
@@ -12,6 +13,7 @@ import type {
   SendEmailRequest,
   SetupMailAccountPayload,
   UpdateEmailRequest,
+  UploadAttachmentResponse,
 } from '@internxt/sdk/dist/mail/types';
 import { SdkManager } from '..';
 
@@ -141,5 +143,21 @@ export class MailService {
    */
   async lookupRecipientKeys(addresses: string[]): Promise<LookupRecipientKeysResponse> {
     return this.client.lookupRecipientKeys(addresses);
+  }
+
+  async uploadAttachment(file: File): Promise<UploadAttachmentResponse> {
+    return this.client.uploadAttachment(file);
+  }
+
+  async downloadAttachment(
+    mailId: string,
+    blobId: string,
+    mailName: string,
+    mailType: string,
+  ): Promise<DownloadAttachmentResponse> {
+    return this.client.downloadAttachment(mailId, blobId, {
+      name: mailName,
+      type: mailType,
+    });
   }
 }
