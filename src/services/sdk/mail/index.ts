@@ -1,4 +1,5 @@
 import type {
+  DownloadAttachmentResponse,
   EmailCreatedResponse,
   EmailDomainsResponse,
   EmailListResponse,
@@ -12,8 +13,10 @@ import type {
   SendEmailRequest,
   SetupMailAccountPayload,
   UpdateEmailRequest,
+  UploadAttachmentResponse,
 } from '@internxt/sdk/dist/mail/types';
 import { SdkManager } from '..';
+import type { RequestCanceler } from '@internxt/sdk/dist/shared/http/types';
 
 export type MailMeResponse = MailAccountResponse;
 
@@ -141,5 +144,37 @@ export class MailService {
    */
   async lookupRecipientKeys(addresses: string[]): Promise<LookupRecipientKeysResponse> {
     return this.client.lookupRecipientKeys(addresses);
+  }
+
+  /**
+   * Uploading an attachment to the S3
+   * @param file - The attachment we want to upload
+   * @returns an object containing the promise and the request canceler
+   */
+  uploadAttachment(file: File): {
+    promise: Promise<UploadAttachmentResponse>;
+    requestCanceler: RequestCanceler;
+  } {
+    return this.client.uploadAttachment(file);
+  }
+
+  /**
+   * Download an attachment from a given mail
+   * @param mailId - The ID of the mail the attachment is attached to
+   * @param blobId - The ID of the attachment
+   * @param mailName - The name of the attachment
+   * @param mailType - The type of the attachment
+   * @returns A readable stream of the attachment
+   */
+  async downloadAttachment(
+    mailId: string,
+    blobId: string,
+    mailName: string,
+    mailType: string,
+  ): Promise<DownloadAttachmentResponse> {
+    return this.client.downloadAttachment(mailId, blobId, {
+      name: mailName,
+      type: mailType,
+    });
   }
 }
