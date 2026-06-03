@@ -1,8 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslationContext } from '@/i18n';
 import notificationsService, { ToastType } from '@/services/notifications';
-import { UploadManager, type UploadAttachmentCallbacks } from '@/services/upload-manager';
+import { UploadManager } from '@/services/upload-manager';
 import type { AttachmentRef } from '@internxt/sdk/dist/mail/types';
+import type { UploadAttachmentCallbacks } from '@/types/mail/upload-manager';
 
 export type AttachmentStatus = 'uploading' | 'done' | 'error';
 

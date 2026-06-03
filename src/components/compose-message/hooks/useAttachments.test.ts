@@ -1,8 +1,9 @@
 import { renderHook, act } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import useAttachments, { MAX_TOTAL_ATTACHMENT_BYTES } from './useAttachments';
-import { UploadManager, type UploadAttachmentCallbacks, type UploadHandle } from '@/services/upload-manager';
+import { UploadManager } from '@/services/upload-manager';
 import notificationsService, { ToastType } from '@/services/notifications';
+import type { UploadAttachmentCallbacks, UploadHandle } from '@/types/mail/upload-manager';
 
 vi.mock('@/i18n', () => ({ useTranslationContext: () => ({ translate: (key: string) => key }) }));
 
