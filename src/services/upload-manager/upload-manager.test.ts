@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { UploadManager } from './index';
 import { MailService } from '@/services/sdk/mail';
 import type { UploadAttachmentResponse } from '@internxt/sdk/dist/mail/types';
+import { AxiosResponseError } from '@internxt/sdk/dist/shared/types/errors';
 
 vi.mock('@/services/sdk/mail', () => ({
   MailService: { instance: { uploadAttachment: vi.fn() } },
@@ -27,6 +28,7 @@ const mockFailure = (error: unknown) => ({
 
 describe('Upload Manager', () => {
   beforeEach(() => {
+    vi.restoreAllMocks();
     uploadAttachment.mockReset();
   });
 
@@ -35,7 +37,7 @@ describe('Upload Manager', () => {
   });
 
   describe('run', () => {
-    test('When files are pushed, then it returns a handle per file with stable id and File', () => {
+    test('When files are pushed, then each pushed file yields a distinct stable handle', () => {
       uploadAttachment.mockReturnValue(mockSuccess({ blobId: 'b', name: 'a.txt', size: 1, type: 'text/plain' }));
       const f1 = aFile('1.txt');
       const f2 = aFile('2.txt');
@@ -48,7 +50,7 @@ describe('Upload Manager', () => {
       expect(handles[0].id).not.toBe(handles[1].id);
     });
 
-    test('When upload succeeds, then the upload success is handled correctly', async () => {
+    test('When upload succeeds, then the caller is notified with the upload result', async () => {
       const result = { blobId: 'blob-1', name: 'a.txt', size: 1, type: 'text/plain' };
       uploadAttachment.mockReturnValue(mockSuccess(result));
       const onSuccess = vi.fn();
@@ -76,9 +78,10 @@ describe('Upload Manager', () => {
 
     test('When upload fails transiently, then it retries until success (max 3 attempts)', async () => {
       const result = { blobId: 'b', name: 'a.txt', size: 1, type: 'text/plain' };
+      const serverError = new AxiosResponseError('Internal Server Error', 'POST /upload', { status: 503 } as never);
       uploadAttachment
-        .mockReturnValueOnce(mockFailure(new Error('1')))
-        .mockReturnValueOnce(mockFailure(new Error('2')))
+        .mockReturnValueOnce(mockFailure(serverError))
+        .mockReturnValueOnce(mockFailure(serverError))
         .mockReturnValue(mockSuccess(result));
       const onSuccess = vi.fn();
       const onError = vi.fn();
@@ -89,6 +92,20 @@ describe('Upload Manager', () => {
       expect(uploadAttachment).toHaveBeenCalledTimes(3);
       expect(onSuccess).toHaveBeenCalledTimes(1);
       expect(onError).not.toHaveBeenCalled();
+    });
+
+    test('When upload fails with a 4xx error, then it does not retry and calls onError immediately', async () => {
+      const clientError = new AxiosResponseError('Forbidden', 'POST /upload', { status: 403 } as never);
+      uploadAttachment.mockReturnValue(mockFailure(clientError));
+      const onSuccess = vi.fn();
+      const onError = vi.fn();
+
+      const [{ id }] = UploadManager.instance.run([aFile()], { onSuccess, onError });
+      await flush();
+
+      expect(uploadAttachment).toHaveBeenCalledTimes(1);
+      expect(onError).toHaveBeenCalledWith(id, clientError);
+      expect(onSuccess).not.toHaveBeenCalled();
     });
   });
 
@@ -105,7 +122,7 @@ describe('Upload Manager', () => {
       expect(onError).not.toHaveBeenCalled();
     });
 
-    test('When retry is called after a failed upload, then a new attempt succeeds and notifies onSuccess', async () => {
+    test('When retry is called after a failed upload, then the caller is notified of the eventual success', async () => {
       uploadAttachment.mockReturnValue(mockFailure(new Error('initial failure')));
       const initialError = vi.fn();
       const [{ id }] = UploadManager.instance.run([aFile()], { onSuccess: vi.fn(), onError: initialError });
@@ -147,7 +164,7 @@ describe('Upload Manager', () => {
       expect(onSuccess).toHaveBeenCalledWith(first.id, expect.any(Object));
     });
 
-    test('When remove is called while the upload is in flight, then the canceler is invoked', async () => {
+    test('When remove is called while the upload is in flight, then the in-flight request is aborted', async () => {
       const cancel = vi.fn();
       let resolveBlocker: (() => void) | undefined;
       const blocker = new Promise<UploadAttachmentResponse>((_res, rej) => {

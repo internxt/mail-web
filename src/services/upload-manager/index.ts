@@ -1,4 +1,5 @@
 import { queue, type QueueObject } from 'async';
+import { AxiosResponseError, AxiosUnknownError } from '@internxt/sdk/dist/shared/types/errors';
 import { MailService } from '@/services/sdk/mail';
 import type { UploadAttachmentResponse } from '@internxt/sdk/dist/mail/types';
 import type { UploadAttachmentCallbacks, UploadAttachmentTask, UploadHandle } from '@/types/mail/upload-manager';
@@ -31,6 +32,12 @@ export class UploadManager {
     }
   };
 
+  /**
+   * Starts the upload of the given files
+   * @param files - The files to upload
+   * @param callbacks - The callbacks to call when the upload is complete (success or error)
+   * @returns The uploaded ID and the file object
+   */
   run(files: File[], callbacks: UploadAttachmentCallbacks): UploadHandle[] {
     return files.map((file) => {
       const id = crypto.randomUUID();
@@ -39,6 +46,12 @@ export class UploadManager {
     });
   }
 
+  /**
+   * The retry method is used to restart an upload that has failed
+   * @param id - The ID of the upload task
+   * @param callbacks - The callbacks to call when the upload is complete (success or error)
+   * @returns - void
+   */
   retry(id: string, callbacks: UploadAttachmentCallbacks): void {
     const existing = this.tasks.get(id);
     if (!existing) return;
@@ -46,6 +59,11 @@ export class UploadManager {
     this.enqueueTask(id, existing.file, callbacks);
   }
 
+  /**
+   * The remove method is used to cancel an upload
+   * @param id - The ID of the upload task
+   * @returns - void
+   */
   remove(id: string): void {
     const task = this.tasks.get(id);
     if (!task) return;
@@ -75,10 +93,19 @@ export class UploadManager {
       } catch (error) {
         lastError = error;
         if (task.cancelled) throw error;
+        if (!isTransientError(error)) throw error;
       } finally {
         task.canceler = undefined;
       }
     }
     throw lastError;
   }
+}
+
+function isTransientError(error: unknown): boolean {
+  if (error instanceof AxiosResponseError) return error.status >= 500;
+  if (error instanceof AxiosUnknownError) {
+    return error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT' || error.code === 'ERR_NETWORK';
+  }
+  return false;
 }
