@@ -4,7 +4,7 @@ import type { Tier } from '@internxt/sdk/dist/drive/payments/types/tiers';
 import type { UserSubscription } from '@internxt/sdk/dist/drive/payments/types/types';
 import type { AppSumoDetails } from '@internxt/sdk/dist/shared/types/appsumo';
 import { faker } from '@faker-js/faker';
-import type { EmailListResponse, EmailResponse, MailboxResponse } from '@internxt/sdk/dist/mail/types';
+import type { AttachmentRef, EmailListResponse, EmailResponse, MailboxResponse } from '@internxt/sdk/dist/mail/types';
 
 export const getMockedUser = (params?: Partial<LoginCredentials['user']>): LoginCredentials['user'] => {
   return {
@@ -142,6 +142,13 @@ const createEmailAddress = () => ({
   avatar: faker.helpers.maybe(() => faker.image.avatar(), { probability: 0.5 }),
 });
 
+export const getMockedAttachment = (): AttachmentRef => ({
+  name: faker.system.fileName(),
+  size: faker.number.int({ min: 1024, max: 16384 }),
+  type: faker.system.mimeType(),
+  blobId: faker.string.uuid(),
+});
+
 export const getMockedMail = (): EmailResponse => ({
   id: faker.string.uuid(),
   mailboxIds: [faker.string.alphanumeric(1), faker.string.alphanumeric(1)],
@@ -161,6 +168,7 @@ export const getMockedMail = (): EmailResponse => ({
   isFlagged: faker.datatype.boolean(),
   hasAttachment: faker.datatype.boolean(),
   size: faker.number.int({ min: 1024, max: 16384 }),
+  attachments: faker.datatype.boolean() ? [getMockedAttachment()] : [],
 });
 
 export const getMockedMails = (count = 3): EmailListResponse => ({
