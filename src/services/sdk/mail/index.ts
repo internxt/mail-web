@@ -146,6 +146,11 @@ export class MailService {
     return this.client.lookupRecipientKeys(addresses);
   }
 
+  /**
+   * Uploading an attachment to the S3
+   * @param file - The attachment we want to upload
+   * @returns an object containing the promise and the request canceler
+   */
   uploadAttachment(file: File): {
     promise: Promise<UploadAttachmentResponse>;
     requestCanceler: RequestCanceler;
@@ -153,6 +158,14 @@ export class MailService {
     return this.client.uploadAttachment(file);
   }
 
+  /**
+   * Download an attachment from a given mail
+   * @param mailId - The ID of the mail the attachment is attached to
+   * @param blobId - The ID of the attachment
+   * @param mailName - The name of the attachment
+   * @param mailType - The type of the attachment
+   * @returns A readable stream of the attachment
+   */
   async downloadAttachment(
     mailId: string,
     blobId: string,
