@@ -205,7 +205,7 @@
         "noRecipients": "Agrega al menos un destinatario antes de enviar",
         "sendFailed": "No se pudo enviar el correo",
         "keyLookupFailed": "No se pudieron obtener las claves del destinatario",
-        "attachmentsTooLarge": "Los adjuntos superan el límite de 25 MB"
+        "attachmentsTooLarge": "Los adjuntos superan el límite de {{maxSize}}"
       },
       "attachments": {
         "totalSize": "{{used}} de {{max}}"

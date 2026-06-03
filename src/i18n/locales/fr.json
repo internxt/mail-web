@@ -205,7 +205,7 @@
         "noRecipients": "Ajoutez au moins un destinataire avant d'envoyer",
         "sendFailed": "Impossible d'envoyer le courriel",
         "keyLookupFailed": "Impossible de récupérer les clés du destinataire",
-        "attachmentsTooLarge": "Les pièces jointes dépassent la limite de 25 Mo"
+        "attachmentsTooLarge": "Les pièces jointes dépassent la limite de {{maxSize}}"
       },
       "attachments": {
         "totalSize": "{{used}} sur {{max}}"

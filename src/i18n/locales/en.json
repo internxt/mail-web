@@ -203,7 +203,7 @@
         "noRecipients": "Add at least one recipient before sending",
         "sendFailed": "Could not send the email",
         "keyLookupFailed": "Could not fetch recipient keys",
-        "attachmentsTooLarge": "Attachments exceed the 25 MB limit"
+        "attachmentsTooLarge": "Attachments exceed the {{maxSize}} limit"
       },
       "attachments": {
         "totalSize": "{{used}} of {{max}}"
