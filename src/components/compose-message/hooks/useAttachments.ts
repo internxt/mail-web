@@ -1,9 +1,12 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslationContext } from '@/i18n';
 import notificationsService, { ToastType } from '@/services/notifications';
+import { bytesToString } from '@/utils/bytes-to-string';
 import { UploadManager } from '@/services/upload-manager';
 import type { AttachmentRef } from '@internxt/sdk/dist/mail/types';
+import { MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL } from '@/constants';
 import type { UploadAttachmentCallbacks } from '@/types/mail/upload-manager';
+import { ErrorService } from '@/services/error';
 
 export type AttachmentStatus = 'uploading' | 'done' | 'error';
 
@@ -13,8 +16,6 @@ export interface AttachmentTask extends Omit<AttachmentRef, 'blobId'> {
   blobId?: string;
 }
 
-export const MAX_TOTAL_ATTACHMENT_BYTES = 25 * 1024 * 1024;
-
 const useAttachments = () => {
   const { translate } = useTranslationContext();
   const [attachments, setAttachments] = useState<AttachmentTask[]>([]);
@@ -23,22 +24,30 @@ const useAttachments = () => {
   const isUploading = useMemo(() => attachments.some((a) => a.status === 'uploading'), [attachments]);
   const hasErrors = useMemo(() => attachments.some((a) => a.status === 'error'), [attachments]);
 
-  const callbacks: UploadAttachmentCallbacks = useMemo(
-    () => ({
-      onSuccess: (id, { blobId }) =>
-        setAttachments((prev) => prev.map((a) => (a.id === id ? { ...a, status: 'done', blobId } : a))),
-      onError: (id) => setAttachments((prev) => prev.map((a) => (a.id === id ? { ...a, status: 'error' } : a))),
-    }),
-    [],
-  );
+  const onTaskCompleted = (attachmentTaskId: AttachmentTask['id'], blobId: string) => {
+    setAttachments((prev) => prev.map((a) => (a.id === attachmentTaskId ? { ...a, blobId, status: 'done' } : a)));
+  };
+
+  const onTaskError = (attachmentTaskId: AttachmentTask['id'], error: unknown) => {
+    const castedError = ErrorService.instance.castError(error);
+    setAttachments((prev) => prev.map((a) => (a.id === attachmentTaskId ? { ...a, status: 'error' } : a)));
+    console.error('ERROR UPLOADING ATTACHMENT', castedError);
+  };
+
+  const callbacks: UploadAttachmentCallbacks = {
+    onSuccess: onTaskCompleted,
+    onError: onTaskError,
+  };
 
   const addFiles = useCallback(
     (files: FileList | File[]) => {
       const list = Array.from(files);
       const incoming = list.reduce((s, f) => s + f.size, 0);
-      if (totalSize + incoming > MAX_TOTAL_ATTACHMENT_BYTES) {
+      if (totalSize + incoming > MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL) {
         notificationsService.show({
-          text: translate('modals.composeMessageDialog.errors.attachmentsTooLarge'),
+          text: translate('modals.composeMessageDialog.errors.attachmentsTooLarge', {
+            maxSize: bytesToString({ size: MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL }),
+          }),
           type: ToastType.Warning,
         });
         return;
@@ -70,11 +79,8 @@ const useAttachments = () => {
   }, []);
 
   const clear = useCallback(() => {
-    setAttachments((prev) => {
-      const ids = prev.map((a) => a.id);
-      queueMicrotask(() => ids.forEach((id) => UploadManager.instance.remove(id)));
-      return [];
-    });
+    UploadManager.instance.clear();
+    setAttachments([]);
   }, []);
 
   return { attachments, totalSize, isUploading, hasErrors, addFiles, retry, remove, clear };

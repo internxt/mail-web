@@ -23,7 +23,7 @@ export class UploadManager {
     try {
       const result = await this.uploadWithRetries(task);
       if (task.cancelled) return;
-      task.callbacks.onSuccess(task.id, result);
+      task.callbacks.onSuccess(task.id, result.blobId);
       if (this.tasks.get(task.id) === task) this.tasks.delete(task.id);
     } catch (error) {
       if (task.cancelled) return;
@@ -69,6 +69,15 @@ export class UploadManager {
     if (!task) return;
     this.cancelTask(task);
     this.tasks.delete(id);
+  }
+
+  /**
+   * The clear method is used to cancel all uploads
+   * @returns - void
+   */
+  clear(): void {
+    this.tasks.forEach((task) => this.cancelTask(task));
+    this.tasks.clear();
   }
 
   private cancelTask(task: UploadAttachmentTask): void {

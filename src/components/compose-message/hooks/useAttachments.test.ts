@@ -1,9 +1,10 @@
 import { renderHook, act } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import useAttachments, { MAX_TOTAL_ATTACHMENT_BYTES } from './useAttachments';
+import useAttachments from './useAttachments';
 import { UploadManager } from '@/services/upload-manager';
 import notificationsService, { ToastType } from '@/services/notifications';
 import type { UploadAttachmentCallbacks, UploadHandle } from '@/types/mail/upload-manager';
+import { MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL } from '@/constants';
 
 vi.mock('@/i18n', () => ({ useTranslationContext: () => ({ translate: (key: string) => key }) }));
 
@@ -13,12 +14,13 @@ vi.mock('@/services/notifications', () => ({
 }));
 
 vi.mock('@/services/upload-manager', () => ({
-  UploadManager: { instance: { run: vi.fn(), retry: vi.fn(), remove: vi.fn() } },
+  UploadManager: { instance: { run: vi.fn(), retry: vi.fn(), remove: vi.fn(), clear: vi.fn() } },
 }));
 
 const run = vi.mocked(UploadManager.instance.run);
 const retry = vi.mocked(UploadManager.instance.retry);
 const remove = vi.mocked(UploadManager.instance.remove);
+const clear = vi.mocked(UploadManager.instance.clear);
 const show = vi.mocked(notificationsService.show);
 
 let lastCallbacks: UploadAttachmentCallbacks | undefined;
@@ -34,6 +36,7 @@ describe('Attachments - custom hook', () => {
     run.mockReset();
     retry.mockReset();
     remove.mockReset();
+    clear.mockReset();
     show.mockReset();
     lastCallbacks = undefined;
     run.mockImplementation((files: File[], callbacks: UploadAttachmentCallbacks): UploadHandle[] => {
@@ -65,7 +68,7 @@ describe('Attachments - custom hook', () => {
     });
 
     test('When the new batch would exceed 25 MB total, then it shows a warning toast and does not enqueue', () => {
-      const big = fileOfSize(MAX_TOTAL_ATTACHMENT_BYTES + 1);
+      const big = fileOfSize(MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL + 1);
       const { result } = renderHook(() => useAttachments());
 
       act(() => result.current.addFiles([big]));
@@ -79,11 +82,11 @@ describe('Attachments - custom hook', () => {
     });
 
     test('When the cumulative size reaches the 25 MB limit, then a subsequent batch is rejected', () => {
-      const half = fileOfSize(MAX_TOTAL_ATTACHMENT_BYTES / 2);
+      const half = fileOfSize(MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL / 2);
       const { result } = renderHook(() => useAttachments());
 
       act(() => result.current.addFiles([half]));
-      act(() => result.current.addFiles([fileOfSize(MAX_TOTAL_ATTACHMENT_BYTES / 2 + 1)]));
+      act(() => result.current.addFiles([fileOfSize(MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL / 2 + 1)]));
 
       expect(result.current.attachments).toHaveLength(1);
       expect(show).toHaveBeenCalledTimes(1);
@@ -95,7 +98,7 @@ describe('Attachments - custom hook', () => {
       const { result } = renderHook(() => useAttachments());
       act(() => result.current.addFiles([fileOfSize(10)]));
 
-      act(() => lastCallbacks?.onSuccess('id-0', { blobId: 'blob-1', name: 'a.txt', size: 10, type: 'text/plain' }));
+      act(() => lastCallbacks?.onSuccess('id-0', 'blob-1'));
 
       expect(result.current.attachments[0]).toMatchObject({ status: 'done', blobId: 'blob-1' });
       expect(result.current.isUploading).toBe(false);
@@ -141,16 +144,13 @@ describe('Attachments - custom hook', () => {
   });
 
   describe('clear', () => {
-    test('When clear is called, then every attachment is removed from the manager and state', async () => {
+    test('When clear is called, then every attachment is removed from the manager and state', () => {
       const { result } = renderHook(() => useAttachments());
       act(() => result.current.addFiles([fileOfSize(10, '1.txt'), fileOfSize(20, '2.txt')]));
 
       act(() => result.current.clear());
-      await new Promise<void>((res) => queueMicrotask(res));
 
-      expect(remove).toHaveBeenCalledTimes(2);
-      expect(remove).toHaveBeenCalledWith('id-0');
-      expect(remove).toHaveBeenCalledWith('id-1');
+      expect(clear).toHaveBeenCalledTimes(1);
       expect(result.current.attachments).toHaveLength(0);
     });
   });
