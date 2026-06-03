@@ -59,7 +59,7 @@ describe('Upload Manager', () => {
       const [{ id }] = UploadManager.instance.run([aFile()], { onSuccess, onError });
       await flush();
 
-      expect(onSuccess).toHaveBeenCalledWith(id, result);
+      expect(onSuccess).toHaveBeenCalledWith(id, result.blobId);
       expect(onError).not.toHaveBeenCalled();
     });
 
@@ -137,7 +137,7 @@ describe('Upload Manager', () => {
       UploadManager.instance.retry(id, { onSuccess, onError });
       await flush();
 
-      expect(onSuccess).toHaveBeenCalledWith(id, result);
+      expect(onSuccess).toHaveBeenCalledWith(id, result.blobId);
       expect(onError).not.toHaveBeenCalled();
     });
   });
@@ -161,7 +161,7 @@ describe('Upload Manager', () => {
 
       const calls = [...onSuccess.mock.calls, ...onError.mock.calls];
       expect(calls.some(([id]) => id === second.id)).toBe(false);
-      expect(onSuccess).toHaveBeenCalledWith(first.id, expect.any(Object));
+      expect(onSuccess).toHaveBeenCalledWith(first.id, expect.any(String));
     });
 
     test('When remove is called while the upload is in flight, then the in-flight request is aborted', async () => {
