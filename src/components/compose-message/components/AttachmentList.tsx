@@ -1,7 +1,8 @@
 import { ArrowClockwiseIcon, PaperclipIcon, SpinnerIcon, WarningIcon, XIcon } from '@phosphor-icons/react';
 import { bytesToString } from '@/utils/bytes-to-string';
 import { useTranslationContext } from '@/i18n';
-import { MAX_TOTAL_ATTACHMENT_BYTES, type AttachmentTask } from '../hooks/useAttachments';
+import { type AttachmentTask } from '../hooks/useAttachments';
+import { MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL } from '@/constants';
 
 interface AttachmentListProps {
   attachments: AttachmentTask[];
@@ -33,7 +34,7 @@ export const AttachmentList = ({ attachments, totalSize, onRemove, onRetry }: At
       <p className="text-xs text-gray-50">
         {translate('modals.composeMessageDialog.attachments.totalSize', {
           used: bytesToString({ size: totalSize }),
-          max: bytesToString({ size: MAX_TOTAL_ATTACHMENT_BYTES }),
+          max: bytesToString({ size: MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL }),
         })}
       </p>
     </div>
