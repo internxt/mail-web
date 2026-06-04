@@ -62,9 +62,16 @@ describe('Attachments - custom hook', () => {
         { id: 'id-0', name: '1.txt', size: 100, type: 'text/plain', status: 'uploading' },
         { id: 'id-1', name: '2.bin', size: 200, type: 'application/octet-stream', status: 'uploading' },
       ]);
-      expect(result.current.totalSize).toBe(300);
+      expect(result.current.totalSize).toBe(0);
       expect(result.current.isUploading).toBe(true);
       expect(result.current.hasErrors).toBe(false);
+
+      act(() => {
+        lastCallbacks?.onSuccess('id-0', 'blob-0');
+        lastCallbacks?.onSuccess('id-1', 'blob-1');
+      });
+
+      expect(result.current.totalSize).toBe(300);
     });
 
     test('When the new batch would exceed 25 MB total, then it shows a warning toast and does not enqueue', () => {
@@ -86,6 +93,7 @@ describe('Attachments - custom hook', () => {
       const { result } = renderHook(() => useAttachments());
 
       act(() => result.current.addFiles([half]));
+      act(() => lastCallbacks?.onSuccess('id-0', 'blob-0'));
       act(() => result.current.addFiles([fileOfSize(MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL / 2 + 1)]));
 
       expect(result.current.attachments).toHaveLength(1);
