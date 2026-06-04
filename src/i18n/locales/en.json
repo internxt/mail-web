@@ -195,7 +195,10 @@
       "subject": "Subject",
       "message": "Message",
       "encryptedBadge": "End-to-end encrypted",
-      "cleartextBadge": "Not encrypted"
+      "cleartextBadge": "Not encrypted",
+      "errors": {
+        "attachmentsTooLarge": "Attachments exceed the {{maxSize}} limit"
+      }
     },
     "preferences": {
       "title": "Preferences",

@@ -197,7 +197,10 @@
       "subject": "Objet",
       "message": "Message",
       "encryptedBadge": "Chiffré de bout en bout",
-      "cleartextBadge": "Non chiffré"
+      "cleartextBadge": "Non chiffré",
+      "errors": {
+        "attachmentsTooLarge": "Les pièces jointes dépassent la limite de {{maxSize}}"
+      }
     },
     "preferences": {
       "title": "Préférences",

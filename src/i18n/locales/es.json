@@ -197,7 +197,10 @@
       "subject": "Asunto",
       "message": "Mensaje",
       "encryptedBadge": "Cifrado de extremo a extremo",
-      "cleartextBadge": "Sin cifrar"
+      "cleartextBadge": "Sin cifrar",
+      "errors": {
+        "attachmentsTooLarge": "Los archivos adjuntos superan el límite de {{maxSize}}"
+      }
     },
     "preferences": {
       "title": "Preferencias",

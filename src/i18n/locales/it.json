@@ -197,7 +197,10 @@
       "subject": "Oggetto",
       "message": "Messaggio",
       "encryptedBadge": "Crittografia end-to-end",
-      "cleartextBadge": "Non crittografato"
+      "cleartextBadge": "Non crittografato",
+      "errors": {
+        "attachmentsTooLarge": "Gli allegati superano il limite di {{maxSize}}"
+      }
     },
     "preferences": {
       "title": "Preferenze",

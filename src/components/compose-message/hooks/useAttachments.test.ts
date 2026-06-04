@@ -1,0 +1,165 @@
+import { renderHook, act } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import useAttachments from './useAttachments';
+import { UploadManager } from '@/services/upload-manager';
+import notificationsService, { ToastType } from '@/services/notifications';
+import type { UploadAttachmentCallbacks, UploadHandle } from '@/types/mail/upload-manager';
+import { MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL } from '@/constants';
+
+vi.mock('@/i18n', () => ({ useTranslationContext: () => ({ translate: (key: string) => key }) }));
+
+vi.mock('@/services/notifications', () => ({
+  default: { show: vi.fn() },
+  ToastType: { Success: 'success', Error: 'error', Warning: 'warning', Info: 'info', Loading: 'loading' },
+}));
+
+vi.mock('@/services/upload-manager', () => ({
+  UploadManager: { instance: { run: vi.fn(), retry: vi.fn(), remove: vi.fn(), clear: vi.fn() } },
+}));
+
+const run = vi.mocked(UploadManager.instance.run);
+const retry = vi.mocked(UploadManager.instance.retry);
+const remove = vi.mocked(UploadManager.instance.remove);
+const clear = vi.mocked(UploadManager.instance.clear);
+const show = vi.mocked(notificationsService.show);
+
+let lastCallbacks: UploadAttachmentCallbacks | undefined;
+
+const fileOfSize = (size: number, name = 'a.txt', type = 'text/plain'): File => {
+  const f = new File(['x'], name, { type });
+  Object.defineProperty(f, 'size', { value: size });
+  return f;
+};
+
+describe('Attachments - custom hook', () => {
+  beforeEach(() => {
+    run.mockReset();
+    retry.mockReset();
+    remove.mockReset();
+    clear.mockReset();
+    show.mockReset();
+    lastCallbacks = undefined;
+    run.mockImplementation((files: File[], callbacks: UploadAttachmentCallbacks): UploadHandle[] => {
+      lastCallbacks = callbacks;
+      return files.map((file, i) => ({ id: `id-${i}`, file }));
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  describe('Adding files', () => {
+    test('When files are added, then files are handled as expected', () => {
+      const f1 = fileOfSize(100, '1.txt');
+      const f2 = fileOfSize(200, '2.bin', 'application/octet-stream');
+      const { result } = renderHook(() => useAttachments());
+
+      act(() => result.current.addFiles([f1, f2]));
+
+      expect(run).toHaveBeenCalledWith([f1, f2], expect.any(Object));
+      expect(result.current.attachments).toEqual([
+        { id: 'id-0', name: '1.txt', size: 100, type: 'text/plain', status: 'uploading' },
+        { id: 'id-1', name: '2.bin', size: 200, type: 'application/octet-stream', status: 'uploading' },
+      ]);
+      expect(result.current.totalSize).toBe(f1.size + f2.size);
+      expect(result.current.isUploading).toBe(true);
+      expect(result.current.hasErrors).toBe(false);
+
+      act(() => {
+        lastCallbacks?.onSuccess('id-0', 'blob-0');
+        lastCallbacks?.onSuccess('id-1', 'blob-1');
+      });
+
+      expect(result.current.totalSize).toBe(300);
+    });
+
+    test('When the new batch would exceed 25 MB total, then it shows a warning toast and does not enqueue', () => {
+      const big = fileOfSize(MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL + 1);
+      const { result } = renderHook(() => useAttachments());
+
+      act(() => result.current.addFiles([big]));
+
+      expect(show).toHaveBeenCalledWith({
+        text: 'modals.composeMessageDialog.errors.attachmentsTooLarge',
+        type: ToastType.Warning,
+      });
+      expect(run).not.toHaveBeenCalled();
+      expect(result.current.attachments).toHaveLength(0);
+    });
+
+    test('When the cumulative size reaches the 25 MB limit, then a subsequent batch is rejected', () => {
+      const half = fileOfSize(MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL / 2);
+      const { result } = renderHook(() => useAttachments());
+
+      act(() => result.current.addFiles([half]));
+      act(() => lastCallbacks?.onSuccess('id-0', 'blob-0'));
+      act(() => result.current.addFiles([fileOfSize(MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL / 2 + 1)]));
+
+      expect(result.current.attachments).toHaveLength(1);
+      expect(show).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('upload callbacks', () => {
+    test('When the manager reports success, then the attachment moves to done and the id of the blob is stored', () => {
+      const { result } = renderHook(() => useAttachments());
+      act(() => result.current.addFiles([fileOfSize(10)]));
+
+      act(() => lastCallbacks?.onSuccess('id-0', 'blob-1'));
+
+      expect(result.current.attachments[0]).toMatchObject({ status: 'done', blobId: 'blob-1' });
+      expect(result.current.isUploading).toBe(false);
+      expect(result.current.hasErrors).toBe(false);
+    });
+
+    test('When the manager reports an error, then the attachment moves to error', () => {
+      const { result } = renderHook(() => useAttachments());
+      act(() => result.current.addFiles([fileOfSize(10)]));
+
+      act(() => lastCallbacks?.onError('id-0', new Error('boom')));
+
+      expect(result.current.attachments[0].status).toBe('error');
+      expect(result.current.hasErrors).toBe(true);
+      expect(result.current.isUploading).toBe(false);
+    });
+  });
+
+  describe('retry', () => {
+    test('When retry is called on a failed attachment, then it goes back to uploading and the manager is notified', () => {
+      const { result } = renderHook(() => useAttachments());
+      act(() => result.current.addFiles([fileOfSize(10)]));
+      act(() => lastCallbacks?.onError('id-0', new Error('x')));
+
+      act(() => result.current.retry('id-0'));
+
+      expect(retry).toHaveBeenCalledWith('id-0', expect.any(Object));
+      expect(result.current.attachments[0].status).toBe('uploading');
+    });
+  });
+
+  describe('remove', () => {
+    test('When remove is called, then the attachment is dropped and the manager is notified', () => {
+      const { result } = renderHook(() => useAttachments());
+      act(() => result.current.addFiles([fileOfSize(10, '1.txt'), fileOfSize(20, '2.txt')]));
+
+      act(() => result.current.remove('id-0'));
+
+      expect(remove).toHaveBeenCalledWith('id-0');
+      expect(result.current.attachments).toHaveLength(1);
+      expect(result.current.attachments[0].id).toBe('id-1');
+    });
+  });
+
+  describe('clear', () => {
+    test('When clear is called, then every attachment is removed from the manager and state', () => {
+      const { result } = renderHook(() => useAttachments());
+      act(() => result.current.addFiles([fileOfSize(10, '1.txt'), fileOfSize(20, '2.txt')]));
+
+      act(() => result.current.clear());
+
+      expect(clear).toHaveBeenCalledTimes(1);
+      expect(result.current.attachments).toHaveLength(0);
+    });
+  });
+});

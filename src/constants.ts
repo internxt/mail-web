@@ -10,3 +10,4 @@ export const DEFAULT_USER_NAME = 'My Internxt';
 export const INTERNXT_EMAIL_DOMAINS = ['@inxt.me', '@inxt.eu', '@encrypt.eu'] as const;
 
 export const DEFAULT_FOLDER_LIMIT = 15;
+export const MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL = 25 * 1024 * 1024;

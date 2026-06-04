@@ -1,8 +1,7 @@
-import type { UploadAttachmentResponse } from '@internxt/sdk/dist/mail/types';
 import type { RequestCanceler } from '@internxt/sdk/dist/shared/http/types';
 
 export type UploadAttachmentCallbacks = {
-  onSuccess: (id: string, result: UploadAttachmentResponse) => void;
+  onSuccess: (id: string, blobId: string) => void;
   onError: (id: string, error: unknown) => void;
 };
 
