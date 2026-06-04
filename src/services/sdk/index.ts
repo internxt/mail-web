@@ -1,5 +1,5 @@
 import { Auth, Drive, MailApi } from '@internxt/sdk';
-import type { ApiSecurity, AppDetails } from '@internxt/sdk/dist/shared';
+import { HttpClient, type ApiSecurity, type AppDetails } from '@internxt/sdk/dist/shared';
 import packageJson from '../../../package.json';
 import { ConfigService } from '../config';
 import { LocalStorageService } from '../local-storage';
@@ -7,6 +7,8 @@ import { store } from '@/store';
 import { logoutThunk } from '@/store/slices/user/thunks';
 
 export type SdkManagerApiSecurity = ApiSecurity & { newToken: string };
+
+HttpClient.enableGlobalRetry();
 
 export class SdkManager {
   public static readonly instance: SdkManager = new SdkManager();
