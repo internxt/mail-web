@@ -62,7 +62,7 @@ describe('Attachments - custom hook', () => {
         { id: 'id-0', name: '1.txt', size: 100, type: 'text/plain', status: 'uploading' },
         { id: 'id-1', name: '2.bin', size: 200, type: 'application/octet-stream', status: 'uploading' },
       ]);
-      expect(result.current.totalSize).toBe(0);
+      expect(result.current.totalSize).toBe(f1.size + f2.size);
       expect(result.current.isUploading).toBe(true);
       expect(result.current.hasErrors).toBe(false);
 

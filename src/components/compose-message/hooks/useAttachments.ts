@@ -20,10 +20,7 @@ const useAttachments = () => {
   const { translate } = useTranslationContext();
   const [attachments, setAttachments] = useState<AttachmentTask[]>([]);
 
-  const totalSize = useMemo(
-    () => attachments.filter((a) => a.status === 'done').reduce((s, a) => s + a.size, 0),
-    [attachments],
-  );
+  const totalSize = useMemo(() => attachments.reduce((s, a) => s + a.size, 0), [attachments]);
   const isUploading = useMemo(() => attachments.some((a) => a.status === 'uploading'), [attachments]);
   const hasErrors = useMemo(() => attachments.some((a) => a.status === 'error'), [attachments]);
 
