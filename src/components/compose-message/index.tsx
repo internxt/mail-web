@@ -1,16 +1,18 @@
 import { LockKeyIcon, PaperclipIcon, WarningIcon, XIcon } from '@phosphor-icons/react';
-import { useCallback } from 'react';
+import { useCallback, useRef, type ChangeEvent } from 'react';
 import type { Recipient } from './types';
 import { RecipientInput } from './components/RecipientInput';
+import { AttachmentList } from './components/AttachmentList';
 import { Button, Input } from '@internxt/ui';
 import RichTextEditor from './components/RichTextEditor';
 import { EditorBar } from './components/editorBar';
 import { ActionDialog, useActionDialog } from '@/context/dialog-manager';
 import { useTranslationContext } from '@/i18n';
 import useComposeMessage from './hooks/useComposeMessage';
-import useComposeSend from './hooks/useComposeSend';
+import useAttachments from './hooks/useAttachments';
 import { useEditor } from '@tiptap/react';
 import { EDITOR_CONFIG } from './config';
+import useComposeSend from './hooks/useComposeSend';
 
 export interface DraftMessage {
   subject?: string;
@@ -41,23 +43,45 @@ export const ComposeMessageDialog = () => {
     onShowBccRecipient,
     onShowCcRecipient,
     onSubjectChange,
+    clear: clearComposeMessage,
   } = useComposeMessage();
 
   const title = draft.subject ?? translate('modals.composeMessageDialog.title');
   const editor = useEditor(EDITOR_CONFIG);
 
-  const onClose = useCallback(() => {
-    onComposeMessageDialogClose(ActionDialog.ComposeMessage);
-  }, [onComposeMessageDialogClose]);
+  const {
+    attachments,
+    totalSize: attachmentsTotalSize,
+    isUploading: isUploadingAttachments,
+    hasErrors: hasAttachmentErrors,
+    addFiles: addAttachmentFiles,
+    retry: retryAttachment,
+    remove: removeAttachment,
+    clear: clearAttachments,
+  } = useAttachments();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { encryptionState, isSending, send } = useComposeSend({
-    toRecipients,
-    ccRecipients,
+  const onClose = useCallback(() => {
+    clearAttachments();
+    clearComposeMessage();
+    editor.commands.clearContent();
+    onComposeMessageDialogClose(ActionDialog.ComposeMessage);
+  }, [editor, clearComposeMessage, onComposeMessageDialogClose, clearAttachments]);
+
+  const { send, encryptionState, isSending } = useComposeSend({
+    attachments,
     bccRecipients,
-    subject: subjectValue,
+    ccRecipients,
     editor,
+    subject: subjectValue,
+    toRecipients,
     onSent: onClose,
   });
+
+  const onFilesPicked = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.length) addAttachmentFiles(e.target.files);
+    e.target.value = '';
+  };
 
   if (!editor) return null;
 
@@ -136,7 +160,13 @@ export const ComposeMessageDialog = () => {
         <div className="pt-4">
           <RichTextEditor editor={editor} />
         </div>
-        {/* !TODO: Handle attachments */}
+        <AttachmentList
+          attachments={attachments}
+          totalSize={attachmentsTotalSize}
+          onRemove={removeAttachment}
+          onRetry={retryAttachment}
+        />
+        <input ref={fileInputRef} type="file" multiple hidden onChange={onFilesPicked} />
 
         <div className="mt-5 flex justify-end items-center space-x-2">
           {encryptionState === 'encrypted' && (
@@ -157,10 +187,15 @@ export const ComposeMessageDialog = () => {
               {translate('modals.composeMessageDialog.cleartextBadge')}
             </span>
           )}
-          <Button variant="ghost" onClick={() => {}} disabled={isSending}>
+          <Button variant="ghost" onClick={() => fileInputRef.current?.click()} disabled={isSending}>
             <PaperclipIcon size={24} />
           </Button>
-          <Button onClick={send} loading={isSending} disabled={isSending} variant={'primary'}>
+          <Button
+            onClick={send}
+            loading={isSending}
+            disabled={isSending || isUploadingAttachments || hasAttachmentErrors}
+            variant={'primary'}
+          >
             {translate('actions.send')}
           </Button>
         </div>

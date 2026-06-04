@@ -45,6 +45,15 @@ const useComposeMessage = (draft?: DraftMessage) => {
     setBccRecipients((prev) => prev.filter((r) => r.id !== id));
   }, []);
 
+  const clear = () => {
+    setSubjectValue('');
+    setToRecipients([]);
+    setCcRecipients([]);
+    setBccRecipients([]);
+    setShowCc(false);
+    setShowBcc(false);
+  };
+
   return {
     subjectValue,
     toRecipients,
@@ -61,6 +70,7 @@ const useComposeMessage = (draft?: DraftMessage) => {
     onRemoveCcRecipient,
     onAddBccRecipient,
     onRemoveBccRecipient,
+    clear,
   };
 };
 

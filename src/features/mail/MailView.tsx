@@ -149,9 +149,11 @@ const MailView = ({ folder }: MailViewProps) => {
             cc={cc.map((u) => ({ name: u.name ?? '', email: u.email }))}
             bcc={bcc.map((u) => ({ name: u.name ?? '', email: u.email }))}
             mail={{
+              id: activeMail.id,
               subject: decrypted.subject || activeMail.subject,
               receivedAt: activeMail.receivedAt,
               htmlBody: decrypted.htmlBody,
+              attachments: activeMail.attachments,
               isEncrypted: decrypted.isEncrypted,
               isDecrypting: decrypted.isDecrypting,
               decryptError: decrypted.decryptError,

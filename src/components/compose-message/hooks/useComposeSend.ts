@@ -12,6 +12,7 @@ import { MailEncryptionService, type RecipientPublicKey } from '@/services/mail-
 import notificationsService, { ToastType } from '@/services/notifications';
 import { useTranslationContext } from '@/i18n';
 import type { Recipient } from '../types';
+import type { AttachmentTask } from './useAttachments';
 
 export type EncryptionState = 'none' | 'unknown' | 'encrypted' | 'cleartext';
 
@@ -23,6 +24,7 @@ interface UseComposeSendParams {
   bccRecipients: Recipient[];
   subject: string;
   editor: Editor | null;
+  attachments: AttachmentTask[];
   onSent: () => void;
 }
 
@@ -43,6 +45,7 @@ export const useComposeSend = ({
   bccRecipients,
   subject,
   editor,
+  attachments,
   onSent,
 }: UseComposeSendParams): UseComposeSendResult => {
   const { translate } = useTranslationContext();
@@ -85,6 +88,15 @@ export const useComposeSend = ({
       return;
     }
 
+    const attachmentsToSend: SendEmailRequest['attachments'] = attachments
+      .filter((a): a is AttachmentTask & { blobId: string } => a.status === 'done' && !!a.blobId)
+      .map((a) => ({
+        blobId: a.blobId,
+        name: a.name,
+        size: a.size,
+        type: a.type,
+      }));
+
     const htmlBody = editor?.getHTML() ?? '';
     const textBody = editor?.getText() ?? '';
     const cleartextPayload: SendEmailRequest = {
@@ -94,6 +106,7 @@ export const useComposeSend = ({
       subject,
       textBody: textBody || undefined,
       htmlBody: htmlBody || undefined,
+      attachments: attachmentsToSend,
     };
 
     try {
@@ -140,6 +153,7 @@ export const useComposeSend = ({
           bcc: bccRecipients.length ? bccRecipients.map(toEmailAddress) : undefined,
           subject,
           encryption,
+          attachments: attachmentsToSend,
         }).unwrap();
       } else {
         await sendEmail(cleartextPayload).unwrap();
@@ -160,6 +174,7 @@ export const useComposeSend = ({
     subject,
     encryptionState,
     senderKeys,
+    attachments,
     triggerLookup,
     sendEmail,
     onSent,

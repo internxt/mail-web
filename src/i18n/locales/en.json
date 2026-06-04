@@ -118,6 +118,9 @@
       "bcc": "BCC",
       "decrypting": "Decrypting message…",
       "decryptFailed": "Could not decrypt this message",
+      "errors": {
+        "downloadAttachmentFailed": "Could not download the attachment"
+      },
       "emptyEmail": {
         "unreadEmails": {
           "title": "Unread messages",
@@ -197,7 +200,13 @@
       "encryptedBadge": "End-to-end encrypted",
       "cleartextBadge": "Not encrypted",
       "errors": {
+        "noRecipients": "Add at least one recipient before sending",
+        "sendFailed": "Could not send the email",
+        "keyLookupFailed": "Could not fetch recipient keys",
         "attachmentsTooLarge": "Attachments exceed the {{maxSize}} limit"
+      },
+      "attachments": {
+        "totalSize": "{{used}} of {{max}}"
       }
     },
     "preferences": {

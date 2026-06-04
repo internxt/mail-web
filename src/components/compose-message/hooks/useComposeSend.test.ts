@@ -41,6 +41,7 @@ const renderSend = (overrides: Partial<Parameters<typeof useComposeSend>[0]> = {
       bccRecipients: [],
       subject: 'Hi',
       editor,
+      attachments: [],
       onSent,
       ...overrides,
     }),
@@ -172,14 +173,12 @@ describe('useComposeSend', () => {
     mocks.triggerLookup.mockReturnValue({
       unwrap: () => Promise.resolve([{ address: 'bob@inxt.me', publicKey: 'bob-pk' }]),
     });
-    const buildSpy = vi
-      .spyOn(MailEncryptionService.instance, 'buildEncryptionBlock')
-      .mockResolvedValue({
-        version: 'v1',
-        encryptedText: 'ct',
-        encryptedPreview: 'cp',
-        wrappedKeys: [],
-      } as EncryptionBlock);
+    const buildSpy = vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue({
+      version: 'v1',
+      encryptedText: 'ct',
+      encryptedPreview: 'cp',
+      wrappedKeys: [],
+    } as EncryptionBlock);
 
     const { result, onSent } = renderSend({ toRecipients: [recipient('bob@inxt.me')] });
 

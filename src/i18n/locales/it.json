@@ -120,6 +120,9 @@
       "bcc": "CCN",
       "decrypting": "Decrittazione del messaggio…",
       "decryptFailed": "Impossibile decrittare questo messaggio",
+      "errors": {
+        "downloadAttachmentFailed": "Impossibile scaricare l'allegato"
+      },
       "emptyEmail": {
         "unreadEmails": {
           "title": "Messaggi non letti",
@@ -199,7 +202,13 @@
       "encryptedBadge": "Crittografia end-to-end",
       "cleartextBadge": "Non crittografato",
       "errors": {
+        "noRecipients": "Aggiungi almeno un destinatario prima di inviare",
+        "sendFailed": "Impossibile inviare l'email",
+        "keyLookupFailed": "Impossibile recuperare le chiavi del destinatario",
         "attachmentsTooLarge": "Gli allegati superano il limite di {{maxSize}}"
+      },
+      "attachments": {
+        "totalSize": "{{used}} di {{max}}"
       }
     },
     "preferences": {
