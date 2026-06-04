@@ -1,5 +1,5 @@
 import { LockKeyIcon, PaperclipIcon, WarningIcon, XIcon } from '@phosphor-icons/react';
-import { useCallback, useMemo, useRef, type ChangeEvent } from 'react';
+import { useCallback, useRef, type ChangeEvent } from 'react';
 import type { Recipient } from './types';
 import { RecipientInput } from './components/RecipientInput';
 import { AttachmentList } from './components/AttachmentList';
@@ -9,19 +9,10 @@ import { EditorBar } from './components/editorBar';
 import { ActionDialog, useActionDialog } from '@/context/dialog-manager';
 import { useTranslationContext } from '@/i18n';
 import useComposeMessage from './hooks/useComposeMessage';
-import useAttachments, { type AttachmentTask } from './hooks/useAttachments';
+import useAttachments from './hooks/useAttachments';
 import { useEditor } from '@tiptap/react';
 import { EDITOR_CONFIG } from './config';
-import {
-  useGetActiveDomainsQuery,
-  useGetMailAccountKeysQuery,
-  useLazyLookupRecipientKeysQuery,
-  useSendEmailMutation,
-} from '@/store/api/mail';
-import { classifyRecipients, uniqueEmailAddresses } from '@/utils/domain';
-import { MailEncryptionService, type RecipientPublicKey } from '@/services/mail-encryption';
-import notificationsService, { ToastType } from '@/services/notifications';
-import type { EmailAddress, SendEmailRequest } from '@internxt/sdk/dist/mail/types';
+import useComposeSend from './hooks/useComposeSend';
 
 export interface DraftMessage {
   subject?: string;
@@ -30,8 +21,6 @@ export interface DraftMessage {
   bcc?: Recipient[];
   body?: string;
 }
-
-const toEmailAddress = (r: Recipient): EmailAddress => (r.name ? { name: r.name, email: r.email } : { email: r.email });
 
 export const ComposeMessageDialog = () => {
   const { translate } = useTranslationContext();
@@ -54,15 +43,11 @@ export const ComposeMessageDialog = () => {
     onShowBccRecipient,
     onShowCcRecipient,
     onSubjectChange,
+    clear: clearComposeMessage,
   } = useComposeMessage();
 
   const title = draft.subject ?? translate('modals.composeMessageDialog.title');
   const editor = useEditor(EDITOR_CONFIG);
-
-  const { data: activeDomains } = useGetActiveDomainsQuery();
-  const { data: senderKeys } = useGetMailAccountKeysQuery();
-  const [triggerLookup] = useLazyLookupRecipientKeysQuery();
-  const [sendEmail, { isLoading: isSending }] = useSendEmailMutation();
 
   const {
     attachments,
@@ -76,115 +61,27 @@ export const ComposeMessageDialog = () => {
   } = useAttachments();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const onClose = useCallback(() => {
+    clearAttachments();
+    clearComposeMessage();
+    editor.commands.clearContent();
+    onComposeMessageDialogClose(ActionDialog.ComposeMessage);
+  }, [editor, clearComposeMessage, onComposeMessageDialogClose, clearAttachments]);
+
+  const { send, encryptionState, isSending } = useComposeSend({
+    attachments,
+    bccRecipients,
+    ccRecipients,
+    editor,
+    subject: subjectValue,
+    toRecipients,
+    onSent: onClose,
+  });
+
   const onFilesPicked = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.length) addAttachmentFiles(e.target.files);
     e.target.value = '';
   };
-
-  const allRecipients = useMemo(
-    () => [...toRecipients, ...ccRecipients, ...bccRecipients],
-    [toRecipients, ccRecipients, bccRecipients],
-  );
-
-  const encryptionState = useMemo<'none' | 'encrypted' | 'cleartext'>(() => {
-    if (allRecipients.length === 0) return 'none';
-    if (!activeDomains) return 'none';
-    return classifyRecipients(
-      allRecipients.map((r) => r.email),
-      activeDomains,
-    ).allInternxt
-      ? 'encrypted'
-      : 'cleartext';
-  }, [allRecipients, activeDomains]);
-
-  const onClose = useCallback(() => {
-    clearAttachments();
-    onComposeMessageDialogClose(ActionDialog.ComposeMessage);
-  }, [onComposeMessageDialogClose, clearAttachments]);
-
-  const handlePrimaryAction = useCallback(async () => {
-    if (allRecipients.length === 0) {
-      notificationsService.show({
-        text: translate('modals.composeMessageDialog.errors.noRecipients'),
-        type: ToastType.Warning,
-      });
-      return;
-    }
-
-    const attachmentsToSend: SendEmailRequest['attachments'] = attachments
-      .filter((a): a is AttachmentTask & { blobId: string } => a.status === 'done' && !!a.blobId)
-      .map((a) => ({
-        blobId: a.blobId,
-        name: a.name,
-        size: a.size,
-        type: a.type,
-      }));
-
-    const htmlBody = editor?.getHTML() ?? '';
-    const textBody = editor?.getText() ?? '';
-    const cleartextPayload: SendEmailRequest = {
-      to: toRecipients.map(toEmailAddress),
-      cc: ccRecipients.length ? ccRecipients.map(toEmailAddress) : undefined,
-      bcc: bccRecipients.length ? bccRecipients.map(toEmailAddress) : undefined,
-      subject: subjectValue,
-      textBody: textBody || undefined,
-      htmlBody: htmlBody || undefined,
-      attachments: attachmentsToSend,
-    };
-
-    try {
-      if (encryptionState === 'encrypted' && senderKeys?.address && senderKeys.publicKey) {
-        const uniqueAddresses = uniqueEmailAddresses(allRecipients.map((r) => r.email));
-        const lookup = await triggerLookup({ addresses: uniqueAddresses }).unwrap();
-        const usable = lookup.filter((r): r is { address: string; publicKey: string } => Boolean(r.publicKey));
-
-        if (usable.length === uniqueAddresses.length) {
-          const recipientsWithKeys: RecipientPublicKey[] = [
-            ...usable,
-            { address: senderKeys.address, publicKey: senderKeys.publicKey },
-          ];
-          const encryption = await MailEncryptionService.instance.buildEncryptionBlock(
-            { body: htmlBody || textBody, previewText: textBody },
-            recipientsWithKeys,
-          );
-
-          await sendEmail({
-            to: toRecipients.map(toEmailAddress),
-            cc: ccRecipients.length ? ccRecipients.map(toEmailAddress) : undefined,
-            bcc: bccRecipients.length ? bccRecipients.map(toEmailAddress) : undefined,
-            subject: subjectValue,
-            encryption,
-            attachments: attachmentsToSend,
-          }).unwrap();
-        } else {
-          await sendEmail(cleartextPayload).unwrap();
-        }
-      } else {
-        await sendEmail(cleartextPayload).unwrap();
-      }
-      onClose();
-    } catch (error) {
-      console.error('[SEND EMAIL] Error while sending an email: ', error);
-      notificationsService.show({
-        text: translate('modals.composeMessageDialog.errors.sendFailed'),
-        type: ToastType.Error,
-      });
-    }
-  }, [
-    attachments,
-    allRecipients,
-    editor,
-    toRecipients,
-    ccRecipients,
-    bccRecipients,
-    subjectValue,
-    encryptionState,
-    senderKeys,
-    triggerLookup,
-    sendEmail,
-    onClose,
-    translate,
-  ]);
 
   if (!editor) return null;
 
@@ -294,7 +191,7 @@ export const ComposeMessageDialog = () => {
             <PaperclipIcon size={24} />
           </Button>
           <Button
-            onClick={handlePrimaryAction}
+            onClick={send}
             loading={isSending}
             disabled={isSending || isUploadingAttachments || hasAttachmentErrors}
             variant={'primary'}
