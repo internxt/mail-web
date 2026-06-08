@@ -71,6 +71,7 @@ export class UploadManager {
       });
       job.canceler = undefined;
       if (job.cancelled) return;
+      this.jobs.delete(job.id);
       this.callbacks.onSuccess(job.id, result.blobId);
     } catch (error) {
       job.canceler = undefined;
