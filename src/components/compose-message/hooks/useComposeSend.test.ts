@@ -1,7 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import type { Editor } from '@tiptap/react';
-import type { EncryptionBlock } from '@internxt/sdk/dist/mail/types';
 import useComposeSend from './useComposeSend';
 import { MailEncryptionService } from '@/services/mail-encryption';
 import notificationsService from '@/services/notifications';
@@ -42,6 +41,7 @@ const renderSend = (overrides: Partial<Parameters<typeof useComposeSend>[0]> = {
       subject: 'Hi',
       editor,
       attachments: [],
+      attachmentsSessionKey: new Uint8Array(32),
       onSent,
       ...overrides,
     }),
@@ -178,7 +178,8 @@ describe('useComposeSend', () => {
       encryptedText: 'ct',
       encryptedPreview: 'cp',
       wrappedKeys: [],
-    } as EncryptionBlock);
+      attachmentWrappedKeys: [],
+    });
 
     const { result, onSent } = renderSend({ toRecipients: [recipient('bob@inxt.me')] });
 
@@ -194,6 +195,7 @@ describe('useComposeSend', () => {
         { address: 'bob@inxt.me', publicKey: 'bob-pk' },
         { address: 'me@inxt.me', publicKey: 'sender-pk' },
       ]),
+      expect.any(Uint8Array),
     );
     expect(mocks.sendEmail).toHaveBeenCalledWith(
       expect.objectContaining({ subject: 'Hi', encryption: expect.objectContaining({ version: 'v1' }) }),

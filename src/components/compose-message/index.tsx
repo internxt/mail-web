@@ -1,5 +1,6 @@
 import { LockKeyIcon, PaperclipIcon, WarningIcon, XIcon } from '@phosphor-icons/react';
-import { useCallback, useRef, type ChangeEvent } from 'react';
+import { useCallback, useRef, useState, type ChangeEvent } from 'react';
+import { genSymmetricKey } from 'internxt-crypto';
 import type { Recipient } from './types';
 import { RecipientInput } from './components/RecipientInput';
 import { AttachmentList } from './components/AttachmentList';
@@ -49,6 +50,8 @@ export const ComposeMessageDialog = () => {
   const title = draft.subject ?? translate('modals.composeMessageDialog.title');
   const editor = useEditor(EDITOR_CONFIG);
 
+  const [attachmentsSessionKey] = useState<Uint8Array>(() => genSymmetricKey());
+
   const {
     attachments,
     totalSize: attachmentsTotalSize,
@@ -58,7 +61,7 @@ export const ComposeMessageDialog = () => {
     retry: retryAttachment,
     remove: removeAttachment,
     clear: clearAttachments,
-  } = useAttachments();
+  } = useAttachments(attachmentsSessionKey);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const onClose = useCallback(() => {
@@ -70,6 +73,7 @@ export const ComposeMessageDialog = () => {
 
   const { send, encryptionState, isSending } = useComposeSend({
     attachments,
+    attachmentsSessionKey,
     bccRecipients,
     ccRecipients,
     editor,

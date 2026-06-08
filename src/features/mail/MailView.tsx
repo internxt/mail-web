@@ -157,6 +157,7 @@ const MailView = ({ folder }: MailViewProps) => {
               isEncrypted: decrypted.isEncrypted,
               isDecrypting: decrypted.isDecrypting,
               decryptError: decrypted.decryptError,
+              envelope: decrypted.envelope,
             }}
           />
         )}

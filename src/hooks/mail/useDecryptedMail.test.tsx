@@ -49,6 +49,7 @@ describe('useDecryptedMail', () => {
       isEncrypted: false,
       isDecrypting: false,
       decryptError: false,
+      envelope: null,
     });
   });
 

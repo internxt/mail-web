@@ -25,6 +25,7 @@ interface UseComposeSendParams {
   subject: string;
   editor: Editor | null;
   attachments: AttachmentTask[];
+  attachmentsSessionKey: Uint8Array;
   onSent: () => void;
 }
 
@@ -46,6 +47,7 @@ export const useComposeSend = ({
   subject,
   editor,
   attachments,
+  attachmentsSessionKey,
   onSent,
 }: UseComposeSendParams): UseComposeSendResult => {
   const { translate } = useTranslationContext();
@@ -146,7 +148,9 @@ export const useComposeSend = ({
         const encryption = await MailEncryptionService.instance.buildEncryptionBlock(
           { body: htmlBody || textBody, previewText: textBody },
           recipientsWithKeys,
+          attachmentsSessionKey,
         );
+
         await sendEmail({
           to: toRecipients.map(toEmailAddress),
           cc: ccRecipients.length ? ccRecipients.map(toEmailAddress) : undefined,
@@ -175,6 +179,7 @@ export const useComposeSend = ({
     encryptionState,
     senderKeys,
     attachments,
+    attachmentsSessionKey,
     triggerLookup,
     sendEmail,
     onSent,

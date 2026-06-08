@@ -1,4 +1,4 @@
-import { base64ToUint8Array, type HybridKeyPair } from 'internxt-crypto';
+import { base64ToUint8Array, encryptSymmetrically, type HybridKeyPair } from 'internxt-crypto';
 import {
   decryptEmail,
   decryptKeysHybrid,
@@ -13,6 +13,10 @@ export type RecipientPublicKey = { address: string; publicKey: string };
 export type EmailContent = { body: string; previewText: string };
 type WrappedKey = EncryptionBlock['wrappedKeys'][number];
 export type EncryptedSummary = { encryptedPreview: string; wrappedKeys: WrappedKey[] };
+interface EncryptedAttachment {
+  sessionKey: Uint8Array;
+  encryptedFile: Uint8Array;
+}
 const PREVIEW_PLAINTEXT_LENGTH = 256;
 
 export const ENCRYPTED_EMAIL_PREFIX = 'INTERNXT-ENCRYPTED-EMAIL-v1';
@@ -46,11 +50,20 @@ export class MailEncryptionService {
    * Only the body and preview are encrypted; the subject travels as cleartext so
    * the backend can index it.
    *
-   * The wrapped keys ship as a de-identified, order-randomized array carrying no
-   * recipient address, so the envelope hides the recipient set (Bcc included) —
-   * each recipient finds their entry by trial decryption (see `decryptEnvelope`).
+   * Both `wrappedKeys` and `attachmentWrappedKeys` ship as de-identified,
+   * order-randomized arrays carrying no recipient address, so the envelope
+   * hides the recipient set (Bcc included) — each recipient finds their entry
+   * by trial decryption (see `decryptEnvelope`).
+   *
+   * `attachmentsSessionKey` is the symmetric key used to encrypt every
+   * attachment blob in this email. It is wrapped per-recipient in
+   * `attachmentWrappedKeys`, kept separate from the body key on purpose.
    */
-  async buildEncryptionBlock(content: EmailContent, recipients: RecipientPublicKey[]): Promise<EncryptionBlock> {
+  async buildEncryptionBlock(
+    content: EmailContent,
+    recipients: RecipientPublicKey[],
+    attachmentsSessionKey: Uint8Array,
+  ): Promise<EncryptionBlock> {
     if (recipients.length === 0) {
       throw new BuildEncryptionBlockError();
     }
@@ -62,23 +75,26 @@ export class MailEncryptionService {
       encryptionKey,
     );
 
-    const wrapped = await Promise.all(
-      recipients.map(async (r) => {
-        const enc = await encryptKeysHybrid(encryptionKey, {
-          email: r.address,
-          publicHybridKey: base64ToUint8Array(r.publicKey),
-        });
-        return { hybridCiphertext: enc.hybridCiphertext, encryptedKey: enc.encryptedKey };
-      }),
-    );
-    const wrappedKeys: WrappedKey[] = secureShuffle(wrapped);
+    const [wrappedKeys, attachmentWrappedKeys] = await Promise.all([
+      Promise.all(recipients.map((r) => this.wrapKeyForRecipient(encryptionKey, r))).then(secureShuffle),
+      Promise.all(recipients.map((r) => this.wrapKeyForRecipient(attachmentsSessionKey, r))).then(secureShuffle),
+    ]);
 
     return {
       version: 'v1',
       encryptedText: encEmail.encText,
       encryptedPreview,
       wrappedKeys,
+      attachmentWrappedKeys,
     };
+  }
+
+  private async wrapKeyForRecipient(key: Uint8Array, recipient: RecipientPublicKey): Promise<WrappedKey> {
+    const enc = await encryptKeysHybrid(key, {
+      email: recipient.address,
+      publicHybridKey: base64ToUint8Array(recipient.publicKey),
+    });
+    return { hybridCiphertext: enc.hybridCiphertext, encryptedKey: enc.encryptedKey };
   }
 
   isEncryptedEmailBody(textBody: string | null | undefined): boolean {
@@ -135,5 +151,63 @@ export class MailEncryptionService {
    */
   decryptSummaryPreview(summary: EncryptedSummary, keypair: HybridKeyPair): Promise<string> {
     return this.trialDecrypt(summary.wrappedKeys, summary.encryptedPreview, keypair);
+  }
+
+  /**
+   * Trial-decrypts a wrapped key array and returns the raw key bytes. Same
+   * de-identified semantics as `trialDecrypt`, but stops at the unwrapped key
+   * rather than continuing to decrypt a payload with it.
+   */
+  private async trialDecryptKey(wrappedKeys: WrappedKey[], keypair: HybridKeyPair): Promise<Uint8Array> {
+    for (const wrapped of wrappedKeys) {
+      try {
+        return await decryptKeysHybrid(
+          { hybridCiphertext: wrapped.hybridCiphertext, encryptedKey: wrapped.encryptedKey, encryptedForEmail: '' },
+          keypair.secretKey,
+        );
+      } catch {
+        // No op, try the next one.
+      }
+    }
+    throw new EnvelopeDecryptionError();
+  }
+
+  /**
+   * Recovers the symmetric session key used to encrypt every attachment in the
+   * email. Pair with `decryptSymmetrically` over the downloaded blob bytes.
+   * @throws {EnvelopeDecryptionError} if the caller is not a recipient.
+   */
+  decryptAttachmentsSessionKey(envelope: EncryptionBlock, keypair: HybridKeyPair): Promise<Uint8Array> {
+    return this.trialDecryptKey(envelope.attachmentWrappedKeys, keypair);
+  }
+
+  /**
+   * Encrypt the attachment
+   * @param sessionKey - The session key needed to encrypt the attachment
+   * @param file - The attachment we want to encrypt
+   * @returns - The encrypted attachment in the form of `EncryptedAttachment`
+   */
+  async encryptAttachment(sessionKey: Uint8Array<ArrayBufferLike>, file: File): Promise<EncryptedAttachment> {
+    const fileBytes = new Uint8Array(await file.arrayBuffer());
+    const encryptedFile = await encryptSymmetrically(sessionKey, fileBytes);
+    return {
+      sessionKey,
+      encryptedFile,
+    };
+  }
+
+  /**
+   * Encrypt the session key for the attachments
+   * @param sessionKey - The session key to encrypt
+   * @param email - The email of the user to encrypt for
+   * @param userPubKey - The user public key of the user to encrypt for
+   * @returns - The hybrid ciphertext and encrypted key
+   */
+  async encryptAttachmentSessionKey(sessionKey: Uint8Array<ArrayBufferLike>, email: string, userPubKey: string) {
+    const enc = await encryptKeysHybrid(sessionKey, {
+      email,
+      publicHybridKey: base64ToUint8Array(userPubKey),
+    });
+    return { hybridCiphertext: enc.hybridCiphertext, encryptedKey: enc.encryptedKey };
   }
 }
