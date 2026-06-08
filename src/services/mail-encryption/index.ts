@@ -195,19 +195,4 @@ export class MailEncryptionService {
       encryptedFile,
     };
   }
-
-  /**
-   * Encrypt the session key for the attachments
-   * @param sessionKey - The session key to encrypt
-   * @param email - The email of the user to encrypt for
-   * @param userPubKey - The user public key of the user to encrypt for
-   * @returns - The hybrid ciphertext and encrypted key
-   */
-  async encryptAttachmentSessionKey(sessionKey: Uint8Array<ArrayBufferLike>, email: string, userPubKey: string) {
-    const enc = await encryptKeysHybrid(sessionKey, {
-      email,
-      publicHybridKey: base64ToUint8Array(userPubKey),
-    });
-    return { hybridCiphertext: enc.hybridCiphertext, encryptedKey: enc.encryptedKey };
-  }
 }
