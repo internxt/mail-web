@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import type { Editor } from '@tiptap/react';
 import useComposeSend from './useComposeSend';
 import { MailEncryptionService } from '@/services/mail-encryption';
+import { ConfigService } from '@/services/config';
 import notificationsService from '@/services/notifications';
 import type { Recipient } from '../types';
 
@@ -30,6 +31,14 @@ vi.mock('@/services/notifications', () => ({
 const editor = { getHTML: () => '<p>body</p>', getText: () => 'body' } as unknown as Editor;
 const recipient = (email: string): Recipient => ({ id: email, email });
 const show = vi.mocked(notificationsService.show);
+
+const mockEncryptionBlock = {
+  version: 'v1',
+  encryptedText: 'ct',
+  encryptedPreview: 'cp',
+  wrappedKeys: [],
+  attachmentWrappedKeys: [],
+};
 
 const renderSend = (overrides: Partial<Parameters<typeof useComposeSend>[0]> = {}) => {
   const onSent = vi.fn();
@@ -74,9 +83,8 @@ describe('useComposeSend', () => {
     expect(onSent).not.toHaveBeenCalled();
   });
 
-  test('When the active domains have not resolved, then the send is blocked to avoid a cleartext downgrade', async () => {
+  test('When the active domains have not resolved, then the send is blocked', async () => {
     mocks.activeDomains = undefined;
-
     const { result, onSent } = renderSend({ toRecipients: [recipient('bob@inxt.me')] });
 
     expect(result.current.encryptionState).toBe('unknown');
@@ -90,9 +98,8 @@ describe('useComposeSend', () => {
     expect(onSent).not.toHaveBeenCalled();
   });
 
-  test('When sending encrypted but the sender keys are missing, then it reports a key lookup failure', async () => {
+  test('When the sender keys are missing, then it reports a key lookup failure', async () => {
     mocks.senderKeys = undefined;
-
     const { result, onSent } = renderSend({ toRecipients: [recipient('bob@inxt.me')] });
 
     await act(async () => {
@@ -104,25 +111,8 @@ describe('useComposeSend', () => {
     expect(onSent).not.toHaveBeenCalled();
   });
 
-  test('When the recipient key lookup throws, then it reports a key lookup failure rather than a send failure', async () => {
+  test('When the recipient key lookup throws, then it reports a key lookup failure', async () => {
     mocks.triggerLookup.mockReturnValue({ unwrap: () => Promise.reject(new Error('network')) });
-
-    const { result, onSent } = renderSend({ toRecipients: [recipient('bob@inxt.me')] });
-
-    await act(async () => {
-      await result.current.send();
-    });
-
-    expect(show).toHaveBeenCalledWith(expect.objectContaining({ text: 'errors.mail.keyLookupFailed' }));
-    expect(mocks.sendEmail).not.toHaveBeenCalled();
-    expect(onSent).not.toHaveBeenCalled();
-  });
-
-  test('When some recipients have no key, then it reports a key lookup failure', async () => {
-    mocks.triggerLookup.mockReturnValue({
-      unwrap: () => Promise.resolve([{ address: 'bob@inxt.me', publicKey: null }]),
-    });
-
     const { result, onSent } = renderSend({ toRecipients: [recipient('bob@inxt.me')] });
 
     await act(async () => {
@@ -135,11 +125,13 @@ describe('useComposeSend', () => {
   });
 
   test('When the send mutation fails, then it reports a send failure and does not close the dialog', async () => {
+    mocks.triggerLookup.mockReturnValue({
+      unwrap: () => Promise.resolve([{ address: 'bob@inxt.me', publicKey: 'bob-pk' }]),
+    });
+    vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
     mocks.sendEmail.mockReturnValue({ unwrap: () => Promise.reject(new Error('boom')) });
 
-    const { result, onSent } = renderSend({ toRecipients: [recipient('bob@gmail.com')] });
-
-    expect(result.current.encryptionState).toBe('cleartext');
+    const { result, onSent } = renderSend({ toRecipients: [recipient('bob@inxt.me')] });
 
     await act(async () => {
       await result.current.send();
@@ -149,41 +141,16 @@ describe('useComposeSend', () => {
     expect(onSent).not.toHaveBeenCalled();
   });
 
-  test('When all recipients are external, then it sends cleartext and closes the dialog', async () => {
-    const { result, onSent } = renderSend({ toRecipients: [recipient('bob@gmail.com')] });
-
-    expect(result.current.encryptionState).toBe('cleartext');
-
-    await act(async () => {
-      await result.current.send();
-    });
-
-    expect(mocks.sendEmail).toHaveBeenCalledWith(
-      expect.objectContaining({
-        to: [{ email: 'bob@gmail.com' }],
-        subject: 'Hi',
-        htmlBody: '<p>body</p>',
-        textBody: 'body',
-      }),
-    );
-    expect(onSent).toHaveBeenCalled();
-  });
-
-  test('When all recipients are Internxt, then it encrypts the body and sends with the sender included', async () => {
+  test('When all recipients are Internxt, then encryptionState is internxt and body is encrypted', async () => {
     mocks.triggerLookup.mockReturnValue({
       unwrap: () => Promise.resolve([{ address: 'bob@inxt.me', publicKey: 'bob-pk' }]),
     });
-    const buildSpy = vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue({
-      version: 'v1',
-      encryptedText: 'ct',
-      encryptedPreview: 'cp',
-      wrappedKeys: [],
-      attachmentWrappedKeys: [],
-    });
-
+    const buildSpy = vi
+      .spyOn(MailEncryptionService.instance, 'buildEncryptionBlock')
+      .mockResolvedValue(mockEncryptionBlock);
     const { result, onSent } = renderSend({ toRecipients: [recipient('bob@inxt.me')] });
 
-    expect(result.current.encryptionState).toBe('encrypted');
+    expect(result.current.encryptionState).toBe('internxt');
 
     await act(async () => {
       await result.current.send();
@@ -198,8 +165,79 @@ describe('useComposeSend', () => {
       expect.any(Uint8Array),
     );
     expect(mocks.sendEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ subject: 'Hi', encryption: expect.objectContaining({ version: 'v1' }) }),
+      expect.objectContaining({ encryption: expect.objectContaining({ version: 'v1' }), deliveryMode: 'INTERNXT' }),
     );
     expect(onSent).toHaveBeenCalled();
+  });
+
+  describe('external recipients', () => {
+    let getVariable: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      getVariable = vi.spyOn(ConfigService.instance, 'getVariable');
+      getVariable.mockImplementation((key: string) => {
+        if (key === 'SERVER_PUBLIC_KEY') return 'server-pk';
+        throw new Error(`unmocked config key ${key}`);
+      });
+    });
+
+    test('When there are external recipients, then encryptionState is external', () => {
+      const { result } = renderSend({ toRecipients: [recipient('bob@gmail.com')] });
+      expect(result.current.encryptionState).toBe('external');
+    });
+
+    test('When an external recipient has no publicKey, then SERVER_PUBLIC_KEY is used for their wrap', async () => {
+      mocks.triggerLookup.mockReturnValue({
+        unwrap: () =>
+          Promise.resolve([
+            { address: 'alice@inxt.me', publicKey: 'alice-pk' },
+            { address: 'bob@gmail.com', publicKey: null },
+          ]),
+      });
+      const buildSpy = vi
+        .spyOn(MailEncryptionService.instance, 'buildEncryptionBlock')
+        .mockResolvedValue(mockEncryptionBlock);
+
+      const { result, onSent } = renderSend({
+        toRecipients: [recipient('alice@inxt.me'), recipient('bob@gmail.com')],
+      });
+
+      await act(async () => {
+        await result.current.send();
+      });
+
+      expect(buildSpy).toHaveBeenCalledWith(
+        { body: '<p>body</p>', previewText: 'body' },
+        expect.arrayContaining([
+          { address: 'alice@inxt.me', publicKey: 'alice-pk' },
+          { address: 'bob@gmail.com', publicKey: 'server-pk' },
+          { address: 'me@inxt.me', publicKey: 'sender-pk' },
+        ]),
+        expect.any(Uint8Array),
+      );
+      expect(mocks.sendEmail).toHaveBeenCalledWith(
+        expect.objectContaining({ deliveryMode: 'EXTERNAL', encryption: expect.objectContaining({ version: 'v1' }) }),
+      );
+      expect(onSent).toHaveBeenCalled();
+    });
+
+    test('When the server public key is not configured and there are external recipients, then it warns and does not send', async () => {
+      getVariable.mockImplementation(() => {
+        throw new Error('not configured');
+      });
+      mocks.triggerLookup.mockReturnValue({
+        unwrap: () => Promise.resolve([{ address: 'bob@gmail.com', publicKey: null }]),
+      });
+
+      const { result, onSent } = renderSend({ toRecipients: [recipient('bob@gmail.com')] });
+
+      await act(async () => {
+        await result.current.send();
+      });
+
+      expect(show).toHaveBeenCalledWith(expect.objectContaining({ text: 'errors.mail.encryptionUnavailable' }));
+      expect(mocks.sendEmail).not.toHaveBeenCalled();
+      expect(onSent).not.toHaveBeenCalled();
+    });
   });
 });
