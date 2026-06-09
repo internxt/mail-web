@@ -2,7 +2,7 @@ import { LockKeyIcon, WarningIcon } from '@phosphor-icons/react';
 import { useTranslationContext } from '@/i18n';
 import PreviewHeader, { type User } from './header';
 import Preview from './preview';
-import type { EmailResponse } from '@internxt/sdk/dist/mail/types';
+import type { EmailResponse, EncryptionBlock } from '@internxt/sdk/dist/mail/types';
 
 interface PreviewMailProps {
   from: User;
@@ -18,6 +18,7 @@ interface PreviewMailProps {
     isEncrypted?: boolean;
     isDecrypting?: boolean;
     decryptError?: boolean;
+    envelope?: EncryptionBlock | null;
   };
 }
 
@@ -49,7 +50,13 @@ const PreviewMail = ({ from, to, cc, bcc, mail }: PreviewMailProps) => {
       {mail.isDecrypting ? (
         <div className="p-5 text-gray-50">{translate('mail.preview.decrypting')}</div>
       ) : (
-        <Preview mailId={mail.id} subject={mail.subject} body={mail.htmlBody} attachments={mail.attachments} />
+        <Preview
+          mailId={mail.id}
+          subject={mail.subject}
+          body={mail.htmlBody}
+          attachments={mail.attachments}
+          envelope={mail.envelope ?? null}
+        />
       )}
     </div>
   );

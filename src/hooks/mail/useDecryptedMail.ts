@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { EmailResponse } from '@internxt/sdk/dist/mail/types';
+import type { EmailResponse, EncryptionBlock } from '@internxt/sdk/dist/mail/types';
 import type { HybridKeyPair } from 'internxt-crypto';
 import { useMailKeys } from './useMailKeys';
 import { MailEncryptionService } from '@/services/mail-encryption';
@@ -10,6 +10,7 @@ type State = {
   isEncrypted: boolean;
   isDecrypting: boolean;
   decryptError: boolean;
+  envelope: EncryptionBlock | null;
 };
 
 const EMPTY: State = {
@@ -18,15 +19,16 @@ const EMPTY: State = {
   isEncrypted: false,
   isDecrypting: false,
   decryptError: false,
+  envelope: null,
 };
 
-type CachedResult = { ok: true; text: string } | { ok: false };
+type CachedResult = { ok: true; text: string; envelope: EncryptionBlock } | { ok: false };
 
 const decryptMailBody = async (mail: EmailResponse, senderKeys: HybridKeyPair): Promise<CachedResult> => {
   try {
     const envelope = MailEncryptionService.instance.parseEncryptionBlock(mail.textBody as string);
     const text = await MailEncryptionService.instance.decryptEnvelope(envelope, senderKeys);
-    return { ok: true, text };
+    return { ok: true, text, envelope };
   } catch (error) {
     console.error('Failed to decrypt mail body', error);
     return { ok: false };
@@ -65,17 +67,32 @@ export const useDecryptedMail = (mail: EmailResponse | undefined): State => {
         isEncrypted: false,
         isDecrypting: false,
         decryptError: false,
+        envelope: null,
       };
     }
 
     const fresh = cached[mail.id] ?? null;
 
     if (!fresh) {
-      return { subject: mail.subject, htmlBody: '', isEncrypted: true, isDecrypting: true, decryptError: false };
+      return {
+        subject: mail.subject,
+        htmlBody: '',
+        isEncrypted: true,
+        isDecrypting: true,
+        decryptError: false,
+        envelope: null,
+      };
     }
 
     if (!fresh.ok) {
-      return { subject: mail.subject, htmlBody: '', isEncrypted: true, isDecrypting: false, decryptError: true };
+      return {
+        subject: mail.subject,
+        htmlBody: '',
+        isEncrypted: true,
+        isDecrypting: false,
+        decryptError: true,
+        envelope: null,
+      };
     }
 
     return {
@@ -84,6 +101,7 @@ export const useDecryptedMail = (mail: EmailResponse | undefined): State => {
       isEncrypted: true,
       isDecrypting: false,
       decryptError: false,
+      envelope: fresh.envelope,
     };
   }, [mail, isEncrypted, cached]);
 };

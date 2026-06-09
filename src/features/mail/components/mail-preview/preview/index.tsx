@@ -1,10 +1,11 @@
-import type { EmailResponse } from '@internxt/sdk/dist/mail/types';
+import type { EmailResponse, EncryptionBlock } from '@internxt/sdk/dist/mail/types';
 import { DownloadSimpleIcon, PaperclipIcon } from '@phosphor-icons/react';
 import DOMPurify from 'dompurify';
 import { bytesToString } from '@/utils/bytes-to-string';
-import { MailService } from '@/services/sdk/mail';
 import notificationsService, { ToastType } from '@/services/notifications';
 import { useTranslationContext } from '@/i18n';
+import { useAttachmentsSessionKey } from '@/hooks/mail/useAttachmentsSessionKey';
+import { NetworkService } from '@/services/network';
 
 const purify = DOMPurify();
 
@@ -37,25 +38,26 @@ interface PreviewProps {
   subject: string;
   body: string;
   attachments?: EmailResponse['attachments'];
+  envelope?: EncryptionBlock | null;
 }
 
-const Preview = ({ mailId, subject, body, attachments }: PreviewProps) => {
+const Preview = ({ mailId, subject, body, attachments, envelope }: PreviewProps) => {
   const { translate } = useTranslationContext();
   const sanitizedBody = purify.sanitize(body);
+  const attachmentsSessionKey = useAttachmentsSessionKey(mailId, envelope ?? null);
 
   const onDownload = async (attachment: EmailAttachment) => {
     try {
-      const { data, contentType } = await MailService.instance.downloadAttachment(
-        mailId,
-        attachment.blobId,
-        attachment.name,
-        attachment.type,
-      );
-      const blob = new Blob([data], { type: contentType || attachment.type });
+      const { blob, name } = await NetworkService.instance.download({
+        ...attachment,
+        mailId: mailId,
+        attachmentsSessionKey: attachmentsSessionKey!,
+      });
+
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = attachment.name;
+      link.download = name ?? attachment.name;
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 0);
     } catch {

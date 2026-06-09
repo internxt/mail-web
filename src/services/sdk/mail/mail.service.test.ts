@@ -327,6 +327,7 @@ describe('Mail Service', () => {
           encryptedText: 'enc-text',
           encryptedPreview: 'enc-preview',
           wrappedKeys: [{ hybridCiphertext: 'ct', encryptedKey: 'ek' }],
+          attachmentWrappedKeys: [{ hybridCiphertext: 'ct', encryptedKey: 'ek' }],
         },
       };
       const mockMailClient = {

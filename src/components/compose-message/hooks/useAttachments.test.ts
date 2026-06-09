@@ -1,10 +1,9 @@
 import { renderHook, act } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import useAttachments from './useAttachments';
-import { UploadManager } from '@/services/upload-manager';
 import notificationsService, { ToastType } from '@/services/notifications';
-import type { UploadAttachmentCallbacks, UploadHandle } from '@/types/mail/upload-manager';
 import { MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL } from '@/constants';
+import type { UploadManagerCallbacks } from '@/services/upload-manager';
 
 vi.mock('@/i18n', () => ({ useTranslationContext: () => ({ translate: (key: string) => key }) }));
 
@@ -13,54 +12,65 @@ vi.mock('@/services/notifications', () => ({
   ToastType: { Success: 'success', Error: 'error', Warning: 'warning', Info: 'info', Loading: 'loading' },
 }));
 
+vi.mock('internxt-crypto', () => ({ genSymmetricKey: () => new Uint8Array(32) }));
+
+const enqueue = vi.fn();
+const retryFn = vi.fn();
+const cancel = vi.fn();
+const clear = vi.fn();
+let lastCallbacks: UploadManagerCallbacks | undefined;
+
 vi.mock('@/services/upload-manager', () => ({
-  UploadManager: { instance: { run: vi.fn(), retry: vi.fn(), remove: vi.fn(), clear: vi.fn() } },
+  UploadManager: class {
+    constructor(_sessionKey: Uint8Array, callbacks: UploadManagerCallbacks) {
+      lastCallbacks = callbacks;
+    }
+    enqueue = enqueue;
+    retry = retryFn;
+    cancel = cancel;
+    clear = clear;
+  },
 }));
 
-const run = vi.mocked(UploadManager.instance.run);
-const retry = vi.mocked(UploadManager.instance.retry);
-const remove = vi.mocked(UploadManager.instance.remove);
-const clear = vi.mocked(UploadManager.instance.clear);
 const show = vi.mocked(notificationsService.show);
 
-let lastCallbacks: UploadAttachmentCallbacks | undefined;
-
+let idSeq = 0;
 const fileOfSize = (size: number, name = 'a.txt', type = 'text/plain'): File => {
   const f = new File(['x'], name, { type });
   Object.defineProperty(f, 'size', { value: size });
   return f;
 };
 
+beforeEach(() => {
+  idSeq = 0;
+  vi.stubGlobal('crypto', { ...globalThis.crypto, randomUUID: () => `id-${idSeq++}` });
+  enqueue.mockReset();
+  retryFn.mockReset();
+  cancel.mockReset();
+  clear.mockReset();
+  show.mockReset();
+  lastCallbacks = undefined;
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
+
 describe('Attachments - custom hook', () => {
-  beforeEach(() => {
-    run.mockReset();
-    retry.mockReset();
-    remove.mockReset();
-    clear.mockReset();
-    show.mockReset();
-    lastCallbacks = undefined;
-    run.mockImplementation((files: File[], callbacks: UploadAttachmentCallbacks): UploadHandle[] => {
-      lastCallbacks = callbacks;
-      return files.map((file, i) => ({ id: `id-${i}`, file }));
-    });
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   describe('Adding files', () => {
     test('When files are added, then files are handled as expected', () => {
       const f1 = fileOfSize(100, '1.txt');
       const f2 = fileOfSize(200, '2.bin', 'application/octet-stream');
-      const { result } = renderHook(() => useAttachments());
+      const { result } = renderHook(() => useAttachments(new Uint8Array(32)));
 
       act(() => result.current.addFiles([f1, f2]));
 
-      expect(run).toHaveBeenCalledWith([f1, f2], expect.any(Object));
+      expect(enqueue).toHaveBeenNthCalledWith(1, 'id-0', f1);
+      expect(enqueue).toHaveBeenNthCalledWith(2, 'id-1', f2);
       expect(result.current.attachments).toEqual([
-        { id: 'id-0', name: '1.txt', size: 100, type: 'text/plain', status: 'uploading' },
-        { id: 'id-1', name: '2.bin', size: 200, type: 'application/octet-stream', status: 'uploading' },
+        { id: 'id-0', name: '1.txt', size: 100, type: 'text/plain', status: 'uploading', file: f1 },
+        { id: 'id-1', name: '2.bin', size: 200, type: 'application/octet-stream', status: 'uploading', file: f2 },
       ]);
       expect(result.current.totalSize).toBe(f1.size + f2.size);
       expect(result.current.isUploading).toBe(true);
@@ -74,9 +84,9 @@ describe('Attachments - custom hook', () => {
       expect(result.current.totalSize).toBe(300);
     });
 
-    test('When the new batch would exceed 25 MB total, then it shows a warning toast and does not enqueue', () => {
+    test('When the new batch would exceed the limit, then it shows a warning toast and does not enqueue', () => {
       const big = fileOfSize(MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL + 1);
-      const { result } = renderHook(() => useAttachments());
+      const { result } = renderHook(() => useAttachments(new Uint8Array(32)));
 
       act(() => result.current.addFiles([big]));
 
@@ -84,13 +94,13 @@ describe('Attachments - custom hook', () => {
         text: 'modals.composeMessageDialog.errors.attachmentsTooLarge',
         type: ToastType.Warning,
       });
-      expect(run).not.toHaveBeenCalled();
+      expect(enqueue).not.toHaveBeenCalled();
       expect(result.current.attachments).toHaveLength(0);
     });
 
-    test('When the cumulative size reaches the 25 MB limit, then a subsequent batch is rejected', () => {
+    test('When the cumulative size reaches the limit, then a subsequent batch is rejected', () => {
       const half = fileOfSize(MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL / 2);
-      const { result } = renderHook(() => useAttachments());
+      const { result } = renderHook(() => useAttachments(new Uint8Array(32)));
 
       act(() => result.current.addFiles([half]));
       act(() => lastCallbacks?.onSuccess('id-0', 'blob-0'));
@@ -102,8 +112,8 @@ describe('Attachments - custom hook', () => {
   });
 
   describe('upload callbacks', () => {
-    test('When the manager reports success, then the attachment moves to done and the id of the blob is stored', () => {
-      const { result } = renderHook(() => useAttachments());
+    test('When the manager reports success, then the attachment moves to done and the blobId is stored', () => {
+      const { result } = renderHook(() => useAttachments(new Uint8Array(32)));
       act(() => result.current.addFiles([fileOfSize(10)]));
 
       act(() => lastCallbacks?.onSuccess('id-0', 'blob-1'));
@@ -114,7 +124,7 @@ describe('Attachments - custom hook', () => {
     });
 
     test('When the manager reports an error, then the attachment moves to error', () => {
-      const { result } = renderHook(() => useAttachments());
+      const { result } = renderHook(() => useAttachments(new Uint8Array(32)));
       act(() => result.current.addFiles([fileOfSize(10)]));
 
       act(() => lastCallbacks?.onError('id-0', new Error('boom')));
@@ -127,25 +137,25 @@ describe('Attachments - custom hook', () => {
 
   describe('retry', () => {
     test('When retry is called on a failed attachment, then it goes back to uploading and the manager is notified', () => {
-      const { result } = renderHook(() => useAttachments());
+      const { result } = renderHook(() => useAttachments(new Uint8Array(32)));
       act(() => result.current.addFiles([fileOfSize(10)]));
       act(() => lastCallbacks?.onError('id-0', new Error('x')));
 
       act(() => result.current.retry('id-0'));
 
-      expect(retry).toHaveBeenCalledWith('id-0', expect.any(Object));
+      expect(retryFn).toHaveBeenCalledWith('id-0');
       expect(result.current.attachments[0].status).toBe('uploading');
     });
   });
 
   describe('remove', () => {
     test('When remove is called, then the attachment is dropped and the manager is notified', () => {
-      const { result } = renderHook(() => useAttachments());
+      const { result } = renderHook(() => useAttachments(new Uint8Array(32)));
       act(() => result.current.addFiles([fileOfSize(10, '1.txt'), fileOfSize(20, '2.txt')]));
 
       act(() => result.current.remove('id-0'));
 
-      expect(remove).toHaveBeenCalledWith('id-0');
+      expect(cancel).toHaveBeenCalledWith('id-0');
       expect(result.current.attachments).toHaveLength(1);
       expect(result.current.attachments[0].id).toBe('id-1');
     });
@@ -153,7 +163,7 @@ describe('Attachments - custom hook', () => {
 
   describe('clear', () => {
     test('When clear is called, then every attachment is removed from the manager and state', () => {
-      const { result } = renderHook(() => useAttachments());
+      const { result } = renderHook(() => useAttachments(new Uint8Array(32)));
       act(() => result.current.addFiles([fileOfSize(10, '1.txt'), fileOfSize(20, '2.txt')]));
 
       act(() => result.current.clear());

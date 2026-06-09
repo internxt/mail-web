@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { generateEmailKeys, uint8ArrayToBase64 } from 'internxt-crypto';
+import { generateEmailKeys, genSymmetricKey, uint8ArrayToBase64 } from 'internxt-crypto';
 import { ENCRYPTED_EMAIL_PREFIX, MailEncryptionService, type RecipientPublicKey } from '.';
 
 const mailEncryption = MailEncryptionService.instance;
 const content = (body: string, previewText = body) => ({ body, previewText });
+const attachmentsKey = () => genSymmetricKey();
 
 beforeEach(() => {
   vi.restoreAllMocks();
@@ -15,7 +16,7 @@ describe('buildEncryptionBlock + decryptEnvelope', () => {
 
     const recipients: RecipientPublicKey[] = [{ address: 'bob@inxt.me', publicKey: uint8ArrayToBase64(bob.publicKey) }];
 
-    const envelope = await mailEncryption.buildEncryptionBlock(content('<p>hi bob</p>'), recipients);
+    const envelope = await mailEncryption.buildEncryptionBlock(content('<p>hi bob</p>'), recipients, attachmentsKey());
 
     expect(envelope.version).toBe('v1');
     expect(Array.isArray(envelope.wrappedKeys)).toBe(true);
@@ -28,9 +29,11 @@ describe('buildEncryptionBlock + decryptEnvelope', () => {
   test('When a message is encrypted, then the subject is never part of the envelope', async () => {
     const bob = await generateEmailKeys();
 
-    const envelope = await mailEncryption.buildEncryptionBlock(content('body'), [
-      { address: 'bob@inxt.me', publicKey: uint8ArrayToBase64(bob.publicKey) },
-    ]);
+    const envelope = await mailEncryption.buildEncryptionBlock(
+      content('body'),
+      [{ address: 'bob@inxt.me', publicKey: uint8ArrayToBase64(bob.publicKey) }],
+      attachmentsKey(),
+    );
 
     expect(envelope).not.toHaveProperty('encryptedSubject');
   });
@@ -39,10 +42,14 @@ describe('buildEncryptionBlock + decryptEnvelope', () => {
     const alice = await generateEmailKeys();
     const bob = await generateEmailKeys();
 
-    const envelope = await mailEncryption.buildEncryptionBlock(content('hey team'), [
-      { address: 'alice@inxt.me', publicKey: uint8ArrayToBase64(alice.publicKey) },
-      { address: 'bob@inxt.me', publicKey: uint8ArrayToBase64(bob.publicKey) },
-    ]);
+    const envelope = await mailEncryption.buildEncryptionBlock(
+      content('hey team'),
+      [
+        { address: 'alice@inxt.me', publicKey: uint8ArrayToBase64(alice.publicKey) },
+        { address: 'bob@inxt.me', publicKey: uint8ArrayToBase64(bob.publicKey) },
+      ],
+      attachmentsKey(),
+    );
 
     const aliceView = await mailEncryption.decryptEnvelope(envelope, alice);
     const bobView = await mailEncryption.decryptEnvelope(envelope, bob);
@@ -58,12 +65,16 @@ describe('buildEncryptionBlock + decryptEnvelope', () => {
     const bcc = await generateEmailKeys();
 
     const addresses = ['sender@inxt.me', 'to@inxt.me', 'cc@inxt.me', 'secret-bcc@inxt.me'];
-    const envelope = await mailEncryption.buildEncryptionBlock(content('hidden recipients'), [
-      { address: addresses[0], publicKey: uint8ArrayToBase64(sender.publicKey) },
-      { address: addresses[1], publicKey: uint8ArrayToBase64(to.publicKey) },
-      { address: addresses[2], publicKey: uint8ArrayToBase64(cc.publicKey) },
-      { address: addresses[3], publicKey: uint8ArrayToBase64(bcc.publicKey) },
-    ]);
+    const envelope = await mailEncryption.buildEncryptionBlock(
+      content('hidden recipients'),
+      [
+        { address: addresses[0], publicKey: uint8ArrayToBase64(sender.publicKey) },
+        { address: addresses[1], publicKey: uint8ArrayToBase64(to.publicKey) },
+        { address: addresses[2], publicKey: uint8ArrayToBase64(cc.publicKey) },
+        { address: addresses[3], publicKey: uint8ArrayToBase64(bcc.publicKey) },
+      ],
+      attachmentsKey(),
+    );
 
     const wire = `${ENCRYPTED_EMAIL_PREFIX}\n${Buffer.from(JSON.stringify(envelope)).toString('base64')}`;
     const serialized = JSON.stringify(envelope);
@@ -85,15 +96,17 @@ describe('buildEncryptionBlock + decryptEnvelope', () => {
   });
 
   test('When no recipients are provided, then encryption should fail', async () => {
-    await expect(mailEncryption.buildEncryptionBlock(content('t'), [])).rejects.toThrow();
+    await expect(mailEncryption.buildEncryptionBlock(content('t'), [], attachmentsKey())).rejects.toThrow();
   });
 
   test('When decrypting with a key that was not a recipient, then decryption should fail cleanly', async () => {
     const bob = await generateEmailKeys();
     const eve = await generateEmailKeys();
-    const envelope = await mailEncryption.buildEncryptionBlock(content('y'), [
-      { address: 'bob@inxt.me', publicKey: uint8ArrayToBase64(bob.publicKey) },
-    ]);
+    const envelope = await mailEncryption.buildEncryptionBlock(
+      content('y'),
+      [{ address: 'bob@inxt.me', publicKey: uint8ArrayToBase64(bob.publicKey) }],
+      attachmentsKey(),
+    );
 
     await expect(mailEncryption.decryptEnvelope(envelope, eve)).rejects.toThrow(/not a recipient or wrong key/);
   });
@@ -104,9 +117,11 @@ describe('encrypted preview', () => {
     const bob = await generateEmailKeys();
     const previewText = `First line.\n\n   Second   line with   spaces.${' tail'.repeat(200)}`;
 
-    const envelope = await mailEncryption.buildEncryptionBlock({ body: '<p>full body</p>', previewText }, [
-      { address: 'bob@inxt.me', publicKey: uint8ArrayToBase64(bob.publicKey) },
-    ]);
+    const envelope = await mailEncryption.buildEncryptionBlock(
+      { body: '<p>full body</p>', previewText },
+      [{ address: 'bob@inxt.me', publicKey: uint8ArrayToBase64(bob.publicKey) }],
+      attachmentsKey(),
+    );
 
     const preview = await mailEncryption.decryptSummaryPreview(
       { encryptedPreview: envelope.encryptedPreview, wrappedKeys: envelope.wrappedKeys },
@@ -121,9 +136,11 @@ describe('encrypted preview', () => {
   test('When a non-recipient tries to read the preview, then it fails cleanly', async () => {
     const bob = await generateEmailKeys();
     const eve = await generateEmailKeys();
-    const envelope = await mailEncryption.buildEncryptionBlock(content('<p>body</p>', 'snippet'), [
-      { address: 'bob@inxt.me', publicKey: uint8ArrayToBase64(bob.publicKey) },
-    ]);
+    const envelope = await mailEncryption.buildEncryptionBlock(
+      content('<p>body</p>', 'snippet'),
+      [{ address: 'bob@inxt.me', publicKey: uint8ArrayToBase64(bob.publicKey) }],
+      attachmentsKey(),
+    );
 
     expect(
       await mailEncryption.decryptSummaryPreview(

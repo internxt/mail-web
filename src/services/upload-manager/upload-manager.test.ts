@@ -1,111 +1,94 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { UploadManager } from './index';
-import { MailService } from '@/services/sdk/mail';
-import type { UploadAttachmentResponse } from '@internxt/sdk/dist/mail/types';
-import { AxiosResponseError } from '@internxt/sdk/dist/shared/types/errors';
+import { UploadManager, type UploadManagerCallbacks } from './index';
+import { NetworkService } from '@/services/network';
 
-vi.mock('@/services/sdk/mail', () => ({
-  MailService: { instance: { uploadAttachment: vi.fn() } },
+vi.mock('@/services/network', () => ({
+  NetworkService: { instance: { upload: vi.fn() } },
 }));
 
-const uploadAttachment = vi.mocked(MailService.instance.uploadAttachment);
+const upload = vi.mocked(NetworkService.instance.upload);
 
 const aFile = (name = 'a.txt') => new File(['x'], name, { type: 'text/plain' });
+const SESSION_KEY = new Uint8Array(32);
 
 const flush = async () => {
-  for (let i = 0; i < 10; i++) await Promise.resolve();
+  for (let i = 0; i < 20; i++) await Promise.resolve();
 };
 
-const mockSuccess = (result: UploadAttachmentResponse) => ({
-  promise: Promise.resolve(result),
-  requestCanceler: { cancel: vi.fn() },
-});
-
-const mockFailure = (error: unknown) => ({
-  promise: Promise.reject(error),
-  requestCanceler: { cancel: vi.fn() },
-});
+const newManager = (callbacks: Partial<UploadManagerCallbacks> = {}) =>
+  new UploadManager(SESSION_KEY, {
+    onSuccess: vi.fn(),
+    onError: vi.fn(),
+    ...callbacks,
+  });
 
 describe('Upload Manager', () => {
   beforeEach(() => {
-    vi.restoreAllMocks();
-    uploadAttachment.mockReset();
+    upload.mockReset();
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
-  describe('run', () => {
-    test('When files are pushed, then each pushed file yields a distinct stable handle', () => {
-      uploadAttachment.mockReturnValue(mockSuccess({ blobId: 'b', name: 'a.txt', size: 1, type: 'text/plain' }));
-      const f1 = aFile('1.txt');
-      const f2 = aFile('2.txt');
-
-      const handles = UploadManager.instance.run([f1, f2], { onSuccess: vi.fn(), onError: vi.fn() });
-
-      expect(handles).toHaveLength(2);
-      expect(handles[0].file).toBe(f1);
-      expect(handles[1].file).toBe(f2);
-      expect(handles[0].id).not.toBe(handles[1].id);
-    });
-
-    test('When upload succeeds, then the caller is notified with the upload result', async () => {
-      const result = { blobId: 'blob-1', name: 'a.txt', size: 1, type: 'text/plain' };
-      uploadAttachment.mockReturnValue(mockSuccess(result));
+  describe('enqueue', () => {
+    test('When the upload resolves, then onSuccess is called with the resulting blobId', async () => {
+      upload.mockResolvedValue({ blobId: 'blob-1', name: 'a.txt', size: 1, type: 'text/plain' });
       const onSuccess = vi.fn();
       const onError = vi.fn();
+      const manager = newManager({ onSuccess, onError });
 
-      const [{ id }] = UploadManager.instance.run([aFile()], { onSuccess, onError });
+      manager.enqueue('id-0', aFile());
       await flush();
 
-      expect(onSuccess).toHaveBeenCalledWith(id, result.blobId);
+      expect(onSuccess).toHaveBeenCalledWith('id-0', 'blob-1');
       expect(onError).not.toHaveBeenCalled();
     });
 
-    test('When upload fails on all attempts, then error is handled properly', async () => {
+    test('When the upload rejects, then onError is called with the error', async () => {
       const error = new Error('boom');
-      uploadAttachment.mockReturnValue(mockFailure(error));
+      upload.mockRejectedValue(error);
       const onSuccess = vi.fn();
       const onError = vi.fn();
+      const manager = newManager({ onSuccess, onError });
 
-      const [{ id }] = UploadManager.instance.run([aFile()], { onSuccess, onError });
+      manager.enqueue('id-0', aFile());
       await flush();
 
-      expect(onError).toHaveBeenCalledWith(id, error);
+      expect(onError).toHaveBeenCalledWith('id-0', error);
       expect(onSuccess).not.toHaveBeenCalled();
     });
 
-    test('When upload fails transiently, then it retries until success (max 3 attempts)', async () => {
-      const result = { blobId: 'b', name: 'a.txt', size: 1, type: 'text/plain' };
-      const serverError = new AxiosResponseError('Internal Server Error', 'POST /upload', { status: 503 } as never);
-      uploadAttachment
-        .mockReturnValueOnce(mockFailure(serverError))
-        .mockReturnValueOnce(mockFailure(serverError))
-        .mockReturnValue(mockSuccess(result));
-      const onSuccess = vi.fn();
-      const onError = vi.fn();
+    test('When multiple files are enqueued, then the queue caps in-flight uploads at the configured concurrency', async () => {
+      const releases: Array<() => void> = [];
+      upload.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            releases.push(() => resolve({ blobId: 'b', name: 'a.txt', size: 1, type: 'text/plain' }));
+          }),
+      );
+      const manager = newManager();
 
-      UploadManager.instance.run([aFile()], { onSuccess, onError });
+      for (let i = 0; i < 6; i++) manager.enqueue(`id-${i}`, aFile(`${i}.txt`));
       await flush();
 
-      expect(uploadAttachment).toHaveBeenCalledTimes(3);
-      expect(onSuccess).toHaveBeenCalledTimes(1);
-      expect(onError).not.toHaveBeenCalled();
+      expect(upload).toHaveBeenCalledTimes(4);
+
+      releases[0]();
+      releases[1]();
+      await flush();
+      expect(upload).toHaveBeenCalledTimes(6);
     });
 
-    test('When upload fails with a 4xx error, then it does not retry and calls onError immediately', async () => {
-      const clientError = new AxiosResponseError('Forbidden', 'POST /upload', { status: 403 } as never);
-      uploadAttachment.mockReturnValue(mockFailure(clientError));
-      const onSuccess = vi.fn();
-      const onError = vi.fn();
+    test('When the file is forwarded to NetworkService, then the session key is passed through', async () => {
+      upload.mockResolvedValue({ blobId: 'b', name: 'a.txt', size: 1, type: 'text/plain' });
+      const file = aFile();
+      const manager = newManager();
 
-      const [{ id }] = UploadManager.instance.run([aFile()], { onSuccess, onError });
+      manager.enqueue('id-0', file);
       await flush();
 
-      expect(uploadAttachment).toHaveBeenCalledTimes(1);
-      expect(onError).toHaveBeenCalledWith(id, clientError);
-      expect(onSuccess).not.toHaveBeenCalled();
+      expect(upload).toHaveBeenCalledWith(SESSION_KEY, file, expect.any(Object));
     });
   });
 
@@ -113,75 +96,113 @@ describe('Upload Manager', () => {
     test('When retry is called with an unknown id, then nothing happens', async () => {
       const onSuccess = vi.fn();
       const onError = vi.fn();
+      const manager = newManager({ onSuccess, onError });
 
-      UploadManager.instance.retry('does-not-exist', { onSuccess, onError });
+      manager.retry('does-not-exist');
       await flush();
 
-      expect(uploadAttachment).not.toHaveBeenCalled();
+      expect(upload).not.toHaveBeenCalled();
       expect(onSuccess).not.toHaveBeenCalled();
       expect(onError).not.toHaveBeenCalled();
     });
 
     test('When retry is called after a failed upload, then the caller is notified of the eventual success', async () => {
-      uploadAttachment.mockReturnValue(mockFailure(new Error('initial failure')));
-      const initialError = vi.fn();
-      const [{ id }] = UploadManager.instance.run([aFile()], { onSuccess: vi.fn(), onError: initialError });
-      await flush();
-      expect(initialError).toHaveBeenCalledWith(id, expect.any(Error));
-
-      const result = { blobId: 'retry-blob', name: 'a.txt', size: 1, type: 'text/plain' };
-      uploadAttachment.mockReturnValue(mockSuccess(result));
+      upload.mockRejectedValueOnce(new Error('initial failure'));
       const onSuccess = vi.fn();
       const onError = vi.fn();
+      const manager = newManager({ onSuccess, onError });
 
-      UploadManager.instance.retry(id, { onSuccess, onError });
+      manager.enqueue('id-0', aFile());
+      await flush();
+      expect(onError).toHaveBeenCalledWith('id-0', expect.any(Error));
+
+      upload.mockResolvedValueOnce({ blobId: 'retry-blob', name: 'a.txt', size: 1, type: 'text/plain' });
+      onSuccess.mockReset();
+      onError.mockReset();
+
+      manager.retry('id-0');
       await flush();
 
-      expect(onSuccess).toHaveBeenCalledWith(id, result.blobId);
+      expect(onSuccess).toHaveBeenCalledWith('id-0', 'retry-blob');
       expect(onError).not.toHaveBeenCalled();
     });
   });
 
-  describe('remove', () => {
-    test('When remove is called before the upload starts, then callbacks are never invoked', async () => {
-      let resolveBlocker: (() => void) | undefined;
-      const blocker = new Promise<UploadAttachmentResponse>((res) => {
-        resolveBlocker = () => res({ blobId: 'first', name: 'a.txt', size: 1, type: 'text/plain' });
-      });
-      uploadAttachment.mockReturnValueOnce({ promise: blocker, requestCanceler: { cancel: vi.fn() } });
-      uploadAttachment.mockReturnValue(mockSuccess({ blobId: 'never', name: 'b', size: 1, type: 'text/plain' }));
+  describe('cancel', () => {
+    test('When cancel is called before the upload starts, then its callbacks are never invoked', async () => {
+      const releasers: Record<string, () => void> = {};
+      upload.mockImplementation(
+        (_key, file) =>
+          new Promise((resolve) => {
+            releasers[file.name] = () => resolve({ blobId: file.name, name: file.name, size: 1, type: 'text/plain' });
+          }),
+      );
 
       const onSuccess = vi.fn();
       const onError = vi.fn();
-      const [first, second] = UploadManager.instance.run([aFile('1.txt'), aFile('2.txt')], { onSuccess, onError });
+      const manager = newManager({ onSuccess, onError });
 
-      UploadManager.instance.remove(second.id);
-      resolveBlocker?.();
+      manager.enqueue('first', aFile('1.txt'));
+      manager.enqueue('second', aFile('2.txt'));
+      await flush();
+
+      manager.cancel('second');
+      releasers['1.txt']?.();
+      releasers['2.txt']?.();
       await flush();
 
       const calls = [...onSuccess.mock.calls, ...onError.mock.calls];
-      expect(calls.some(([id]) => id === second.id)).toBe(false);
-      expect(onSuccess).toHaveBeenCalledWith(first.id, expect.any(String));
+      expect(calls.some(([id]) => id === 'second')).toBe(false);
+      expect(onSuccess).toHaveBeenCalledWith('first', '1.txt');
     });
 
-    test('When remove is called while the upload is in flight, then the in-flight request is aborted', async () => {
-      const cancel = vi.fn();
-      let resolveBlocker: (() => void) | undefined;
-      const blocker = new Promise<UploadAttachmentResponse>((_res, rej) => {
-        resolveBlocker = () => rej(new Error('aborted'));
+    test('When cancel is called while the upload is in flight, then the in-flight canceler is triggered', async () => {
+      const cancelSpy = vi.fn();
+      let rejectFirst: ((reason: unknown) => void) | undefined;
+      upload.mockImplementationOnce((_key, _file, options) => {
+        options?.onCanceler?.({ cancel: cancelSpy });
+        return new Promise((_resolve, reject) => {
+          rejectFirst = reject;
+        });
       });
-      uploadAttachment.mockReturnValueOnce({ promise: blocker, requestCanceler: { cancel } });
 
       const onSuccess = vi.fn();
       const onError = vi.fn();
-      const [{ id }] = UploadManager.instance.run([aFile()], { onSuccess, onError });
+      const manager = newManager({ onSuccess, onError });
+
+      manager.enqueue('id-0', aFile());
+      await flush();
+      manager.cancel('id-0');
+      rejectFirst?.(new Error('aborted'));
       await flush();
 
-      UploadManager.instance.remove(id);
-      resolveBlocker?.();
+      expect(cancelSpy).toHaveBeenCalledWith('Upload cancelled');
+      expect(onSuccess).not.toHaveBeenCalled();
+      expect(onError).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('clear', () => {
+    test('When clear is called, then every in-flight job is cancelled and no callbacks fire afterwards', async () => {
+      const cancelSpies: Array<ReturnType<typeof vi.fn>> = [];
+      upload.mockImplementation((_key, _file, options) => {
+        const cancel = vi.fn();
+        cancelSpies.push(cancel);
+        options?.onCanceler?.({ cancel });
+        return new Promise(() => {});
+      });
+      const onSuccess = vi.fn();
+      const onError = vi.fn();
+      const manager = newManager({ onSuccess, onError });
+
+      manager.enqueue('id-0', aFile('1.txt'));
+      manager.enqueue('id-1', aFile('2.txt'));
       await flush();
 
-      expect(cancel).toHaveBeenCalledWith('Upload cancelled');
+      manager.clear();
+      await flush();
+
+      cancelSpies.forEach((cancel) => expect(cancel).toHaveBeenCalledWith('Upload cancelled'));
       expect(onSuccess).not.toHaveBeenCalled();
       expect(onError).not.toHaveBeenCalled();
     });
