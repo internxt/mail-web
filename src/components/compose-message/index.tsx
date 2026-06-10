@@ -64,7 +64,17 @@ export const ComposeMessageDialog = () => {
   } = useAttachments(attachmentsSessionKey);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const onClose = useCallback(() => {
+  // const { saveDraft } = useDraftMessage({
+  //   attachments,
+  //   toRecipients,
+  //   ccRecipients,
+  //   bccRecipients,
+  //   subject: subjectValue,
+  //   editor,
+  // });
+
+  const onClose = useCallback(async () => {
+    // await saveDraft();
     clearAttachments();
     clearComposeMessage();
     editor.commands.clearContent();

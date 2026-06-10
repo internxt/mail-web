@@ -134,3 +134,14 @@ export class EnvelopeDecryptionError extends Error {
     Object.setPrototypeOf(this, EnvelopeDecryptionError.prototype);
   }
 }
+
+export class DraftMessageError extends Error {
+  constructor(
+    errorMsg?: string,
+    public requestId?: string,
+  ) {
+    super('Error while fetching draft message: ' + errorMsg);
+
+    Object.setPrototypeOf(this, DraftMessageError.prototype);
+  }
+}

@@ -1,6 +1,7 @@
 import { api } from '../base';
 import {
   DeleteEmailError,
+  DraftMessageError,
   FetchActiveDomainsError,
   FetchListFolderError,
   FetchMailAccountKeysError,
@@ -19,6 +20,7 @@ import { MailService, type MailMeResponse } from '@/services/sdk/mail';
 import type { FolderType } from '@/types/mail';
 import { batchProcess } from '@/utils/batch-processes';
 import type {
+  DraftEmailRequest,
   EmailCreatedResponse,
   EmailDomainsResponse,
   EmailListResponse,
@@ -290,6 +292,30 @@ export const mailApi = api.injectEndpoints({
       },
       invalidatesTags: [{ type: 'ListFolder', id: 'sent' }, 'Mailbox'],
     }),
+    draftEmail: builder.mutation<EmailCreatedResponse, DraftEmailRequest>({
+      async queryFn(payload): Promise<{ data: EmailCreatedResponse } | { error: DraftMessageError }> {
+        try {
+          const result = await MailService.instance.draftEmail(payload);
+          return { data: result };
+        } catch (error) {
+          const err = ErrorService.instance.castError(error);
+          return { error: new DraftMessageError(err.message, err.requestId) };
+        }
+      },
+      invalidatesTags: [{ type: 'ListFolder', id: 'drafts' }],
+    }),
+    updateDraft: builder.mutation<void, { draftId: string; payload: DraftEmailRequest }>({
+      async queryFn({ draftId, payload }): Promise<{ data: void } | { error: DraftMessageError }> {
+        try {
+          await MailService.instance.updateDraft(draftId, payload);
+          return { data: undefined };
+        } catch (error) {
+          const err = ErrorService.instance.castError(error);
+          return { error: new DraftMessageError(err.message, err.requestId) };
+        }
+      },
+      invalidatesTags: [{ type: 'ListFolder', id: 'drafts' }],
+    }),
   }),
 });
 
@@ -306,4 +332,6 @@ export const {
   useLookupRecipientKeysQuery,
   useLazyLookupRecipientKeysQuery,
   useSendEmailMutation,
+  useDraftEmailMutation,
+  useUpdateDraftMutation,
 } = mailApi;

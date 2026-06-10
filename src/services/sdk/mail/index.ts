@@ -1,5 +1,6 @@
 import type {
   DownloadAttachmentResponse,
+  DraftEmailRequest,
   EmailCreatedResponse,
   EmailDomainsResponse,
   EmailListResponse,
@@ -132,6 +133,37 @@ export class MailService {
    */
   async sendEmail(payload: SendEmailRequest): Promise<EmailCreatedResponse> {
     return this.client.sendEmail(payload);
+  }
+
+  /**
+   * Drafts an email. Should be encrypted with the sender keys only
+   *
+   * @param payload - The draft request (recipients, subject, body, optional encryption block, attachments)
+   * @returns The id of the drafted email
+   */
+  async draftEmail(payload: DraftEmailRequest): Promise<EmailCreatedResponse> {
+    return this.client.saveDraft(payload);
+  }
+
+  /**
+   * Updates an existing draft
+   *
+   * @param draftId - The id of the draft to update
+   * @param payload - The draft request (recipients, subject, body, optional encryption block, attachments)
+   * @returns A promise that resolves when the update operation is complete
+   */
+  async updateDraft(draftId: string, payload: DraftEmailRequest): Promise<void> {
+    return this.client.updateDraft(draftId, payload);
+  }
+
+  /**
+   * Returns a specific draft by its ID.
+   *
+   * @param {string} draftId - The ID of the draft to fetch
+   * @returns A promise that resolves with an EmailResponse object
+   */
+  async getDraft(draftId: string): Promise<EmailResponse> {
+    return this.client.getDraft(draftId);
   }
 
   /**
