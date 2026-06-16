@@ -136,6 +136,15 @@
     },
     "reply": {
       "header": "Le {{date}}, {{senderName}} <{{senderEmail}}> a écrit :"
+    },
+    "forward": {
+      "header": "---------- Message transféré ---------",
+      "from": "De",
+      "date": "Date",
+      "subject": "Objet",
+      "to": "À",
+      "cc": "Cc",
+      "bcc": "Cci"
     }
   },
   "errors": {

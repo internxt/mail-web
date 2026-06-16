@@ -1,7 +1,8 @@
 import type { ComposePayload } from '@/types/mail';
 import { useMemo } from 'react';
-import { formatEmailToReply } from '../helpers/format-email';
+import { formatEmailToForward, formatEmailToReply } from '../helpers/format-email';
 import type { Recipient } from '../types';
+import { useTranslationContext } from '@/i18n';
 
 type InitialComposeData = {
   replyToEmailId?: string;
@@ -23,6 +24,8 @@ const withIds = (users: { email: string; name?: string }[] | undefined): Recipie
 const EMPTY_DATA: InitialComposeData = { subject: '', to: [], cc: [], bcc: [] };
 
 export const useInitialComposeState = (compose: ComposePayload | undefined): InitialComposeState => {
+  const { translate } = useTranslationContext();
+
   return useMemo(() => {
     if (!compose) return { mode: 'new', data: EMPTY_DATA };
     switch (compose.mode) {
@@ -41,10 +44,23 @@ export const useInitialComposeState = (compose: ComposePayload | undefined): Ini
         };
       }
       case 'replyAll':
-      case 'forward':
+      case 'forward': {
+        const forward = formatEmailToForward(compose.sourceMail, translate);
+
+        return {
+          mode: compose.mode,
+          data: {
+            subject: forward.subject ?? '',
+            to: withIds(forward.to),
+            cc: withIds(forward.cc),
+            bcc: withIds(forward.bcc),
+            htmlBody: forward.htmlBody ?? undefined,
+          },
+        };
+      }
       case 'draft':
       case 'new':
         return { mode: compose.mode, data: EMPTY_DATA };
     }
-  }, [compose]);
+  }, [compose, translate]);
 };

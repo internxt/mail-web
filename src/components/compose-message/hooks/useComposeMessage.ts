@@ -1,20 +1,20 @@
 import { useCallback, useState } from 'react';
 import type { Recipient } from '../types';
 
-interface InitialDraft {
+interface InitialValues {
   subject?: string;
   to?: Recipient[];
   cc?: Recipient[];
   bcc?: Recipient[];
 }
 
-const useComposeMessage = (initialDraft?: InitialDraft) => {
-  const [subjectValue, setSubjectValue] = useState<string>(initialDraft?.subject ?? '');
-  const [toRecipients, setToRecipients] = useState<Recipient[]>(initialDraft?.to ?? []);
-  const [ccRecipients, setCcRecipients] = useState<Recipient[]>(initialDraft?.cc ?? []);
-  const [bccRecipients, setBccRecipients] = useState<Recipient[]>(initialDraft?.bcc ?? []);
-  const [showCc, setShowCc] = useState((initialDraft?.cc?.length ?? 0) > 0);
-  const [showBcc, setShowBcc] = useState((initialDraft?.bcc?.length ?? 0) > 0);
+const useComposeMessage = () => {
+  const [subjectValue, setSubjectValue] = useState<string>('');
+  const [toRecipients, setToRecipients] = useState<Recipient[]>([]);
+  const [ccRecipients, setCcRecipients] = useState<Recipient[]>([]);
+  const [bccRecipients, setBccRecipients] = useState<Recipient[]>([]);
+  const [showCc, setShowCc] = useState((ccRecipients?.length ?? 0) > 0);
+  const [showBcc, setShowBcc] = useState((bccRecipients?.length ?? 0) > 0);
 
   const onShowCcRecipient = () => {
     setShowCc(true);
@@ -52,6 +52,15 @@ const useComposeMessage = (initialDraft?: InitialDraft) => {
     setBccRecipients((prev) => prev.filter((r) => r.id !== id));
   }, []);
 
+  const setInitialValues = (initialValues: InitialValues) => {
+    setSubjectValue(initialValues.subject ?? '');
+    setToRecipients(initialValues.to ?? []);
+    setCcRecipients(initialValues.cc ?? []);
+    setBccRecipients(initialValues.bcc ?? []);
+    setShowCc((initialValues.cc?.length ?? 0) > 0);
+    setShowBcc((initialValues.bcc?.length ?? 0) > 0);
+  };
+
   const clear = () => {
     setSubjectValue('');
     setToRecipients([]);
@@ -77,6 +86,7 @@ const useComposeMessage = (initialDraft?: InitialDraft) => {
     onRemoveCcRecipient,
     onAddBccRecipient,
     onRemoveBccRecipient,
+    setInitialValues,
     clear,
   };
 };

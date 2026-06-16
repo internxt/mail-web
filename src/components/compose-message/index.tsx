@@ -1,5 +1,5 @@
 import { LockKeyIcon, PaperclipIcon, WarningIcon, XIcon } from '@phosphor-icons/react';
-import { useCallback, useRef, useState, type ChangeEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
 
 import { genSymmetricKey } from 'internxt-crypto';
 import type { Recipient } from './types';
@@ -50,16 +50,22 @@ export const ComposeMessageDialog = () => {
     onShowBccRecipient,
     onShowCcRecipient,
     onSubjectChange,
+    setInitialValues,
     clear: clearComposeMessage,
-  } = useComposeMessage({
-    subject: item.subject,
-    to: item.to,
-    cc: item.cc,
-    bcc: item.bcc,
-  });
+  } = useComposeMessage();
 
   const title = item.subject ?? translate('modals.composeMessageDialog.title');
   const editor = useEditor(EDITOR_CONFIG);
+
+  useEffect(() => {
+    setInitialValues(item);
+  }, [item, mode]);
+
+  useEffect(() => {
+    if (mode !== 'forward' || !editor || !item.htmlBody) return;
+    editor.commands.setContent(`<p></p><p></p> ${item.htmlBody}`);
+    editor.commands.focus('start');
+  }, [editor, mode, item.htmlBody]);
 
   const [attachmentsSessionKey] = useState<Uint8Array>(() => genSymmetricKey());
 

@@ -1,8 +1,10 @@
 import { renderHook } from '@testing-library/react';
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, vi } from 'vitest';
 import { useInitialComposeState } from './useInitialComposeState';
 import { getMockedMail } from '@/test-utils/fixtures';
 import type { ComposePayload } from '@/types/mail';
+
+vi.mock('@/i18n', () => ({ useTranslationContext: () => ({ translate: (key: string) => key }) }));
 
 describe('Preparing the initial state of the compose dialog', () => {
   test('When the dialog opens without any payload, then the compose starts as a blank new message', () => {
@@ -68,18 +70,48 @@ describe('Preparing the initial state of the compose dialog', () => {
     allIds.forEach((id) => expect(id).toBeTruthy());
   });
 
+  test('When the user forwards a message, then the subject is pre-filled as a forward of the original conversation', () => {
+    const sourceMail = getMockedMail({ subject: 'Project status' });
+    const payload: ComposePayload = { mode: 'forward', sourceMail };
+
+    const { result } = renderHook(() => useInitialComposeState(payload));
+
+    expect(result.current.mode).toBe('forward');
+    expect(result.current.data.subject).toBe('Fwd: Project status');
+  });
+
+  test('When the user forwards a message, then the recipient fields start empty so the user chooses who receives it', () => {
+    const sourceMail = getMockedMail({
+      to: [{ email: 'bob@inxt.me' }],
+      cc: [{ email: 'cc@inxt.me' }],
+      bcc: [{ email: 'bcc@inxt.me' }],
+    });
+    const payload: ComposePayload = { mode: 'forward', sourceMail };
+
+    const { result } = renderHook(() => useInitialComposeState(payload));
+
+    expect(result.current.data.to).toEqual([]);
+    expect(result.current.data.cc).toEqual([]);
+    expect(result.current.data.bcc).toEqual([]);
+  });
+
+  test('When the user forwards a message, then the body includes the original sender info so the user knows what is being shared', () => {
+    const sourceMail = getMockedMail({
+      from: [{ name: 'Alice', email: 'alice@inxt.me' }],
+    });
+    const payload: ComposePayload = { mode: 'forward', sourceMail };
+
+    const { result } = renderHook(() => useInitialComposeState(payload));
+
+    expect(result.current.data.htmlBody).toContain('alice@inxt.me');
+  });
+
   test('When the dialog is opened in a mode that is not yet implemented, then it falls back to an empty draft', () => {
     const sourceMail = getMockedMail();
-    const replyAllPayload: ComposePayload = { mode: 'replyAll', sourceMail };
-    const forwardPayload: ComposePayload = { mode: 'forward', sourceMail };
     const draftPayload: ComposePayload = { mode: 'draft', draft: sourceMail };
 
-    const { result: replyAllResult } = renderHook(() => useInitialComposeState(replyAllPayload));
-    const { result: forwardResult } = renderHook(() => useInitialComposeState(forwardPayload));
-    const { result: draftResult } = renderHook(() => useInitialComposeState(draftPayload));
+    const { result } = renderHook(() => useInitialComposeState(draftPayload));
 
-    expect(replyAllResult.current).toEqual({ mode: 'replyAll', data: { subject: '', to: [], cc: [], bcc: [] } });
-    expect(forwardResult.current).toEqual({ mode: 'forward', data: { subject: '', to: [], cc: [], bcc: [] } });
-    expect(draftResult.current).toEqual({ mode: 'draft', data: { subject: '', to: [], cc: [], bcc: [] } });
+    expect(result.current).toEqual({ mode: 'draft', data: { subject: '', to: [], cc: [], bcc: [] } });
   });
 });
