@@ -17,6 +17,7 @@ interface HeaderProps {
   cc: User[];
   bcc: User[];
   attachmentsLength?: number;
+  collapsedSnippet?: React.ReactNode;
 }
 
 const RecipientLine = ({ label, users }: { label: string; users: User[] }) => {
@@ -34,25 +35,27 @@ const RecipientLine = ({ label, users }: { label: string; users: User[] }) => {
   );
 };
 
-const PreviewHeader = ({ sender, date, to, cc, bcc, attachmentsLength }: HeaderProps) => {
+const PreviewHeader = ({ sender, date, to, cc, bcc, attachmentsLength, collapsedSnippet }: HeaderProps) => {
   const formattedDate = DateService.formatWithTime(date);
   const { translate } = useTranslationContext();
 
   return (
     <div className="flex w-full flex-row items-start justify-between p-5">
-      <div className="flex flex-row gap-3">
+      <div className="flex flex-row gap-3 min-w-0 flex-1">
         <Avatar fullName={sender.name} src={sender.avatar} diameter={40} />
-        <div className="flex flex-col gap-0.5">
+        <div className="flex flex-col gap-0.5 min-w-0 flex-1">
           <p className="text-lg font-medium text-gray-100">{sender.name}</p>
-          <div className="flex flex-col gap-2">
-            <RecipientLine label={translate('mail.preview.to')} users={to} />
-            <RecipientLine label={translate('mail.preview.cc')} users={cc} />
-            <RecipientLine label={translate('mail.preview.bcc')} users={bcc} />
-          </div>
+          {collapsedSnippet ?? (
+            <div className="flex flex-col gap-2">
+              <RecipientLine label={translate('mail.preview.to')} users={to} />
+              <RecipientLine label={translate('mail.preview.cc')} users={cc} />
+              <RecipientLine label={translate('mail.preview.bcc')} users={bcc} />
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="flex flex-col items-end gap-3 text-sm text-gray-500">
+      <div className="flex flex-col items-end gap-3 text-sm text-gray-500 shrink-0">
         <span className="whitespace-nowrap text-sm text-gray-80">{formattedDate}</span>
         {(attachmentsLength ?? 0) > 0 ? (
           <span className="flex flex-row items-center gap-1">

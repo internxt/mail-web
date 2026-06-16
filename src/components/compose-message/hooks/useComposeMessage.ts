@@ -1,13 +1,20 @@
 import { useCallback, useState } from 'react';
-import type { DraftMessage, Recipient } from '../types';
+import type { Recipient } from '../types';
 
-const useComposeMessage = (draft?: DraftMessage) => {
-  const [subjectValue, setSubjectValue] = useState(draft?.subject ?? '');
-  const [toRecipients, setToRecipients] = useState<Recipient[]>(draft?.to ?? []);
-  const [ccRecipients, setCcRecipients] = useState<Recipient[]>(draft?.cc ?? []);
-  const [bccRecipients, setBccRecipients] = useState<Recipient[]>(draft?.bcc ?? []);
-  const [showCc, setShowCc] = useState(ccRecipients?.length > 0);
-  const [showBcc, setShowBcc] = useState(bccRecipients?.length > 0);
+interface InitialDraft {
+  subject?: string;
+  to?: Recipient[];
+  cc?: Recipient[];
+  bcc?: Recipient[];
+}
+
+const useComposeMessage = (initialDraft?: InitialDraft) => {
+  const [subjectValue, setSubjectValue] = useState<string>(initialDraft?.subject ?? '');
+  const [toRecipients, setToRecipients] = useState<Recipient[]>(initialDraft?.to ?? []);
+  const [ccRecipients, setCcRecipients] = useState<Recipient[]>(initialDraft?.cc ?? []);
+  const [bccRecipients, setBccRecipients] = useState<Recipient[]>(initialDraft?.bcc ?? []);
+  const [showCc, setShowCc] = useState((initialDraft?.cc?.length ?? 0) > 0);
+  const [showBcc, setShowBcc] = useState((initialDraft?.bcc?.length ?? 0) > 0);
 
   const onShowCcRecipient = () => {
     setShowCc(true);

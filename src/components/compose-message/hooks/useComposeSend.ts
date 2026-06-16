@@ -26,6 +26,7 @@ interface UseComposeSendParams {
   editor: Editor | null;
   attachments: AttachmentTask[];
   attachmentsSessionKey: Uint8Array;
+  inReplyTo?: string;
   onSent: () => void;
 }
 
@@ -48,6 +49,7 @@ export const useComposeSend = ({
   editor,
   attachments,
   attachmentsSessionKey,
+  inReplyTo,
   onSent,
 }: UseComposeSendParams): UseComposeSendResult => {
   const { translate } = useTranslationContext();
@@ -109,6 +111,7 @@ export const useComposeSend = ({
       textBody: textBody || undefined,
       htmlBody: htmlBody || undefined,
       attachments: attachmentsToSend,
+      inReplyToEmailId: inReplyTo,
     };
 
     try {
@@ -158,6 +161,7 @@ export const useComposeSend = ({
           subject,
           encryption,
           attachments: attachmentsToSend,
+          inReplyToEmailId: inReplyTo,
         }).unwrap();
       } else {
         await sendEmail(cleartextPayload).unwrap();
@@ -180,6 +184,7 @@ export const useComposeSend = ({
     senderKeys,
     attachments,
     attachmentsSessionKey,
+    inReplyTo,
     triggerLookup,
     sendEmail,
     onSent,

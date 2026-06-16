@@ -131,6 +131,9 @@
           "description": "There are no unread messages"
         }
       }
+    },
+    "reply": {
+      "header": "On {{date}}, {{senderName}} <{{senderEmail}}> wrote:"
     }
   },
   "errors": {

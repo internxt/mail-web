@@ -133,6 +133,9 @@
           "description": "Non ci sono messaggi non letti"
         }
       }
+    },
+    "reply": {
+      "header": "Il {{date}}, {{senderName}} <{{senderEmail}}> ha scritto:"
     }
   },
   "errors": {
