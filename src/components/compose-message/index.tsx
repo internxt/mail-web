@@ -185,7 +185,7 @@ export const ComposeMessageDialog = () => {
         <input ref={fileInputRef} type="file" multiple hidden onChange={onFilesPicked} />
 
         <div className="mt-5 flex justify-end items-center space-x-2">
-          {encryptionState === 'encrypted' && (
+          {encryptionState === 'internxt' && (
             <span
               data-testid="encryption-badge-encrypted"
               className="inline-flex items-center gap-1 rounded-full bg-green/10 px-2.5 py-1 text-sm font-medium text-green"
@@ -194,7 +194,7 @@ export const ComposeMessageDialog = () => {
               {translate('modals.composeMessageDialog.encryptedBadge')}
             </span>
           )}
-          {encryptionState === 'cleartext' && (
+          {encryptionState === 'external' && (
             <span
               data-testid="encryption-badge-cleartext"
               className="inline-flex items-center gap-1 rounded-full bg-yellow/10 px-2.5 py-1 text-sm font-medium text-yellow"

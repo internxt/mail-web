@@ -20,6 +20,7 @@ const configKeys: Record<keyof ConfigKeys, string> = {
   MAGIC_SALT: 'VITE_MAGIC_SALT',
   DRIVE_APP_URL: 'VITE_DRIVE_APP_URL',
   INTERCOM_PROVIDER_KEY: 'VITE_INTERCOM_PROVIDER_KEY',
+  SERVER_PUBLIC_KEY: 'VITE_SERVER_PUBLIC_KEY',
 };
 
 export class ConfigService {

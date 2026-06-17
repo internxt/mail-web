@@ -46,8 +46,11 @@ export class NetworkService {
     attachmentsSessionKey: Uint8Array;
   }): Promise<{ blob: Blob; name: string }> {
     const { data, contentType, fileName } = await MailService.instance.downloadAttachment(mailId, blobId, name, type);
-    const payload = await decryptSymmetrically(attachmentsSessionKey, new Uint8Array(data));
-    const blob = new Blob([payload as BlobPart], { type: contentType || type });
+    let payload = new Uint8Array(data) as BlobPart;
+    if (attachmentsSessionKey) {
+      payload = (await decryptSymmetrically(attachmentsSessionKey, new Uint8Array(data))) as BlobPart;
+    }
+    const blob = new Blob([payload], { type: contentType || type });
     return { blob, name: name ?? fileName };
   }
 
