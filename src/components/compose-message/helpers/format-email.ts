@@ -9,12 +9,13 @@ export type ReplyDraft = Partial<EmailResponse> & {
 export type ForwardDraft = Partial<EmailResponse>;
 
 export const formatEmailToReply = (mail: EmailResponse): ReplyDraft => {
+  const hasReplyPrefix = /^\s*re:/i.test(mail.subject);
   return {
     replyToEmailId: mail.id,
     to: mail.from,
     cc: mail.cc ?? [],
     bcc: mail.bcc ?? [],
-    subject: mail.subject.startsWith('Re:') ? mail.subject : `Re: ${mail.subject}`,
+    subject: hasReplyPrefix ? mail.subject : `Re: ${mail.subject}`,
     htmlBody: mail.htmlBody,
     textBody: mail.textBody,
     threadId: mail.threadId,

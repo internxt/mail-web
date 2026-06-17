@@ -134,9 +134,6 @@
         }
       }
     },
-    "reply": {
-      "header": "El {{date}}, {{senderName}} <{{senderEmail}}> escribió:"
-    },
     "forward": {
       "header": "---------- Mensaje reenviado ---------",
       "from": "De",

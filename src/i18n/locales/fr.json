@@ -134,9 +134,6 @@
         }
       }
     },
-    "reply": {
-      "header": "Le {{date}}, {{senderName}} <{{senderEmail}}> a écrit :"
-    },
     "forward": {
       "header": "---------- Message transféré ---------",
       "from": "De",

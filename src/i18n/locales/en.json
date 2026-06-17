@@ -132,9 +132,6 @@
         }
       }
     },
-    "reply": {
-      "header": "On {{date}}, {{senderName}} <{{senderEmail}}> wrote:"
-    },
     "forward": {
       "header": "---------- Forwarded message ---------",
       "from": "From",

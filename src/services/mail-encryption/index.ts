@@ -158,6 +158,11 @@ export class MailEncryptionService {
     return this.trialDecrypt(summary.wrappedKeys, summary.encryptedPreview, keypair);
   }
 
+  /**
+   * Decrypt the body of a given email
+   * @param mail - The email to decrypt
+   * @returns - An object indicating if the decryption was ok and the decrypted text
+   */
   async decryptMailBody(mail: EmailResponse): Promise<DecryptedMailBody> {
     const rawBody = (mail.textBody ?? '') as string;
     const isEncrypted = this.isEncryptedEmailBody(rawBody);
