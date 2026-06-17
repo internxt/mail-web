@@ -2,7 +2,6 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { usePreviewMailActions } from './usePreviewMailActions';
 import { ErrorService } from '@/services/error';
-import type { DecryptedMail } from '@/types/mail';
 import { ActionDialog } from '@/context/dialog-manager/types';
 import { getMockedMail } from '@/test-utils/fixtures';
 
@@ -27,7 +26,6 @@ const makeParams = (overrides?: Record<string, unknown>) => ({
   updateReadStatus: vi.fn().mockResolvedValue(null),
   moveToFolder: vi.fn().mockResolvedValue(null),
   deleteEmails: vi.fn().mockResolvedValue(null),
-  decryptedMail: {} as unknown as DecryptedMail,
   openDialog: vi.fn(),
   ...overrides,
 });
