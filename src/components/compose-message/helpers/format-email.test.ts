@@ -1,8 +1,12 @@
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { formatEmailToReply } from './format-email';
 import { getMockedMail } from '@/test-utils/fixtures';
 
 describe('Formatting an email as a reply draft', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
   test('When replying to a message, then the original sender becomes the only recipient of the draft', async () => {
     const original = getMockedMail({
       from: [{ name: 'Alice', email: 'alice@inxt.me' }],

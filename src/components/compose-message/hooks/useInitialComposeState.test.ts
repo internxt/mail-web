@@ -1,10 +1,12 @@
 import { renderHook } from '@testing-library/react';
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { useInitialComposeState } from './useInitialComposeState';
 import { getMockedMail } from '@/test-utils/fixtures';
 import type { ComposePayload } from '@/types/mail';
 
 describe('Preparing the initial state of the compose dialog', () => {
+  beforeEach(() => vi.restoreAllMocks());
+
   test('When the dialog opens without any payload, then the compose starts as a blank new message', () => {
     const { result } = renderHook(() => useInitialComposeState(undefined));
 

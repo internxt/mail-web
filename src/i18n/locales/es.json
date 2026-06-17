@@ -133,9 +133,6 @@
           "description": "No hay mensajes sin leer"
         }
       }
-    },
-    "reply": {
-      "header": "El {{date}}, {{senderName}} <{{senderEmail}}> escribió:"
     }
   },
   "errors": {

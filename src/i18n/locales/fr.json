@@ -133,9 +133,6 @@
           "description": "Aucun message non lu"
         }
       }
-    },
-    "reply": {
-      "header": "Le {{date}}, {{senderName}} <{{senderEmail}}> a écrit :"
     }
   },
   "errors": {
