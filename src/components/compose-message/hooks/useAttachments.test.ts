@@ -4,6 +4,7 @@ import useAttachments from './useAttachments';
 import notificationsService, { ToastType } from '@/services/notifications';
 import { MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL } from '@/constants';
 import type { UploadManagerCallbacks } from '@/services/upload-manager';
+import type { InheritedAttachmentInput } from './useAttachments';
 
 vi.mock('@/i18n', () => ({ useTranslationContext: () => ({ translate: (key: string) => key }) }));
 
@@ -69,8 +70,16 @@ describe('Attachments - custom hook', () => {
       expect(enqueue).toHaveBeenNthCalledWith(1, 'id-0', f1);
       expect(enqueue).toHaveBeenNthCalledWith(2, 'id-1', f2);
       expect(result.current.attachments).toEqual([
-        { id: 'id-0', name: '1.txt', size: 100, type: 'text/plain', status: 'uploading', file: f1 },
-        { id: 'id-1', name: '2.bin', size: 200, type: 'application/octet-stream', status: 'uploading', file: f2 },
+        { kind: 'uploaded', id: 'id-0', name: '1.txt', size: 100, type: 'text/plain', status: 'uploading', file: f1 },
+        {
+          kind: 'uploaded',
+          id: 'id-1',
+          name: '2.bin',
+          size: 200,
+          type: 'application/octet-stream',
+          status: 'uploading',
+          file: f2,
+        },
       ]);
       expect(result.current.totalSize).toBe(f1.size + f2.size);
       expect(result.current.isUploading).toBe(true);
@@ -170,6 +179,115 @@ describe('Attachments - custom hook', () => {
 
       expect(clear).toHaveBeenCalledTimes(1);
       expect(result.current.attachments).toHaveLength(0);
+    });
+  });
+
+  describe('inherited attachments', () => {
+    const envelope = {
+      version: 'v1',
+      encryptedText: 'ct',
+      encryptedPreview: 'cp',
+      wrappedKeys: [],
+      attachmentWrappedKeys: [],
+    };
+
+    const makeInherited = (overrides: Partial<InheritedAttachmentInput> = {}): InheritedAttachmentInput => ({
+      originalMailId: 'mail-1',
+      originalBlobId: 'blob-orig-1',
+      originalEnvelope: envelope,
+      name: 'photo.jpg',
+      size: 500,
+      type: 'image/jpeg',
+      ...overrides,
+    });
+
+    test('When inheriting attachments from a forwarded email, then they appear in the list as ready-to-send', () => {
+      const { result } = renderHook(() => useAttachments(new Uint8Array(32)));
+
+      act(() =>
+        result.current.addInheritedAttachments([
+          makeInherited(),
+          makeInherited({ name: 'doc.pdf', size: 200, originalBlobId: 'blob-orig-2' }),
+        ]),
+      );
+
+      expect(result.current.attachments).toHaveLength(2);
+      expect(result.current.attachments[0]).toMatchObject({
+        kind: 'inherited',
+        name: 'photo.jpg',
+        size: 500,
+        status: 'pending',
+        originalMailId: 'mail-1',
+        originalBlobId: 'blob-orig-1',
+      });
+      expect(result.current.attachments[1]).toMatchObject({
+        kind: 'inherited',
+        name: 'doc.pdf',
+        status: 'pending',
+      });
+      expect(result.current.totalSize).toBe(700);
+      expect(result.current.isUploading).toBe(false);
+      expect(result.current.hasErrors).toBe(false);
+      expect(enqueue).not.toHaveBeenCalled();
+    });
+
+    test('When an inherited attachment is removed, then it is gone from the list', () => {
+      const { result } = renderHook(() => useAttachments(new Uint8Array(32)));
+      act(() => result.current.addInheritedAttachments([makeInherited()]));
+
+      const id = result.current.attachments[0].id;
+      act(() => result.current.remove(id));
+
+      expect(result.current.attachments).toHaveLength(0);
+      expect(result.current.totalSize).toBe(0);
+    });
+
+    test('When inheriting attachments that would exceed the per-mail size limit, then the user is warned and they are not added', () => {
+      const { result } = renderHook(() => useAttachments(new Uint8Array(32)));
+
+      act(() =>
+        result.current.addInheritedAttachments([makeInherited({ size: MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL + 1 })]),
+      );
+
+      expect(show).toHaveBeenCalledWith({
+        text: 'modals.composeMessageDialog.errors.attachmentsTooLarge',
+        type: ToastType.Warning,
+      });
+      expect(result.current.attachments).toHaveLength(0);
+    });
+
+    test('When markResolvingInherited is called, then the attachment moves to uploading', () => {
+      const { result } = renderHook(() => useAttachments(new Uint8Array(32)));
+      act(() => result.current.addInheritedAttachments([makeInherited()]));
+      const id = result.current.attachments[0].id;
+
+      act(() => result.current.markResolvingInherited(id));
+
+      expect(result.current.attachments[0].status).toBe('uploading');
+      expect(result.current.isUploading).toBe(true);
+    });
+
+    test('When markInheritedResolved is called, then the attachment is done with the new blobId', () => {
+      const { result } = renderHook(() => useAttachments(new Uint8Array(32)));
+      act(() => result.current.addInheritedAttachments([makeInherited()]));
+      const id = result.current.attachments[0].id;
+
+      act(() => result.current.markInheritedResolved(id, 'new-blob-id'));
+
+      expect(result.current.attachments[0]).toMatchObject({ status: 'done', blobId: 'new-blob-id' });
+      expect(result.current.isUploading).toBe(false);
+      expect(result.current.hasErrors).toBe(false);
+    });
+
+    test('When markInheritedFailed is called, then the attachment moves to error', () => {
+      const { result } = renderHook(() => useAttachments(new Uint8Array(32)));
+      act(() => result.current.addInheritedAttachments([makeInherited()]));
+      const id = result.current.attachments[0].id;
+
+      act(() => result.current.markInheritedFailed(id));
+
+      expect(result.current.attachments[0].status).toBe('error');
+      expect(result.current.hasErrors).toBe(true);
     });
   });
 });

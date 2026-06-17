@@ -160,7 +160,8 @@
       "sendFailed": "Impossible d'envoyer le courriel",
       "keyLookupFailed": "Impossible de récupérer les clés du destinataire",
       "internxtKeyMissing": "Impossible de trouver les clés de chiffrement pour un destinataire Internxt. Veuillez réessayer plus tard.",
-      "encryptionUnavailable": "Le chiffrement n'est pas encore prêt. Veuillez réessayer dans un instant."
+      "encryptionUnavailable": "Le chiffrement n'est pas encore prêt. Veuillez réessayer dans un instant.",
+      "forwardAttachmentFailed": "Impossible de préparer une pièce jointe pour le transfert. Veuillez réessayer."
     }
   },
   "modals": {

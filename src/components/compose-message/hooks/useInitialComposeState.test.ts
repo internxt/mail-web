@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { useInitialComposeState } from './useInitialComposeState';
-import { getMockedMail } from '@/test-utils/fixtures';
+import { getMockedAttachment, getMockedMail } from '@/test-utils/fixtures';
 import type { ComposePayload } from '@/types/mail';
 
 describe('Preparing the initial state of the compose dialog', () => {
@@ -70,18 +70,79 @@ describe('Preparing the initial state of the compose dialog', () => {
     allIds.forEach((id) => expect(id).toBeTruthy());
   });
 
-  test('When the dialog is opened in a mode that is not yet implemented, then it falls back to an empty draft', () => {
+  describe('forwarding messages', () => {
+    const envelope = {
+      version: 'v1',
+      encryptedText: 'ct',
+      encryptedPreview: 'cp',
+      wrappedKeys: [],
+      attachmentWrappedKeys: [{ encryptedKey: 'k' }],
+    };
+
+    test('When forwarding a message with attachments, then they are exposed in the initial state so the compose can hydrate them', () => {
+      const attachment = getMockedAttachment();
+      const sourceMail = getMockedMail({
+        id: 'mail-fwd',
+        attachments: [attachment],
+        encryption: envelope as never,
+      });
+      const payload: ComposePayload = { mode: 'forward', sourceMail };
+
+      const { result } = renderHook(() => useInitialComposeState(payload));
+
+      expect(result.current.mode).toBe('forward');
+      expect(result.current.data.inheritedAttachments).toHaveLength(1);
+      expect(result.current.data.inheritedAttachments![0]).toMatchObject({
+        originalMailId: 'mail-fwd',
+        originalBlobId: attachment.blobId,
+        name: attachment.name,
+        size: attachment.size,
+        type: attachment.type,
+        originalEnvelope: envelope,
+      });
+    });
+
+    test('When forwarding a message with no attachments, then inheritedAttachments is an empty array', () => {
+      const sourceMail = getMockedMail({ attachments: [], encryption: envelope as never });
+      const payload: ComposePayload = { mode: 'forward', sourceMail };
+
+      const { result } = renderHook(() => useInitialComposeState(payload));
+
+      expect(result.current.data.inheritedAttachments).toEqual([]);
+    });
+
+    test('When forwarding a message with no encryption envelope, then no attachments are inherited', () => {
+      const attachment = getMockedAttachment();
+      const sourceMail = getMockedMail({ attachments: [attachment], encryption: null as never });
+      const payload: ComposePayload = { mode: 'forward', sourceMail };
+
+      const { result } = renderHook(() => useInitialComposeState(payload));
+
+      expect(result.current.data.inheritedAttachments).toEqual([]);
+    });
+
+    test('When forwarding a message, then the compose opens with empty recipients and subject', () => {
+      const sourceMail = getMockedMail({ subject: 'Original subject', attachments: [] });
+      const payload: ComposePayload = { mode: 'forward', sourceMail };
+
+      const { result } = renderHook(() => useInitialComposeState(payload));
+
+      expect(result.current.data.to).toEqual([]);
+      expect(result.current.data.cc).toEqual([]);
+      expect(result.current.data.bcc).toEqual([]);
+      expect(result.current.data.subject).toBe('');
+    });
+  });
+
+  test('When the dialog is opened in replyAll or draft mode, then it falls back to an empty draft', () => {
     const sourceMail = getMockedMail();
     const replyAllPayload: ComposePayload = { mode: 'replyAll', sourceMail };
-    const forwardPayload: ComposePayload = { mode: 'forward', sourceMail };
     const draftPayload: ComposePayload = { mode: 'draft', draft: sourceMail };
 
     const { result: replyAllResult } = renderHook(() => useInitialComposeState(replyAllPayload));
-    const { result: forwardResult } = renderHook(() => useInitialComposeState(forwardPayload));
     const { result: draftResult } = renderHook(() => useInitialComposeState(draftPayload));
 
     expect(replyAllResult.current).toEqual({ mode: 'replyAll', data: { subject: '', to: [], cc: [], bcc: [] } });
-    expect(forwardResult.current).toEqual({ mode: 'forward', data: { subject: '', to: [], cc: [], bcc: [] } });
     expect(draftResult.current).toEqual({ mode: 'draft', data: { subject: '', to: [], cc: [], bcc: [] } });
   });
 });

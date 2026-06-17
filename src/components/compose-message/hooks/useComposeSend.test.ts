@@ -3,9 +3,12 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import type { Editor } from '@tiptap/react';
 import useComposeSend from './useComposeSend';
 import { MailEncryptionService } from '@/services/mail-encryption';
+import { NetworkService } from '@/services/network';
+import { MailKeysService } from '@/services/mail-keys';
 import { ConfigService } from '@/services/config';
 import notificationsService from '@/services/notifications';
 import type { Recipient } from '../types';
+import type { AttachmentTask } from './useAttachments';
 
 const mocks = vi.hoisted(() => ({
   activeDomains: undefined as { domain: string }[] | undefined,
@@ -42,6 +45,9 @@ const mockEncryptionBlock = {
 
 const renderSend = (overrides: Partial<Parameters<typeof useComposeSend>[0]> = {}) => {
   const onSent = vi.fn();
+  const markResolvingInherited = vi.fn();
+  const markInheritedResolved = vi.fn();
+  const markInheritedFailed = vi.fn();
   const { result } = renderHook(() =>
     useComposeSend({
       toRecipients: [],
@@ -52,10 +58,13 @@ const renderSend = (overrides: Partial<Parameters<typeof useComposeSend>[0]> = {
       attachments: [],
       attachmentsSessionKey: new Uint8Array(32),
       onSent,
+      markResolvingInherited,
+      markInheritedResolved,
+      markInheritedFailed,
       ...overrides,
     }),
   );
-  return { result, onSent };
+  return { result, onSent, markResolvingInherited, markInheritedResolved, markInheritedFailed };
 };
 
 describe('useComposeSend', () => {
@@ -236,6 +245,124 @@ describe('useComposeSend', () => {
       });
 
       expect(show).toHaveBeenCalledWith(expect.objectContaining({ text: 'errors.mail.encryptionUnavailable' }));
+      expect(mocks.sendEmail).not.toHaveBeenCalled();
+      expect(onSent).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('inherited attachments (forwarded mails)', () => {
+    const envelope = {
+      version: 'v1',
+      encryptedText: 'ct',
+      encryptedPreview: 'cp',
+      wrappedKeys: [],
+      attachmentWrappedKeys: [{ encryptedKey: 'k' }],
+    };
+
+    const makeInherited = (overrides: Partial<AttachmentTask> = {}): AttachmentTask =>
+      ({
+        kind: 'inherited',
+        id: 'inh-1',
+        name: 'photo.jpg',
+        size: 500,
+        type: 'image/jpeg',
+        status: 'pending',
+        originalMailId: 'orig-mail',
+        originalBlobId: 'orig-blob',
+        originalEnvelope: envelope,
+        ...overrides,
+      }) as AttachmentTask;
+
+    beforeEach(() => {
+      mocks.triggerLookup.mockReturnValue({
+        unwrap: () => Promise.resolve([{ address: 'bob@inxt.me', publicKey: 'bob-pk' }]),
+      });
+      vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
+      vi.spyOn(MailKeysService.instance, 'getCurrentKeys').mockReturnValue({
+        publicKey: 'sender-pub',
+        privateKey: 'sender-priv',
+      } as never);
+      vi.spyOn(MailEncryptionService.instance, 'decryptAttachmentsSessionKey').mockResolvedValue(new Uint8Array(32));
+      vi.spyOn(NetworkService.instance, 'download').mockResolvedValue({ blob: new Blob(['data']), name: 'photo.jpg' });
+      vi.spyOn(NetworkService.instance, 'upload').mockResolvedValue({ blobId: 'new-blob-id' });
+    });
+
+    test('When sending a forward, then each inherited attachment is downloaded with its original key, re-encrypted with the new session key, and uploaded as a fresh blob', async () => {
+      const decryptSpy = vi.spyOn(MailEncryptionService.instance, 'decryptAttachmentsSessionKey');
+      const downloadSpy = vi.spyOn(NetworkService.instance, 'download');
+      const uploadSpy = vi.spyOn(NetworkService.instance, 'upload');
+
+      const { result, onSent, markResolvingInherited, markInheritedResolved } = renderSend({
+        toRecipients: [recipient('bob@inxt.me')],
+        attachments: [makeInherited()],
+      });
+
+      await act(async () => {
+        await result.current.send();
+      });
+
+      expect(decryptSpy).toHaveBeenCalledWith(envelope, expect.objectContaining({ publicKey: 'sender-pub' }));
+      expect(downloadSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ mailId: 'orig-mail', blobId: 'orig-blob', name: 'photo.jpg' }),
+      );
+      expect(uploadSpy).toHaveBeenCalledWith(expect.any(Uint8Array), expect.any(File));
+      expect(markResolvingInherited).toHaveBeenCalledWith('inh-1');
+      expect(markInheritedResolved).toHaveBeenCalledWith('inh-1', 'new-blob-id');
+      expect(mocks.sendEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          attachments: [expect.objectContaining({ blobId: 'new-blob-id', name: 'photo.jpg' })],
+        }),
+      );
+      expect(onSent).toHaveBeenCalled();
+    });
+
+    test('When an inherited attachment fails to be re-processed, then the email is not sent and the user sees an error', async () => {
+      vi.spyOn(NetworkService.instance, 'download').mockRejectedValue(new Error('network error'));
+
+      const { result, onSent, markInheritedFailed } = renderSend({
+        toRecipients: [recipient('bob@inxt.me')],
+        attachments: [makeInherited()],
+      });
+
+      await act(async () => {
+        await result.current.send();
+      });
+
+      expect(markInheritedFailed).toHaveBeenCalledWith('inh-1');
+      expect(show).toHaveBeenCalledWith(expect.objectContaining({ text: 'errors.mail.forwardAttachmentFailed' }));
+      expect(mocks.sendEmail).not.toHaveBeenCalled();
+      expect(onSent).not.toHaveBeenCalled();
+    });
+
+    test('When the user removed all inherited attachments, then the email is sent without them', async () => {
+      const { result, onSent } = renderSend({
+        toRecipients: [recipient('bob@inxt.me')],
+        attachments: [],
+      });
+
+      await act(async () => {
+        await result.current.send();
+      });
+
+      expect(NetworkService.instance.download).not.toHaveBeenCalled();
+      expect(mocks.sendEmail).toHaveBeenCalledWith(expect.objectContaining({ attachments: [] }));
+      expect(onSent).toHaveBeenCalled();
+    });
+
+    test('When the sender keypair is not available, then the send is aborted before attempting download', async () => {
+      vi.spyOn(MailKeysService.instance, 'getCurrentKeys').mockReturnValue(null);
+
+      const { result, onSent } = renderSend({
+        toRecipients: [recipient('bob@inxt.me')],
+        attachments: [makeInherited()],
+      });
+
+      await act(async () => {
+        await result.current.send();
+      });
+
+      expect(NetworkService.instance.download).not.toHaveBeenCalled();
+      expect(show).toHaveBeenCalledWith(expect.objectContaining({ text: 'errors.mail.keyLookupFailed' }));
       expect(mocks.sendEmail).not.toHaveBeenCalled();
       expect(onSent).not.toHaveBeenCalled();
     });
