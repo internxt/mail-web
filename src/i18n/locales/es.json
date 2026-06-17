@@ -159,6 +159,7 @@
       "noRecipients": "Agrega al menos un destinatario antes de enviar",
       "sendFailed": "No se pudo enviar el correo",
       "keyLookupFailed": "No se pudieron obtener las claves del destinatario",
+      "internxtKeyMissing": "No se encontraron claves de cifrado para un destinatario de Internxt. Inténtalo de nuevo más tarde.",
       "encryptionUnavailable": "El cifrado aún no está listo. Inténtalo de nuevo en un momento."
     }
   },
