@@ -7,7 +7,7 @@ import {
   useLazyLookupRecipientKeysQuery,
   useSendEmailMutation,
 } from '@/store/api/mail';
-import { classifyRecipients, uniqueEmailAddresses } from '@/utils/domain';
+import { classifyRecipients, isInternxtDomain, uniqueEmailAddresses } from '@/utils/domain';
 import { MailEncryptionService, type RecipientPublicKey } from '@/services/mail-encryption';
 import { ConfigService } from '@/services/config';
 import notificationsService, { ToastType } from '@/services/notifications';
@@ -109,6 +109,14 @@ export const useComposeSend = ({
         return;
       }
 
+      // If an Internxt recipient has no public key, the lookup is broken — never
+      // fall back to the server key for them, that would silently weaken encryption.
+      const missingInternxtKey = lookup.some((r) => !r.publicKey && isInternxtDomain(r.address, activeDomains ?? []));
+      if (missingInternxtKey) {
+        notificationsService.show({ text: translate('errors.mail.internxtKeyMissing'), type: ToastType.Error });
+        return;
+      }
+
       // For external recipients (no publicKey) substitute the server public key
       // so the backend can decrypt and forward the content in cleartext.
       let serverPublicKey: string | undefined;
@@ -155,6 +163,7 @@ export const useComposeSend = ({
     }
   }, [
     allRecipients,
+    activeDomains,
     editor,
     toRecipients,
     ccRecipients,

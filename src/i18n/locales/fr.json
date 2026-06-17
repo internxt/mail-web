@@ -159,6 +159,7 @@
       "noRecipients": "Ajoutez au moins un destinataire avant d'envoyer",
       "sendFailed": "Impossible d'envoyer le courriel",
       "keyLookupFailed": "Impossible de récupérer les clés du destinataire",
+      "internxtKeyMissing": "Impossible de trouver les clés de chiffrement pour un destinataire Internxt. Veuillez réessayer plus tard.",
       "encryptionUnavailable": "Le chiffrement n'est pas encore prêt. Veuillez réessayer dans un instant."
     }
   },
