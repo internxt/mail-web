@@ -168,6 +168,7 @@
       "noRecipients": "Ajoutez au moins un destinataire avant d'envoyer",
       "sendFailed": "Impossible d'envoyer le courriel",
       "keyLookupFailed": "Impossible de récupérer les clés du destinataire",
+      "forwardAttachmentFailed": "Impossible de préparer une pièce jointe pour le transfert. Veuillez réessayer.",
       "encryptionUnavailable": "Le chiffrement n'est pas encore prêt. Veuillez réessayer dans un instant."
     }
   },

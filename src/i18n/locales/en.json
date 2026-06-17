@@ -166,6 +166,7 @@
       "noRecipients": "Add at least one recipient before sending",
       "sendFailed": "Could not send the email",
       "keyLookupFailed": "Could not fetch recipient keys",
+      "forwardAttachmentFailed": "Could not prepare an attachment for forwarding. Please try again.",
       "encryptionUnavailable": "Encryption isn't ready yet. Please try again in a moment."
     }
   },

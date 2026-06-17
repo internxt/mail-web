@@ -168,6 +168,7 @@
       "noRecipients": "Agrega al menos un destinatario antes de enviar",
       "sendFailed": "No se pudo enviar el correo",
       "keyLookupFailed": "No se pudieron obtener las claves del destinatario",
+      "forwardAttachmentFailed": "No se pudo preparar un adjunto para reenviar. Inténtalo de nuevo.",
       "encryptionUnavailable": "El cifrado aún no está listo. Inténtalo de nuevo en un momento."
     }
   },

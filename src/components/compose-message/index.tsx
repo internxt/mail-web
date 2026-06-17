@@ -75,10 +75,26 @@ export const ComposeMessageDialog = () => {
     isUploading: isUploadingAttachments,
     hasErrors: hasAttachmentErrors,
     addFiles: addAttachmentFiles,
+    addInheritedAttachments,
+    markResolvingInherited,
+    markInheritedResolved,
+    markInheritedFailed,
     retry: retryAttachment,
     remove: removeAttachment,
     clear: clearAttachments,
   } = useAttachments(attachmentsSessionKey);
+
+  const hydratedForwardAttachmentsRef = useRef(false);
+  useEffect(() => {
+    if (mode !== 'forward') return;
+    if (hydratedForwardAttachmentsRef.current) return;
+
+    const inherited = item.inheritedAttachments ?? [];
+    if (inherited.length === 0) return;
+
+    hydratedForwardAttachmentsRef.current = true;
+    addInheritedAttachments(inherited);
+  }, [mode, item.inheritedAttachments, addInheritedAttachments]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const onClose = useCallback(() => {
@@ -86,6 +102,7 @@ export const ComposeMessageDialog = () => {
     clearComposeMessage();
     editor.commands.clearContent();
     onComposeMessageDialogClose(ActionDialog.ComposeMessage);
+    hydratedForwardAttachmentsRef.current = false;
   }, [editor, clearComposeMessage, onComposeMessageDialogClose, clearAttachments]);
 
   const { send, encryptionState, isSending } = useComposeSend({
@@ -98,6 +115,9 @@ export const ComposeMessageDialog = () => {
     toRecipients,
     inReplyTo: inReplyItemId,
     onSent: onClose,
+    markResolvingInherited,
+    markInheritedResolved,
+    markInheritedFailed,
   });
 
   const onFilesPicked = (e: ChangeEvent<HTMLInputElement>) => {
