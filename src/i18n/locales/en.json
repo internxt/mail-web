@@ -158,8 +158,7 @@
       "sendFailed": "Could not send the email",
       "keyLookupFailed": "Could not fetch recipient keys",
       "internxtKeyMissing": "Could not find encryption keys for an Internxt recipient. Please try again later.",
-      "encryptionUnavailable": "Encryption isn't ready yet. Please try again in a moment.",
-      "forwardAttachmentFailed": "Could not prepare an attachment for forwarding. Please try again."
+      "encryptionUnavailable": "Encryption isn't ready yet. Please try again in a moment."
     }
   },
   "modals": {

@@ -1,9 +1,7 @@
-import type { ComposePayload, DecryptedMail } from '@/types/mail';
-import type { EncryptionBlock } from '@internxt/sdk/dist/mail/types';
+import type { ComposePayload } from '@/types/mail';
 import { useMemo } from 'react';
 import { formatEmailToReply } from '../helpers/format-email';
 import type { Recipient } from '../types';
-import type { InheritedAttachmentInput } from './useAttachments';
 
 type InitialComposeData = {
   replyToEmailId?: string;
@@ -12,7 +10,6 @@ type InitialComposeData = {
   cc: Recipient[];
   bcc: Recipient[];
   htmlBody?: string;
-  inheritedAttachments?: InheritedAttachmentInput[];
 };
 
 type InitialComposeState = {
@@ -24,19 +21,6 @@ const withIds = (users: { email: string; name?: string }[] | undefined): Recipie
   (users ?? []).map((u) => ({ id: crypto.randomUUID(), email: u.email, name: u.name }));
 
 const EMPTY_DATA: InitialComposeData = { subject: '', to: [], cc: [], bcc: [] };
-
-const extractInheritedAttachments = (mail: DecryptedMail): InheritedAttachmentInput[] => {
-  if (!mail.encryption || !mail.attachments || mail.attachments.length === 0) return [];
-  const envelope = mail.encryption as EncryptionBlock;
-  return mail.attachments.map((a) => ({
-    originalMailId: mail.id,
-    originalBlobId: a.blobId,
-    originalEnvelope: envelope,
-    name: a.name,
-    size: a.size,
-    type: a.type,
-  }));
-};
 
 export const useInitialComposeState = (compose: ComposePayload | undefined): InitialComposeState => {
   return useMemo(() => {
@@ -56,15 +40,8 @@ export const useInitialComposeState = (compose: ComposePayload | undefined): Ini
           },
         };
       }
-      case 'forward':
-        return {
-          mode: compose.mode,
-          data: {
-            ...EMPTY_DATA,
-            inheritedAttachments: extractInheritedAttachments(compose.sourceMail),
-          },
-        };
       case 'replyAll':
+      case 'forward':
       case 'draft':
       case 'new':
         return { mode: compose.mode, data: EMPTY_DATA };

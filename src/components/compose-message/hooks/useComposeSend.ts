@@ -10,12 +10,10 @@ import {
 import { classifyRecipients, isInternxtDomain, uniqueEmailAddresses } from '@/utils/domain';
 import { MailEncryptionService, type RecipientPublicKey } from '@/services/mail-encryption';
 import { ConfigService } from '@/services/config';
-import { NetworkService } from '@/services/network';
-import { MailKeysService } from '@/services/mail-keys';
 import notificationsService, { ToastType } from '@/services/notifications';
 import { useTranslationContext } from '@/i18n';
 import type { Recipient } from '../types';
-import type { AttachmentTask, InheritedAttachment } from './useAttachments';
+import type { AttachmentTask } from './useAttachments';
 
 export type EncryptionState = 'none' | 'unknown' | 'internxt' | 'external';
 
@@ -30,9 +28,6 @@ interface UseComposeSendParams {
   attachments: AttachmentTask[];
   attachmentsSessionKey: Uint8Array;
   inReplyTo?: string;
-  markResolvingInherited: (id: string) => void;
-  markInheritedResolved: (id: string, blobId: string) => void;
-  markInheritedFailed: (id: string) => void;
   onSent: () => void;
 }
 
@@ -58,9 +53,6 @@ export const useComposeSend = ({
   attachments,
   attachmentsSessionKey,
   inReplyTo,
-  markResolvingInherited,
-  markInheritedResolved,
-  markInheritedFailed,
   onSent,
 }: UseComposeSendParams): UseComposeSendResult => {
   const { translate } = useTranslationContext();
@@ -102,60 +94,14 @@ export const useComposeSend = ({
       return;
     }
 
+    const attachmentsToSend: SendEmailRequest['attachments'] = attachments
+      .filter((a): a is AttachmentTask & { blobId: string } => a.status === 'done' && !!a.blobId)
+      .map((a) => ({ blobId: a.blobId, name: a.name, size: a.size, type: a.type }));
+
     const htmlBody = editor?.getHTML() ?? '';
     const textBody = editor?.getText() ?? '';
 
     try {
-      // Resolve inherited attachments (forwarded mails): download, decrypt, re-encrypt, upload.
-      const pendingInherited = attachments.filter(
-        (a): a is InheritedAttachment => a.kind === 'inherited' && a.status === 'pending',
-      );
-      const resolvedBlobIds = new Map<string, string>();
-
-      if (pendingInherited.length > 0) {
-        const senderKeypair = MailKeysService.instance.getCurrentKeys();
-        if (!senderKeypair) {
-          notificationsService.show({ text: translate('errors.mail.keyLookupFailed'), type: ToastType.Error });
-          return;
-        }
-
-        for (const item of pendingInherited) {
-          markResolvingInherited(item.id);
-          try {
-            const originalSessionKey = await MailEncryptionService.instance.decryptAttachmentsSessionKey(
-              item.originalEnvelope,
-              senderKeypair,
-            );
-            const { blob } = await NetworkService.instance.download({
-              mailId: item.originalMailId,
-              blobId: item.originalBlobId,
-              name: item.name,
-              type: item.type,
-              attachmentsSessionKey: originalSessionKey,
-            });
-            const file = new File([blob], item.name, { type: item.type });
-            const { blobId } = await NetworkService.instance.upload(attachmentsSessionKey, file);
-            markInheritedResolved(item.id, blobId);
-            resolvedBlobIds.set(item.id, blobId);
-          } catch (error) {
-            console.error('Failed to re-process inherited attachment', error);
-            markInheritedFailed(item.id);
-            notificationsService.show({
-              text: translate('errors.mail.forwardAttachmentFailed'),
-              type: ToastType.Error,
-            });
-            return;
-          }
-        }
-      }
-
-      const attachmentsToSend: SendEmailRequest['attachments'] = attachments.flatMap((a) => {
-        if (a.status === 'done' && a.blobId) return [{ blobId: a.blobId, name: a.name, size: a.size, type: a.type }];
-        const justResolved = resolvedBlobIds.get(a.id);
-        if (justResolved) return [{ blobId: justResolved, name: a.name, size: a.size, type: a.type }];
-        return [];
-      });
-
       const uniqueAddresses = uniqueEmailAddresses(allRecipients.map((r) => r.email));
       let lookup: RecipientKey[];
       try {
@@ -231,9 +177,6 @@ export const useComposeSend = ({
     attachments,
     attachmentsSessionKey,
     inReplyTo,
-    markResolvingInherited,
-    markInheritedResolved,
-    markInheritedFailed,
     triggerLookup,
     sendEmail,
     onSent,

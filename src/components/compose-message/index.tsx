@@ -1,5 +1,5 @@
 import { LockKeyIcon, PaperclipIcon, WarningIcon, XIcon } from '@phosphor-icons/react';
-import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { useCallback, useRef, useState, type ChangeEvent } from 'react';
 
 import { genSymmetricKey } from 'internxt-crypto';
 import type { Recipient } from './types';
@@ -69,25 +69,11 @@ export const ComposeMessageDialog = () => {
     isUploading: isUploadingAttachments,
     hasErrors: hasAttachmentErrors,
     addFiles: addAttachmentFiles,
-    addInheritedAttachments,
-    markResolvingInherited,
-    markInheritedResolved,
-    markInheritedFailed,
     retry: retryAttachment,
     remove: removeAttachment,
     clear: clearAttachments,
   } = useAttachments(attachmentsSessionKey);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const hydratedForwardAttachmentsRef = useRef(false);
-  useEffect(() => {
-    if (mode !== 'forward') return;
-    if (hydratedForwardAttachmentsRef.current) return;
-    const inherited = item.inheritedAttachments ?? [];
-    if (inherited.length === 0) return;
-    hydratedForwardAttachmentsRef.current = true;
-    addInheritedAttachments(inherited);
-  }, [mode, item.inheritedAttachments, addInheritedAttachments]);
 
   const onClose = useCallback(() => {
     clearAttachments();
@@ -105,9 +91,6 @@ export const ComposeMessageDialog = () => {
     subject: subjectValue,
     toRecipients,
     inReplyTo: inReplyItemId,
-    markResolvingInherited,
-    markInheritedResolved,
-    markInheritedFailed,
     onSent: onClose,
   });
 
