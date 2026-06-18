@@ -37,7 +37,8 @@ const MailView = ({ folder }: MailViewProps) => {
   const { openDialog } = useActionDialog();
 
   const { data: activeMailData } = useGetThreadQuery({ emailId: activeMailId! }, { skip: !activeMailId });
-  const activeMails = activeMailId ? activeMailData : undefined;
+  const thread = activeMailId ? activeMailData : undefined;
+  const activeMail = thread?.find((m) => m.id === activeMailId);
   const {
     isLoadingListFolder,
     listFolderEmails,
@@ -61,7 +62,7 @@ const MailView = ({ folder }: MailViewProps) => {
   const previewActions = usePreviewMailActions({
     activeMailId,
     folder,
-    decryptedMail: activeMails?.[0],
+    decryptedMail: activeMail,
     clearActiveMail: () => setActiveMailId(undefined),
 
     updateReadStatus: async (args) => {
@@ -132,11 +133,7 @@ const MailView = ({ folder }: MailViewProps) => {
       {/* Mail Preview */}
       <div className="flex flex-col w-full">
         <div className="flex flex-row w-full pl-1 justify-between">
-          <ActionsBar
-            isRead={activeMails?.some((m) => m.isRead) ?? false}
-            optionsDisabled={!activeMailId}
-            {...previewActions}
-          />
+          <ActionsBar isRead={activeMail?.isRead ?? false} optionsDisabled={!activeMailId} {...previewActions} />
           <Settings />
         </div>
 
@@ -144,7 +141,7 @@ const MailView = ({ folder }: MailViewProps) => {
           <PreviewEmailEmptyState unreadEmailsCount={unreadByMailbox[folder]} />
         </Activity>
 
-        {activeMails && <ThreadView key={activeMailId} thread={activeMails} />}
+        {thread && <ThreadView key={activeMailId} thread={thread} />}
       </div>
     </div>
   );

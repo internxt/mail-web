@@ -108,7 +108,43 @@ describe('Preparing the initial state of the compose dialog', () => {
     expect(result.current.data.htmlBody).toContain('alice@inxt.me');
   });
 
-  test('When the dialog is opened in a mode that is not yet implemented, then it falls back to an empty draft', () => {
+  test('When the user forwards a message, then the subject is pre-filled as a forward of the original conversation', () => {
+    const sourceMail = getMockedMail({ subject: 'Project status' });
+    const payload: ComposePayload = { mode: 'forward', sourceMail };
+
+    const { result } = renderHook(() => useInitialComposeState(payload));
+
+    expect(result.current.mode).toBe('forward');
+    expect(result.current.data.subject).toBe('Fwd: Project status');
+  });
+
+  test('When the user forwards a message, then the recipient fields start empty so the user chooses who receives it', () => {
+    const sourceMail = getMockedMail({
+      to: [{ email: 'bob@inxt.me' }],
+      cc: [{ email: 'cc@inxt.me' }],
+      bcc: [{ email: 'bcc@inxt.me' }],
+    });
+    const payload: ComposePayload = { mode: 'forward', sourceMail };
+
+    const { result } = renderHook(() => useInitialComposeState(payload));
+
+    expect(result.current.data.to).toEqual([]);
+    expect(result.current.data.cc).toEqual([]);
+    expect(result.current.data.bcc).toEqual([]);
+  });
+
+  test('When the user forwards a message, then the body includes the original sender info so the user knows what is being shared', () => {
+    const sourceMail = getMockedMail({
+      from: [{ name: 'Alice', email: 'alice@inxt.me' }],
+    });
+    const payload: ComposePayload = { mode: 'forward', sourceMail };
+
+    const { result } = renderHook(() => useInitialComposeState(payload));
+
+    expect(result.current.data.htmlBody).toContain('alice@inxt.me');
+  });
+
+  test('When the dialog is opened in replyAll or draft mode, then it falls back to an empty draft', () => {
     const sourceMail = getMockedMail();
     const draftPayload: ComposePayload = { mode: 'draft', draft: sourceMail };
 
