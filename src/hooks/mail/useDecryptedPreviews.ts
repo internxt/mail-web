@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { EmailListResponse } from '@internxt/sdk/dist/mail/types';
 import type { HybridKeyPair } from 'internxt-crypto';
-import { useMailKeys } from './useMailKeys';
 import { MailEncryptionService } from '@/services/mail-encryption';
+import { MailKeysService } from '@/services/mail-keys';
 
 type Summary = EmailListResponse['emails'][number];
 
@@ -29,19 +29,19 @@ const decryptPendingPreviews = async (pending: Summary[], keypair: HybridKeyPair
  * crypto, and a row that fails simply stays absent
  */
 export const useDecryptedPreviews = (summaries: Summary[] | undefined): Record<string, string> => {
-  const keypair = useMailKeys();
+  const senderKeys = MailKeysService.instance.getCurrentKeys();
   const [previews, setPreviews] = useState<Record<string, string>>({});
   const attempted = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    if (!keypair || !summaries?.length) return;
+    if (!senderKeys || !summaries?.length) return;
 
     const pending = summaries.filter((s) => s.encryption && !attempted.current.has(s.id));
     if (pending.length === 0) return;
     pending.forEach((s) => attempted.current.add(s.id));
 
     let cancelled = false;
-    decryptPendingPreviews(pending, keypair).then((resolved) => {
+    decryptPendingPreviews(pending, senderKeys).then((resolved) => {
       if (!cancelled && Object.keys(resolved).length) {
         setPreviews((prev) => ({ ...prev, ...resolved }));
       }
@@ -50,7 +50,7 @@ export const useDecryptedPreviews = (summaries: Summary[] | undefined): Record<s
     return () => {
       cancelled = true;
     };
-  }, [summaries, keypair]);
+  }, [summaries, senderKeys]);
 
   return previews;
 };

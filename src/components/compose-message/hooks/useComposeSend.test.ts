@@ -42,6 +42,9 @@ const mockEncryptionBlock = {
 
 const renderSend = (overrides: Partial<Parameters<typeof useComposeSend>[0]> = {}) => {
   const onSent = vi.fn();
+  const markResolvingInherited = vi.fn();
+  const markInheritedResolved = vi.fn();
+  const markInheritedFailed = vi.fn();
   const { result } = renderHook(() =>
     useComposeSend({
       toRecipients: [],
@@ -52,10 +55,13 @@ const renderSend = (overrides: Partial<Parameters<typeof useComposeSend>[0]> = {
       attachments: [],
       attachmentsSessionKey: new Uint8Array(32),
       onSent,
+      markResolvingInherited,
+      markInheritedResolved,
+      markInheritedFailed,
       ...overrides,
     }),
   );
-  return { result, onSent };
+  return { result, onSent, markResolvingInherited, markInheritedResolved, markInheritedFailed };
 };
 
 describe('useComposeSend', () => {
@@ -236,6 +242,58 @@ describe('useComposeSend', () => {
       });
 
       expect(show).toHaveBeenCalledWith(expect.objectContaining({ text: 'errors.mail.encryptionUnavailable' }));
+      expect(mocks.sendEmail).not.toHaveBeenCalled();
+      expect(onSent).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Internxt recipients without a public key', () => {
+    test('When an Internxt recipient has no public key available, then the send is aborted to avoid weakening their encryption', async () => {
+      const getVariable = vi.spyOn(ConfigService.instance, 'getVariable');
+      getVariable.mockImplementation((key: string) => {
+        if (key === 'SERVER_PUBLIC_KEY') return 'server-pk';
+        throw new Error(`unmocked config key ${key}`);
+      });
+      mocks.triggerLookup.mockReturnValue({
+        unwrap: () => Promise.resolve([{ address: 'alice@inxt.me', publicKey: null }]),
+      });
+      const buildSpy = vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock');
+
+      const { result, onSent } = renderSend({ toRecipients: [recipient('alice@inxt.me')] });
+
+      await act(async () => {
+        await result.current.send();
+      });
+
+      expect(show).toHaveBeenCalledWith(expect.objectContaining({ text: 'errors.mail.internxtKeyMissing' }));
+      expect(buildSpy).not.toHaveBeenCalled();
+      expect(getVariable).not.toHaveBeenCalled();
+      expect(mocks.sendEmail).not.toHaveBeenCalled();
+      expect(onSent).not.toHaveBeenCalled();
+    });
+
+    test('When one Internxt recipient is missing keys but another mix of recipients have them, then the send is still aborted', async () => {
+      vi.spyOn(ConfigService.instance, 'getVariable').mockReturnValue('server-pk');
+      mocks.triggerLookup.mockReturnValue({
+        unwrap: () =>
+          Promise.resolve([
+            { address: 'alice@inxt.me', publicKey: 'alice-pk' },
+            { address: 'carol@inxt.me', publicKey: null },
+            { address: 'bob@gmail.com', publicKey: null },
+          ]),
+      });
+      const buildSpy = vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock');
+
+      const { result, onSent } = renderSend({
+        toRecipients: [recipient('alice@inxt.me'), recipient('carol@inxt.me'), recipient('bob@gmail.com')],
+      });
+
+      await act(async () => {
+        await result.current.send();
+      });
+
+      expect(show).toHaveBeenCalledWith(expect.objectContaining({ text: 'errors.mail.internxtKeyMissing' }));
+      expect(buildSpy).not.toHaveBeenCalled();
       expect(mocks.sendEmail).not.toHaveBeenCalled();
       expect(onSent).not.toHaveBeenCalled();
     });

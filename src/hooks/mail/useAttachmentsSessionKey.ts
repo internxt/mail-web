@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { EncryptionBlock } from '@internxt/sdk/dist/mail/types';
-import { useMailKeys } from './useMailKeys';
 import { MailEncryptionService } from '@/services/mail-encryption';
+import { MailKeysService } from '@/services/mail-keys';
 
 type CachedKey = { ok: true; key: Uint8Array } | { ok: false };
 
@@ -15,7 +15,7 @@ export const useAttachmentsSessionKey = (
   mailId: string | null,
   envelope: EncryptionBlock | null,
 ): Uint8Array | null => {
-  const keypair = useMailKeys();
+  const keypair = MailKeysService.instance.getCurrentKeys();
   const [cache, setCache] = useState<Record<string, CachedKey>>({});
 
   useEffect(() => {

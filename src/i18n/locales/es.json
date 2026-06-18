@@ -133,6 +133,15 @@
           "description": "No hay mensajes sin leer"
         }
       }
+    },
+    "forward": {
+      "header": "---------- Mensaje reenviado ---------",
+      "from": "De",
+      "date": "Fecha",
+      "subject": "Asunto",
+      "to": "Para",
+      "cc": "Cc",
+      "bcc": "Cco"
     }
   },
   "errors": {
@@ -159,6 +168,8 @@
       "noRecipients": "Agrega al menos un destinatario antes de enviar",
       "sendFailed": "No se pudo enviar el correo",
       "keyLookupFailed": "No se pudieron obtener las claves del destinatario",
+      "forwardAttachmentFailed": "No se pudo preparar un adjunto para reenviar. Inténtalo de nuevo.",
+      "internxtKeyMissing": "No se encontraron claves de cifrado para un destinatario de Internxt. Inténtalo de nuevo más tarde.",
       "encryptionUnavailable": "El cifrado aún no está listo. Inténtalo de nuevo en un momento."
     }
   },

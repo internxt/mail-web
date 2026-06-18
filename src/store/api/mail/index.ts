@@ -17,7 +17,7 @@ import {
 import { ErrorService } from '@/services/error';
 import { RecipientKeysService } from '@/services/recipient-keys';
 import { MailService, type MailMeResponse } from '@/services/sdk/mail';
-import type { FolderType } from '@/types/mail';
+import type { DecryptedMail, FolderType } from '@/types/mail';
 import { batchProcess } from '@/utils/batch-processes';
 import type {
   DraftEmailRequest,
@@ -33,6 +33,7 @@ import type {
   SendEmailRequest,
 } from '@internxt/sdk/dist/mail/types';
 import type { AppDispatch } from '@/store';
+import { MailEncryptionService } from '@/services/mail-encryption';
 
 const normalizeLookupAddresses = (addresses: string[]): string[] => {
   const seen = new Set<string>();
@@ -164,6 +165,37 @@ export const mailApi = api.injectEndpoints({
       },
       providesTags: ['MailMessage'],
     }),
+
+    getThread: builder.query<DecryptedMail[], { emailId: string }>({
+      async queryFn({ emailId }) {
+        try {
+          const mailList = await MailService.instance.getThreads(emailId);
+          const decrypted = await Promise.all(
+            mailList.map(async (email): Promise<DecryptedMail> => {
+              const result = await MailEncryptionService.instance.decryptMailBody(email);
+              if (!result.ok) {
+                return {
+                  ...email,
+                  isEncrypted: result.isEncrypted,
+                  decryptError: result.decryptError,
+                };
+              }
+              return {
+                ...email,
+                htmlBody: result.text,
+                ...(result.envelope ? { encryption: result.envelope } : {}),
+                isEncrypted: result.isEncrypted,
+              };
+            }),
+          );
+          return { data: decrypted };
+        } catch (error) {
+          const err = ErrorService.instance.castError(error);
+          return { error: new FetchMessageError(err.message, err.requestId) };
+        }
+      },
+      providesTags: (_, __, arg) => [{ type: 'ThreadMessage', id: arg.emailId }],
+    }),
     updateReadStatus: builder.mutation<null, { emailId: string; mailbox: string; isRead: boolean }>({
       async queryFn({ emailId, isRead }) {
         try {
@@ -290,7 +322,7 @@ export const mailApi = api.injectEndpoints({
           return { error: new SendEmailError(err.message, err.requestId) };
         }
       },
-      invalidatesTags: [{ type: 'ListFolder', id: 'sent' }, 'Mailbox'],
+      invalidatesTags: [{ type: 'ListFolder', id: 'sent' }, 'Mailbox', 'ThreadMessage'],
     }),
     draftEmail: builder.mutation<EmailCreatedResponse, DraftEmailRequest>({
       async queryFn(payload): Promise<{ data: EmailCreatedResponse } | { error: DraftMessageError }> {
@@ -325,6 +357,7 @@ export const {
   useGetMailboxesInfoQuery,
   useGetListFolderQuery,
   useGetMailMessageQuery,
+  useGetThreadQuery,
   useUpdateReadStatusMutation,
   useDeleteMailsMutation,
   useMoveToFolderMutation,

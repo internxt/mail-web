@@ -92,6 +92,10 @@ export class MailService {
    * @param {string} emailId - The ID of the email to fetch
    * @returns A promise that resolves with an EmailResponse object
    */
+  async getThreads(emailId: string): Promise<EmailResponse[]> {
+    return this.client.getThreads(emailId);
+  }
+
   async getMessage(emailId: string): Promise<EmailResponse> {
     return this.client.getEmail(emailId);
   }

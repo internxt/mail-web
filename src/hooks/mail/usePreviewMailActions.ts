@@ -1,17 +1,21 @@
 import { ErrorService } from '@/services/error';
 import { useTranslationContext } from '@/i18n';
-import type { FolderType } from '@/types/mail';
+import type { ComposePayload, FolderType } from '@/types/mail';
 import { useCallback } from 'react';
+import type { EmailResponse } from '@internxt/sdk/dist/mail/types';
+import { ActionDialog, type OpenDialog } from '@/context/dialog-manager/types';
 
 type MailAction = 'markAsRead' | 'markAsUnread' | 'trash' | 'move';
 
 interface UsePreviewMailActionsParams {
   activeMailId: string | undefined;
   folder: FolderType;
+  decryptedMail: EmailResponse | undefined;
   clearActiveMail: () => void;
   updateReadStatus: (args: { emailId: string; mailbox: FolderType; isRead: boolean }) => Promise<void>;
   moveToFolder: (args: { emailIds: string[]; sourceMailbox: FolderType; targetMailbox: FolderType }) => Promise<void>;
   deleteEmails: (args: { emailIds: string[]; sourceMailbox: FolderType }) => Promise<void>;
+  openDialog: OpenDialog;
 }
 
 interface PreviewMailActions {
@@ -27,10 +31,12 @@ interface PreviewMailActions {
 export const usePreviewMailActions = ({
   activeMailId,
   folder,
+  decryptedMail,
   clearActiveMail,
   updateReadStatus,
   moveToFolder,
   deleteEmails,
+  openDialog,
 }: UsePreviewMailActionsParams): PreviewMailActions => {
   const { translate } = useTranslationContext();
 
@@ -38,7 +44,7 @@ export const usePreviewMailActions = ({
     (action: MailAction, error: unknown) => {
       const err = ErrorService.instance.castError(error);
       console.error(`Error while running ${action}: `, err);
-      ErrorService.instance.notifyUser(translate(`errors.mail.${action}` as Parameters<typeof translate>[0]));
+      ErrorService.instance.notifyUser(translate(`errors.mail.${action}`));
     },
     [translate],
   );
@@ -81,6 +87,33 @@ export const usePreviewMailActions = ({
     [activeMailId, folder, moveToFolder, clearActiveMail, notifyError],
   );
 
+  const onReply = useCallback(() => {
+    if (!decryptedMail) return;
+
+    const openComposeDialogData = {
+      mode: 'reply',
+      sourceMail: decryptedMail,
+    } satisfies ComposePayload;
+
+    openDialog(ActionDialog.ComposeMessage, {
+      data: openComposeDialogData,
+      closeAllDialogsFirst: true,
+    });
+  }, [decryptedMail, openDialog]);
+
+  const onForward = useCallback(() => {
+    if (!decryptedMail) return;
+    const openComposeDialogData = {
+      mode: 'forward',
+      sourceMail: decryptedMail,
+    } satisfies ComposePayload;
+
+    openDialog(ActionDialog.ComposeMessage, {
+      data: openComposeDialogData,
+      closeAllDialogsFirst: true,
+    });
+  }, [decryptedMail, openDialog]);
+
   const noop = useCallback(() => {}, []);
 
   return {
@@ -88,8 +121,8 @@ export const usePreviewMailActions = ({
     onMarkAsUnread,
     onTrash,
     onMove,
-    onReply: noop,
+    onReply,
     onReplyAll: noop,
-    onForward: noop,
+    onForward,
   };
 };

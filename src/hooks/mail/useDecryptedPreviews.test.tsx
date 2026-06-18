@@ -3,12 +3,8 @@ import { describe, test, expect, vi, beforeEach } from 'vitest';
 import type { HybridKeyPair } from 'internxt-crypto';
 import type { EmailListResponse } from '@internxt/sdk/dist/mail/types';
 import { useDecryptedPreviews } from './useDecryptedPreviews';
-import { useMailKeys } from './useMailKeys';
 import { MailEncryptionService } from '@/services/mail-encryption';
-
-vi.mock('./useMailKeys', () => ({ useMailKeys: vi.fn() }));
-
-const mockKeys = vi.mocked(useMailKeys);
+import { MailKeysService } from '@/services/mail-keys';
 
 type Summary = EmailListResponse['emails'][number];
 
@@ -17,6 +13,10 @@ const encryptedSummary = (id: string): Summary =>
   ({ id, encryption: { encryptedPreview: 'ep', wrappedKeys: [] } }) as unknown as Summary;
 const plainSummary = (id: string): Summary => ({ id }) as unknown as Summary;
 
+const setKeys = (keys: HybridKeyPair | null) => {
+  vi.spyOn(MailKeysService.instance, 'getCurrentKeys').mockReturnValue(keys);
+};
+
 const spyOnPreviewDecrypt = () => vi.spyOn(MailEncryptionService.instance, 'decryptSummaryPreview');
 let mockDecrypt: ReturnType<typeof spyOnPreviewDecrypt>;
 
@@ -24,11 +24,11 @@ describe('useDecryptedPreviews', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     mockDecrypt = spyOnPreviewDecrypt();
-    mockKeys.mockReturnValue(keypair);
+    setKeys(keypair);
   });
 
   test('When the caller has no keys, then no previews are decrypted', () => {
-    mockKeys.mockReturnValue(null);
+    setKeys(null);
 
     const { result } = renderHook(() => useDecryptedPreviews([encryptedSummary('a')]));
 
@@ -47,9 +47,8 @@ describe('useDecryptedPreviews', () => {
   test('When a summary has no encryption block, then it is skipped', async () => {
     const { result } = renderHook(() => useDecryptedPreviews([plainSummary('a')]));
 
-    await waitFor(() => expect(mockKeys).toHaveBeenCalled());
+    await waitFor(() => expect(result.current).toStrictEqual({}));
     expect(mockDecrypt).not.toHaveBeenCalled();
-    expect(result.current).toStrictEqual({});
   });
 
   test('When a summary cannot be decrypted, then it is omitted from the result', async () => {

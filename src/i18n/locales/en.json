@@ -131,6 +131,15 @@
           "description": "There are no unread messages"
         }
       }
+    },
+    "forward": {
+      "header": "---------- Forwarded message ---------",
+      "from": "From",
+      "date": "Date",
+      "subject": "Subject",
+      "to": "To",
+      "cc": "Cc",
+      "bcc": "Bcc"
     }
   },
   "errors": {
@@ -157,6 +166,8 @@
       "noRecipients": "Add at least one recipient before sending",
       "sendFailed": "Could not send the email",
       "keyLookupFailed": "Could not fetch recipient keys",
+      "forwardAttachmentFailed": "Could not prepare an attachment for forwarding. Please try again.",
+      "internxtKeyMissing": "Could not find encryption keys for an Internxt recipient. Please try again later.",
       "encryptionUnavailable": "Encryption isn't ready yet. Please try again in a moment."
     }
   },

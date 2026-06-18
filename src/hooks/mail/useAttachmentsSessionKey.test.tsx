@@ -4,11 +4,7 @@ import type { EncryptionBlock } from '@internxt/sdk/dist/mail/types';
 import type { HybridKeyPair } from 'internxt-crypto';
 import { useAttachmentsSessionKey } from './useAttachmentsSessionKey';
 import { MailEncryptionService } from '@/services/mail-encryption';
-
-vi.mock('./useMailKeys', () => ({ useMailKeys: vi.fn() }));
-
-const { useMailKeys } = await import('./useMailKeys');
-const useMailKeysMock = vi.mocked(useMailKeys);
+import { MailKeysService } from '@/services/mail-keys';
 
 const KEY = new Uint8Array([1, 2, 3, 4]);
 const KEYPAIR = { secretKey: new Uint8Array(32), publicKey: new Uint8Array(32) } as unknown as HybridKeyPair;
@@ -20,8 +16,14 @@ const ENVELOPE = {
   attachmentWrappedKeys: [],
 } as unknown as EncryptionBlock;
 
+const setKeys = (keys: HybridKeyPair | null) => {
+  const spy = vi.spyOn(MailKeysService.instance, 'getCurrentKeys');
+  spy.mockReturnValue(keys);
+  return spy;
+};
+
 beforeEach(() => {
-  useMailKeysMock.mockReturnValue(KEYPAIR);
+  setKeys(KEYPAIR);
 });
 
 afterEach(() => {
@@ -48,7 +50,7 @@ describe('useAttachmentsSessionKey', () => {
   });
 
   test('When the keypair is not yet available, then decryption is deferred until it loads', async () => {
-    useMailKeysMock.mockReturnValue(null);
+    setKeys(null);
     const decryptSpy = vi.spyOn(MailEncryptionService.instance, 'decryptAttachmentsSessionKey').mockResolvedValue(KEY);
 
     const { result, rerender } = renderHook(() => useAttachmentsSessionKey('mail-1', ENVELOPE));
@@ -56,7 +58,7 @@ describe('useAttachmentsSessionKey', () => {
     expect(result.current).toBeNull();
     expect(decryptSpy).not.toHaveBeenCalled();
 
-    useMailKeysMock.mockReturnValue(KEYPAIR);
+    setKeys(KEYPAIR);
     rerender();
 
     await waitFor(() => expect(result.current).toBe(KEY));

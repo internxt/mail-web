@@ -10,8 +10,10 @@ export interface ActionDialogState {
 
 export type DialogActionConfig = { closeAllDialogsFirst?: boolean; data?: unknown };
 
+export type OpenDialog = (key: ActionDialog, config?: DialogActionConfig) => void;
+
 export type ActionDialogContextProps = {
   actionDialogs: Partial<Record<ActionDialog, ActionDialogState>>;
-  openDialog: (key: ActionDialog, config?: DialogActionConfig) => void;
+  openDialog: OpenDialog;
   closeDialog: (key: ActionDialog) => void;
 };

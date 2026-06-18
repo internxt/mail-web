@@ -2,6 +2,8 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { usePreviewMailActions } from './usePreviewMailActions';
 import { ErrorService } from '@/services/error';
+import { ActionDialog } from '@/context/dialog-manager/types';
+import { getMockedMail } from '@/test-utils/fixtures';
 
 vi.mock('@/services/error', () => ({
   ErrorService: {
@@ -19,10 +21,12 @@ vi.mock('@/i18n', () => ({
 const makeParams = (overrides?: Record<string, unknown>) => ({
   activeMailId: 'mail-1',
   folder: 'inbox' as const,
+  decryptedMail: getMockedMail({ id: 'mail-1' }),
   clearActiveMail: vi.fn(),
   updateReadStatus: vi.fn().mockResolvedValue(null),
   moveToFolder: vi.fn().mockResolvedValue(null),
   deleteEmails: vi.fn().mockResolvedValue(null),
+  openDialog: vi.fn(),
   ...overrides,
 });
 
@@ -190,6 +194,54 @@ describe('Preview Mail Actions - custom hook', () => {
       expect(ErrorService.instance.castError).toHaveBeenCalledWith(error);
       expect(consoleErrorSpy).toHaveBeenCalledOnce();
       expect(params.clearActiveMail).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Reply', () => {
+    test('When replying to the open mail, then the compose dialog is launched in reply mode using that mail as the source', () => {
+      const sourceMail = getMockedMail({ id: 'mail-1' });
+      const params = makeParams({ decryptedMail: sourceMail });
+      const { result } = renderHook(() => usePreviewMailActions(params));
+
+      act(() => result.current.onReply());
+
+      expect(params.openDialog).toHaveBeenCalledWith(ActionDialog.ComposeMessage, {
+        data: { mode: 'reply', sourceMail },
+        closeAllDialogsFirst: true,
+      });
+    });
+
+    test('When no decrypted mail is available, then replying does nothing', () => {
+      const params = makeParams({ decryptedMail: undefined });
+      const { result } = renderHook(() => usePreviewMailActions(params));
+
+      act(() => result.current.onReply());
+
+      expect(params.openDialog).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Forward', () => {
+    test('When forwarding the open mail, then the compose dialog is launched in forward mode using that mail as the source', () => {
+      const sourceMail = getMockedMail({ id: 'mail-1' });
+      const params = makeParams({ decryptedMail: sourceMail });
+      const { result } = renderHook(() => usePreviewMailActions(params));
+
+      act(() => result.current.onForward());
+
+      expect(params.openDialog).toHaveBeenCalledWith(ActionDialog.ComposeMessage, {
+        data: { mode: 'forward', sourceMail },
+        closeAllDialogsFirst: true,
+      });
+    });
+
+    test('When no decrypted mail is available, then forwarding does nothing', () => {
+      const params = makeParams({ decryptedMail: undefined });
+      const { result } = renderHook(() => usePreviewMailActions(params));
+
+      act(() => result.current.onForward());
+
+      expect(params.openDialog).not.toHaveBeenCalled();
     });
   });
 });
