@@ -25,6 +25,7 @@ interface UseDraftMessageResult {
   draftId: string | null;
   isSaving: boolean;
   saveDraft: () => Promise<void>;
+  clearDraftRef: () => void;
 }
 
 export const useDraftMessage = ({
@@ -94,6 +95,10 @@ export const useDraftMessage = ({
     }
   }, [buildPayload, createDraft, updateDraft]);
 
+  const clearDraftRef = useCallback(() => {
+    draftIdRef.current = null;
+  }, []);
+
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
@@ -107,7 +112,7 @@ export const useDraftMessage = ({
     };
   }, [toRecipients, ccRecipients, bccRecipients, subject, editor, attachments, saveDraft]);
 
-  return { draftId: draftIdRef.current, isSaving, saveDraft };
+  return { draftId: draftIdRef.current, isSaving, saveDraft, clearDraftRef };
 };
 
 export default useDraftMessage;
