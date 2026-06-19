@@ -130,8 +130,6 @@ export const audioExtensions: FileExtensionMap = {
   cda: ['cda'],
 };
 
-const previewableAudioExtensionsGroup: string[] = ['aac', 'flac', 'm4a', 'mp3', 'ogg', 'opus', 'wav', 'weba'];
-
 const codeExtensions: FileExtensionMap = {
   c: ['c', 'h'],
   'c++': ['cpp', 'c++', 'cc', 'cxx', 'hpp', 'h++', 'hh', 'hxx'],
@@ -177,7 +175,6 @@ const imageExtensions: FileExtensionMap = {
   raw: ['raw', 'cr2', 'nef', 'orf', 'sr2'],
   webp: ['webp'],
 };
-const previewableImageExtensionGroups: string[] = ['jpg', 'png', 'bmp', 'gif', 'webp', 'heic'];
 
 const pdfExtensions: FileExtensionMap = {
   pdf: ['pdf'],
@@ -218,8 +215,6 @@ export const videoExtensions: FileExtensionMap = {
   flv: ['flv', 'f4v', 'f4p', 'f4a', 'f4b'],
 };
 
-const previewableVideoExtensionsGroup: string[] = Object.keys(videoExtensions);
-
 const WordExtensions: FileExtensionMap = {
   doc: ['doc'],
   docx: ['docx'],
@@ -243,12 +238,6 @@ const zipExtensions: FileExtensionMap = {
   zip: ['zip', 'zipx'],
 };
 
-const previewablePdfExtensionGroups: string[] = ['pdf'];
-
-const previewableExcelFormatExtensionGroup: string[] = ['xlsx'];
-
-const previewableDocsGroup: string[] = ['doc', 'docx'];
-
 const defaultExtensions: FileExtensionMap = {};
 
 export enum FileExtensionGroup {
@@ -269,10 +258,6 @@ export enum FileExtensionGroup {
 }
 
 type fileExtensionsDictionary = Record<FileExtensionGroup, FileExtensionMap>;
-type fileExtensionsPreviewableDictionary = {
-  [key in FileExtensionGroup]: string[];
-};
-
 const fileExtensionGroups: fileExtensionsDictionary = {
   [FileExtensionGroup.Audio]: audioExtensions,
   [FileExtensionGroup.Code]: codeExtensions,
@@ -289,39 +274,5 @@ const fileExtensionGroups: fileExtensionsDictionary = {
   [FileExtensionGroup.Zip]: zipExtensions,
   [FileExtensionGroup.Default]: defaultExtensions,
 };
-
-export const fileExtensionPreviewableGroups: fileExtensionsPreviewableDictionary = {
-  [FileExtensionGroup.Audio]: previewableAudioExtensionsGroup,
-  [FileExtensionGroup.Code]: [],
-  [FileExtensionGroup.Figma]: [],
-  [FileExtensionGroup.Image]: previewableImageExtensionGroups,
-  [FileExtensionGroup.Pdf]: previewablePdfExtensionGroups,
-  [FileExtensionGroup.Ppt]: [],
-  [FileExtensionGroup.Txt]: [],
-  [FileExtensionGroup.Video]: previewableVideoExtensionsGroup,
-  [FileExtensionGroup.Word]: previewableDocsGroup,
-  [FileExtensionGroup.Xls]: previewableExcelFormatExtensionGroup,
-  [FileExtensionGroup.Xml]: [],
-  [FileExtensionGroup.Csv]: [],
-  [FileExtensionGroup.Zip]: [],
-  [FileExtensionGroup.Default]: [],
-};
-
-export const thumbnailableImageExtension: string[] = [
-  ...imageExtensions['jpg'],
-  ...imageExtensions['png'],
-  ...imageExtensions['bmp'],
-  ...imageExtensions['gif'],
-];
-
-export const thumbnailablePdfExtension: string[] = pdfExtensions['pdf'];
-
-export const thumbnailableVideoExtension: string[] = Object.values(videoExtensions).flat();
-
-export const thumbnailableExtension: string[] = [
-  ...thumbnailableImageExtension,
-  ...thumbnailablePdfExtension,
-  ...thumbnailableVideoExtension,
-];
 
 export default fileExtensionGroups;
