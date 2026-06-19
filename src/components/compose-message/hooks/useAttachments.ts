@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import type { AttachmentRef } from '@internxt/sdk/dist/mail/types';
+import type { EncryptionBlock } from '@internxt/sdk/dist/mail/types';
 import { useTranslationContext } from '@/i18n';
 import notificationsService, { ToastType } from '@/services/notifications';
 import { bytesToString } from '@/utils/bytes-to-string';
@@ -7,13 +7,38 @@ import { MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL } from '@/constants';
 import { ErrorService } from '@/services/error';
 import { UploadManager } from '@/services/upload-manager';
 
-export type AttachmentStatus = 'uploading' | 'done' | 'error';
+export type AttachmentStatus = 'pending' | 'uploading' | 'done' | 'error';
 
-export interface AttachmentTask extends Omit<AttachmentRef, 'blobId'> {
+interface AttachmentBase {
   id: string;
+  name: string;
+  size: number;
+  type: string;
   status: AttachmentStatus;
   blobId?: string;
+}
+
+export interface UploadedAttachment extends AttachmentBase {
+  kind: 'uploaded';
   file: File;
+}
+
+export interface InheritedAttachment extends AttachmentBase {
+  kind: 'inherited';
+  originalMailId: string;
+  originalBlobId: string;
+  originalEnvelope: EncryptionBlock;
+}
+
+export type AttachmentTask = UploadedAttachment | InheritedAttachment;
+
+export interface InheritedAttachmentInput {
+  originalMailId: string;
+  originalBlobId: string;
+  originalEnvelope: EncryptionBlock;
+  name: string;
+  size: number;
+  type: string;
 }
 
 const useAttachments = (sessionKey: Uint8Array) => {
@@ -50,7 +75,8 @@ const useAttachments = (sessionKey: Uint8Array) => {
         return;
       }
 
-      const pending: AttachmentTask[] = list.map((file) => ({
+      const pending: UploadedAttachment[] = list.map((file) => ({
+        kind: 'uploaded',
         id: crypto.randomUUID(),
         name: file.name,
         size: file.size,
@@ -63,6 +89,48 @@ const useAttachments = (sessionKey: Uint8Array) => {
     },
     [totalSize, translate, manager],
   );
+
+  const addInheritedAttachments = useCallback(
+    (items: InheritedAttachmentInput[]) => {
+      if (items.length === 0) return;
+      const incoming = items.reduce((s, item) => s + item.size, 0);
+      if (totalSize + incoming > MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL) {
+        notificationsService.show({
+          text: translate('modals.composeMessageDialog.errors.attachmentsTooLarge', {
+            maxSize: bytesToString({ size: MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL }),
+          }),
+          type: ToastType.Warning,
+        });
+        return;
+      }
+
+      const inherited: InheritedAttachment[] = items.map((item) => ({
+        kind: 'inherited',
+        id: crypto.randomUUID(),
+        name: item.name,
+        size: item.size,
+        type: item.type ?? 'application/octet-stream',
+        status: 'pending',
+        originalMailId: item.originalMailId,
+        originalBlobId: item.originalBlobId,
+        originalEnvelope: item.originalEnvelope,
+      }));
+      setAttachments((prev) => [...prev, ...inherited]);
+    },
+    [totalSize, translate],
+  );
+
+  const markResolvingInherited = useCallback((id: string) => {
+    setAttachments((prev) => prev.map((a) => (a.id === id ? { ...a, status: 'uploading' } : a)));
+  }, []);
+
+  const markInheritedResolved = useCallback((id: string, blobId: string) => {
+    setAttachments((prev) => prev.map((a) => (a.id === id ? { ...a, status: 'done', blobId } : a)));
+  }, []);
+
+  const markInheritedFailed = useCallback((id: string) => {
+    setAttachments((prev) => prev.map((a) => (a.id === id ? { ...a, status: 'error' } : a)));
+  }, []);
 
   const retry = useCallback(
     (id: string) => {
@@ -91,6 +159,10 @@ const useAttachments = (sessionKey: Uint8Array) => {
     isUploading,
     hasErrors,
     addFiles,
+    addInheritedAttachments,
+    markResolvingInherited,
+    markInheritedResolved,
+    markInheritedFailed,
     retry,
     remove,
     clear,

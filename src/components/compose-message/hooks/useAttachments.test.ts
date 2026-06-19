@@ -69,8 +69,9 @@ describe('Attachments - custom hook', () => {
       expect(enqueue).toHaveBeenNthCalledWith(1, 'id-0', f1);
       expect(enqueue).toHaveBeenNthCalledWith(2, 'id-1', f2);
       expect(result.current.attachments).toEqual([
-        { id: 'id-0', name: '1.txt', size: 100, type: 'text/plain', status: 'uploading', file: f1 },
+        { kind: 'uploaded', id: 'id-0', name: '1.txt', size: 100, type: 'text/plain', status: 'uploading', file: f1 },
         {
+          kind: 'uploaded',
           id: 'id-1',
           name: '2.bin',
           size: 200,

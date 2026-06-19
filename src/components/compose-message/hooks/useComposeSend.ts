@@ -9,11 +9,13 @@ import {
 } from '@/store/api/mail';
 import { classifyRecipients, isInternxtDomain, uniqueEmailAddresses } from '@/utils/domain';
 import { MailEncryptionService, type RecipientPublicKey } from '@/services/mail-encryption';
+import { NetworkService } from '@/services/network';
+import { MailKeysService } from '@/services/mail-keys';
 import { ConfigService } from '@/services/config';
 import notificationsService, { ToastType } from '@/services/notifications';
 import { useTranslationContext } from '@/i18n';
 import type { Recipient } from '../types';
-import type { AttachmentTask } from './useAttachments';
+import type { AttachmentTask, InheritedAttachment } from './useAttachments';
 
 export type EncryptionState = 'none' | 'unknown' | 'internxt' | 'external';
 
@@ -29,6 +31,9 @@ interface UseComposeSendParams {
   attachmentsSessionKey: Uint8Array;
   inReplyTo?: string;
   onSent: () => void;
+  markResolvingInherited: (id: string) => void;
+  markInheritedResolved: (id: string, blobId: string) => void;
+  markInheritedFailed: (id: string) => void;
 }
 
 interface UseComposeSendResult {
@@ -54,6 +59,9 @@ export const useComposeSend = ({
   attachmentsSessionKey,
   inReplyTo,
   onSent,
+  markResolvingInherited,
+  markInheritedResolved,
+  markInheritedFailed,
 }: UseComposeSendParams): UseComposeSendResult => {
   const { translate } = useTranslationContext();
 
@@ -78,6 +86,74 @@ export const useComposeSend = ({
       : 'external';
   }, [allRecipients, activeDomains]);
 
+  const handleInheritAttachments = useCallback(async () => {
+    const pendingInherited = attachments.filter(
+      (a): a is InheritedAttachment => a.kind === 'inherited' && a.status === 'pending',
+    );
+    const resolvedBlobIds = new Map<string, string>();
+
+    if (pendingInherited.length > 0) {
+      const senderKeysForAttachments = MailKeysService.instance.getCurrentKeys();
+      if (!senderKeysForAttachments) {
+        notificationsService.show({
+          text: translate('errors.mail.forwardAttachmentFailed'),
+          type: ToastType.Error,
+        });
+        return;
+      }
+
+      for (const item of pendingInherited) {
+        markResolvingInherited(item.id);
+        try {
+          const originalSessionKey = await MailEncryptionService.instance.decryptAttachmentsSessionKey(
+            item.originalEnvelope,
+            senderKeysForAttachments,
+          );
+
+          const { blob } = await NetworkService.instance.download({
+            mailId: item.originalMailId,
+            blobId: item.originalBlobId,
+            name: item.name,
+            type: item.type,
+            attachmentsSessionKey: originalSessionKey,
+          });
+          const file = new File([blob], item.name, { type: item.type });
+          const { blobId } = await NetworkService.instance.upload(attachmentsSessionKey, file);
+          markInheritedResolved(item.id, blobId);
+          resolvedBlobIds.set(item.id, blobId);
+        } catch (error) {
+          console.error('Failed to re-encrypt inherited attachment', error);
+          markInheritedFailed(item.id);
+          notificationsService.show({
+            text: translate('errors.mail.forwardAttachmentFailed'),
+            type: ToastType.Error,
+          });
+          return;
+        }
+      }
+    }
+
+    const attachmentsToSend: SendEmailRequest['attachments'] = attachments.flatMap((a) => {
+      if (a.status === 'done' && a.blobId) {
+        return [{ blobId: a.blobId, name: a.name, size: a.size, type: a.type }];
+      }
+      const justResolved = resolvedBlobIds.get(a.id);
+      if (justResolved) {
+        return [{ blobId: justResolved, name: a.name, size: a.size, type: a.type }];
+      }
+      return [];
+    });
+
+    return attachmentsToSend;
+  }, [
+    attachments,
+    markInheritedFailed,
+    markInheritedResolved,
+    markResolvingInherited,
+    translate,
+    attachmentsSessionKey,
+  ]);
+
   const send = useCallback(async () => {
     if (allRecipients.length === 0) {
       notificationsService.show({ text: translate('errors.mail.noRecipients'), type: ToastType.Warning });
@@ -94,9 +170,7 @@ export const useComposeSend = ({
       return;
     }
 
-    const attachmentsToSend: SendEmailRequest['attachments'] = attachments
-      .filter((a): a is AttachmentTask & { blobId: string } => a.status === 'done' && !!a.blobId)
-      .map((a) => ({ blobId: a.blobId, name: a.name, size: a.size, type: a.type }));
+    const attachmentsToSend = await handleInheritAttachments();
 
     const htmlBody = editor?.getHTML() ?? '';
     const textBody = editor?.getText() ?? '';
@@ -181,6 +255,7 @@ export const useComposeSend = ({
     sendEmail,
     onSent,
     translate,
+    handleInheritAttachments,
   ]);
 
   return { encryptionState, isSending, send };

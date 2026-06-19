@@ -133,6 +133,16 @@
           "description": "Non ci sono messaggi non letti"
         }
       }
+    },
+    "forward": {
+      "header": "---------- Messaggio inoltrato ---------",
+      "prefix": "I:",
+      "from": "Da",
+      "date": "Data",
+      "subject": "Oggetto",
+      "to": "A",
+      "cc": "Cc",
+      "bcc": "Ccn"
     }
   },
   "errors": {
@@ -159,6 +169,7 @@
       "noRecipients": "Aggiungi almeno un destinatario prima di inviare",
       "sendFailed": "Impossibile inviare l'email",
       "keyLookupFailed": "Impossibile recuperare le chiavi del destinatario",
+      "forwardAttachmentFailed": "Impossibile preparare un allegato per l'inoltro. Riprova.",
       "internxtKeyMissing": "Impossibile trovare le chiavi di cifratura per un destinatario Internxt. Riprova più tardi.",
       "encryptionUnavailable": "La crittografia non è ancora pronta. Riprova tra un momento."
     }
