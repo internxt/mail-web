@@ -13,6 +13,7 @@ import { useAppSelector } from '@/store/hooks';
 import { bytesToString } from '@/utils/bytes-to-string';
 import { ActionDialog, useActionDialog } from '@/context/dialog-manager';
 import { useSidenavData } from './useSidenavData';
+import { NotePencilIcon } from '@phosphor-icons/react';
 
 const Sidenav = () => {
   const { translate } = useTranslationContext();
@@ -71,7 +72,21 @@ const Sidenav = () => {
         }}
         primaryAction={
           <Button className="w-full" variant="primary" onClick={onPrimaryActionClicked} disabled={isMailDisabled}>
-            {translate('actions.newMessage')}
+            <div className="flex flex-row gap-2">
+              <NotePencilIcon size={24} />
+              {translate('actions.newMessage')}
+            </div>
+          </Button>
+        }
+        collapsedPrimaryAction={
+          <Button
+            aria-label={translate('actions.newMessage')}
+            className="w-full"
+            variant="primary"
+            onClick={onPrimaryActionClicked}
+            disabled={isMailDisabled}
+          >
+            <NotePencilIcon size={24} />
           </Button>
         }
         notification={
