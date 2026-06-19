@@ -79,7 +79,13 @@ const Sidenav = () => {
           </Button>
         }
         collapsedPrimaryAction={
-          <Button className="w-full" variant="primary" onClick={onPrimaryActionClicked} disabled={isMailDisabled}>
+          <Button
+            aria-label={translate('actions.newMessage')}
+            className="w-full"
+            variant="primary"
+            onClick={onPrimaryActionClicked}
+            disabled={isMailDisabled}
+          >
             <NotePencilIcon size={24} />
           </Button>
         }
