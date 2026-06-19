@@ -52,14 +52,14 @@ const useComposeMessage = () => {
     setBccRecipients((prev) => prev.filter((r) => r.id !== id));
   }, []);
 
-  const setInitialValues = (initialValues: InitialValues) => {
+  const setInitialValues = useCallback((initialValues: InitialValues) => {
     setSubjectValue(initialValues.subject ?? '');
     setToRecipients(initialValues.to ?? []);
     setCcRecipients(initialValues.cc ?? []);
     setBccRecipients(initialValues.bcc ?? []);
     setShowCc((initialValues.cc?.length ?? 0) > 0);
     setShowBcc((initialValues.bcc?.length ?? 0) > 0);
-  };
+  }, []);
 
   const clear = () => {
     setSubjectValue('');

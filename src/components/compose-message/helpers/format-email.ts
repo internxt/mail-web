@@ -22,9 +22,12 @@ export const formatEmailToReply = (mail: EmailResponse): ReplyDraft => {
   };
 };
 
+const escapeHtml = (s: string): string =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
 const formatAddress = (address: EmailAddress): string => {
   const name = address.name?.trim();
-  return name ? `${name} &lt;${address.email}&gt;` : `&lt;${address.email}&gt;`;
+  return name ? `${escapeHtml(name)} &lt;${escapeHtml(address.email)}&gt;` : `&lt;${escapeHtml(address.email)}&gt;`;
 };
 
 const formatAddressList = (addresses: EmailAddress[] | undefined): string =>
@@ -36,9 +39,9 @@ export const formatEmailToForward = (mail: EmailResponse, translate: Translate):
 
   const lines = [
     translate('mail.forward.header'),
-    `${translate('mail.forward.from')}: ${formatAddress(mail.from[0])}`,
+    ...(mail.from?.length ? [`${translate('mail.forward.from')}: ${formatAddress(mail.from[0])}`] : []),
     `${translate('mail.forward.date')}: ${date}`,
-    `${translate('mail.forward.subject')}: ${mail.subject}`,
+    `${translate('mail.forward.subject')}: ${escapeHtml(mail.subject)}`,
     `${translate('mail.forward.to')}: ${formatAddressList(mail.to)}`,
   ];
 
@@ -52,7 +55,10 @@ export const formatEmailToForward = (mail: EmailResponse, translate: Translate):
   const body = `${lines.join('<br>')}<br><br>${originalBody}`;
 
   return {
-    subject: mail.subject.startsWith('Fwd:') ? mail.subject : `Fwd: ${mail.subject}`,
+    subject: (() => {
+      const prefix = translate('mail.forward.prefix');
+      return mail.subject?.toLowerCase().startsWith(prefix.toLowerCase()) ? mail.subject : `${prefix} ${mail.subject}`;
+    })(),
     to: [],
     cc: [],
     bcc: [],

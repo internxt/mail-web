@@ -136,6 +136,7 @@
     },
     "forward": {
       "header": "---------- Message transféré ---------",
+      "prefix": "Tr :",
       "from": "De",
       "date": "Date",
       "subject": "Objet",

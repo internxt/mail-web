@@ -134,6 +134,7 @@
     },
     "forward": {
       "header": "---------- Forwarded message ---------",
+      "prefix": "Fwd:",
       "from": "From",
       "date": "Date",
       "subject": "Subject",

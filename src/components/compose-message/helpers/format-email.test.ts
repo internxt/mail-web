@@ -2,7 +2,8 @@ import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { formatEmailToForward, formatEmailToReply } from './format-email';
 import { getMockedMail } from '@/test-utils/fixtures';
 
-const translate = ((key: string) => key) as unknown as Parameters<typeof formatEmailToForward>[1];
+const translations: Record<string, string> = { 'mail.forward.prefix': 'Fwd:' };
+const translate = ((key: string) => translations[key] ?? key) as unknown as Parameters<typeof formatEmailToForward>[1];
 
 describe('Formatting an email as a reply draft', () => {
   beforeEach(() => {

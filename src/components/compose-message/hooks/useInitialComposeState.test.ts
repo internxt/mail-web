@@ -4,7 +4,8 @@ import { useInitialComposeState } from './useInitialComposeState';
 import { getMockedMail } from '@/test-utils/fixtures';
 import type { ComposePayload } from '@/types/mail';
 
-vi.mock('@/i18n', () => ({ useTranslationContext: () => ({ translate: (key: string) => key }) }));
+const translations: Record<string, string> = { 'mail.forward.prefix': 'Fwd:' };
+vi.mock('@/i18n', () => ({ useTranslationContext: () => ({ translate: (key: string) => translations[key] ?? key }) }));
 
 describe('Preparing the initial state of the compose dialog', () => {
   beforeEach(() => vi.restoreAllMocks());

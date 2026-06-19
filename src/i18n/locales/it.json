@@ -136,6 +136,7 @@
     },
     "forward": {
       "header": "---------- Messaggio inoltrato ---------",
+      "prefix": "I:",
       "from": "Da",
       "date": "Data",
       "subject": "Oggetto",
