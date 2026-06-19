@@ -218,6 +218,53 @@ describe('Mail API', () => {
     });
   });
 
+  describe('Get Thread', () => {
+    test('When fetching a thread of plain messages, then each one is returned with its original body and marked as not encrypted', async () => {
+      const mockedMails = [
+        getMockedMail({ textBody: 'plain a', htmlBody: '<p>plain a</p>' }),
+        getMockedMail({ textBody: 'plain b', htmlBody: '<p>plain b</p>' }),
+      ];
+      const getThreadsSpy = vi.spyOn(MailService.instance, 'getThreads').mockResolvedValue(mockedMails);
+      const store = createTestStore();
+
+      const result = await store.dispatch(mailApi.endpoints.getThread.initiate({ emailId: mockedMails[0].id }));
+
+      expect(getThreadsSpy).toHaveBeenCalledWith(mockedMails[0].id);
+      expect(result.data).toHaveLength(2);
+      expect(result.data?.[0]).toMatchObject({
+        id: mockedMails[0].id,
+        htmlBody: '<p>plain a</p>',
+        isEncrypted: false,
+      });
+      expect(result.data?.[0]).not.toHaveProperty('decryptError');
+    });
+
+    test('When one message in the thread cannot be opened, then the rest still arrive and the broken one carries an error description', async () => {
+      const readableMail = getMockedMail({ textBody: 'plain', htmlBody: '<p>plain</p>' });
+      const unreadableMail = getMockedMail({ textBody: 'INTERNXT-ENCRYPTED-EMAIL-v1\ncorrupt' });
+      vi.spyOn(MailService.instance, 'getThreads').mockResolvedValue([readableMail, unreadableMail]);
+      const store = createTestStore();
+
+      const result = await store.dispatch(mailApi.endpoints.getThread.initiate({ emailId: readableMail.id }));
+
+      expect(result.data).toHaveLength(2);
+      expect(result.data?.[0]).toMatchObject({ isEncrypted: false });
+      expect(result.data?.[1]).toMatchObject({ isEncrypted: true, decryptError: expect.any(String) });
+    });
+
+    test('When the thread cannot be retrieved, then an error indicating so is thrown', async () => {
+      const mockedMail = getMockedMail();
+      vi.spyOn(MailService.instance, 'getThreads').mockRejectedValue(new Error('Unauthorized'));
+      const castErrorSpy = vi.spyOn(ErrorService.instance, 'castError');
+      const store = createTestStore();
+
+      const result = await store.dispatch(mailApi.endpoints.getThread.initiate({ emailId: mockedMail.id }));
+
+      expect(castErrorSpy).toHaveBeenCalledOnce();
+      expect(result.error).toBeInstanceOf(FetchMessageError);
+    });
+  });
+
   describe('Update Read Status', () => {
     test('When marking a mail as read, then it should call the service and return null', async () => {
       vi.spyOn(MailService.instance, 'updateEmailStatus').mockResolvedValue();

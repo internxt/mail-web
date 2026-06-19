@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { generateEmailKeys, genSymmetricKey, uint8ArrayToBase64 } from 'internxt-crypto';
 import { ENCRYPTED_EMAIL_PREFIX, MailEncryptionService, type RecipientPublicKey } from '.';
+import { MailKeysService } from '../mail-keys';
+import { getMockedMail } from '@/test-utils/fixtures';
 
 const mailEncryption = MailEncryptionService.instance;
 const content = (body: string, previewText = body) => ({ body, previewText });
@@ -174,5 +176,89 @@ describe('isEncryptedEmailBody / parseEncryptionBlock', () => {
     };
     const wire = `${ENCRYPTED_EMAIL_PREFIX}\n${Buffer.from(JSON.stringify(block)).toString('base64')}`;
     expect(mailEncryption.parseEncryptionBlock(wire)).toStrictEqual(block);
+  });
+});
+
+describe('Decrypting body email', () => {
+  beforeEach(() => {
+    MailKeysService.instance.clear();
+  });
+
+  test('When the mail arrives in plain text, then its readable body is returned as is', async () => {
+    const mail = getMockedMail({ textBody: 'plain text', htmlBody: '<p>plain</p>' });
+
+    const result = await mailEncryption.decryptMailBody(mail);
+
+    expect(result).toEqual({
+      ok: true,
+      isEncrypted: false,
+      envelope: null,
+      text: '<p>plain</p>',
+    });
+  });
+
+  test('When the mail has no html version, then the plain text body is used as the readable body', async () => {
+    const mail = getMockedMail({ textBody: 'plain text', htmlBody: '' });
+
+    const result = await mailEncryption.decryptMailBody(mail);
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.text).toBe('plain text');
+      expect(result.isEncrypted).toBe(false);
+      expect(result.envelope).toBeNull();
+    }
+  });
+
+  test('When the mail is encrypted but the user has not unlocked their keys yet, then the failure is reported without trying to read the contents', async () => {
+    const wire = `${ENCRYPTED_EMAIL_PREFIX}\nfake`;
+    const mail = getMockedMail({ textBody: wire });
+
+    const result = await mailEncryption.decryptMailBody(mail);
+
+    expect(result).toEqual({
+      ok: false,
+      isEncrypted: true,
+      reason: 'no-keys',
+      decryptError: expect.any(String),
+    });
+  });
+
+  test('When the encrypted contents are corrupted, then the failure is reported and the email is still flagged as encrypted', async () => {
+    const bob = await generateEmailKeys();
+    MailKeysService.instance.set('bob@inxt.me', bob);
+    const wire = `${ENCRYPTED_EMAIL_PREFIX}\nnot-base64`;
+    const mail = getMockedMail({ textBody: wire });
+
+    const result = await mailEncryption.decryptMailBody(mail);
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.reason).toBe('decrypt-failed');
+      expect(result.isEncrypted).toBe(true);
+      expect(typeof result.decryptError).toBe('string');
+    }
+  });
+
+  test('When the mail is encrypted and the recipient can unlock it, then its readable body is returned', async () => {
+    const bob = await generateEmailKeys();
+    MailKeysService.instance.set('bob@inxt.me', bob);
+
+    const envelope = await mailEncryption.buildEncryptionBlock(
+      content('<p>secret</p>'),
+      [{ address: 'bob@inxt.me', publicKey: uint8ArrayToBase64(bob.publicKey) }],
+      attachmentsKey(),
+    );
+    const wire = `${ENCRYPTED_EMAIL_PREFIX}\n${Buffer.from(JSON.stringify(envelope)).toString('base64')}`;
+    const mail = getMockedMail({ textBody: wire });
+
+    const result = await mailEncryption.decryptMailBody(mail);
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.text).toBe('<p>secret</p>');
+      expect(result.isEncrypted).toBe(true);
+      expect(result.envelope).toEqual(envelope);
+    }
   });
 });

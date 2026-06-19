@@ -1,35 +1,11 @@
 import type { EmailResponse, EncryptionBlock } from '@internxt/sdk/dist/mail/types';
 import { DownloadSimpleIcon, PaperclipIcon } from '@phosphor-icons/react';
-import DOMPurify from 'dompurify';
 import { bytesToString } from '@/utils/bytes-to-string';
 import notificationsService, { ToastType } from '@/services/notifications';
 import { useTranslationContext } from '@/i18n';
 import { useAttachmentsSessionKey } from '@/hooks/mail/useAttachmentsSessionKey';
 import { NetworkService } from '@/services/network';
-
-const purify = DOMPurify();
-
-purify.addHook('afterSanitizeAttributes', (node) => {
-  const tag = node.tagName?.toLowerCase();
-
-  if (tag === 'img' || tag === 'video' || tag === 'audio' || tag === 'source') {
-    const src = node.getAttribute('src') ?? '';
-    if (src && !src.startsWith('data:') && !src.startsWith('cid:')) {
-      node.removeAttribute('src');
-    }
-  }
-
-  if (node.hasAttribute('background')) {
-    const bg = node.getAttribute('background') ?? '';
-    if (bg && !bg.startsWith('data:') && !bg.startsWith('cid:')) {
-      node.removeAttribute('background');
-    }
-  }
-
-  if (tag === 'a') {
-    node.setAttribute('rel', 'noopener noreferrer');
-  }
-});
+import { useSanitizedMailHtml } from '../utils/useSanitizedMailHtml';
 
 type EmailAttachment = NonNullable<EmailResponse['attachments']>[number];
 
@@ -43,7 +19,7 @@ interface PreviewProps {
 
 const Preview = ({ mailId, subject, body, attachments, envelope }: PreviewProps) => {
   const { translate } = useTranslationContext();
-  const sanitizedBody = purify.sanitize(body);
+  const sanitizedBody = useSanitizedMailHtml(body);
   const attachmentsSessionKey = useAttachmentsSessionKey(mailId, envelope ?? null);
 
   const onDownload = async (attachment: EmailAttachment) => {

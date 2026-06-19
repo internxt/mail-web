@@ -6,8 +6,10 @@ import {
   encryptEmailWithKey,
   encryptKeysHybrid,
 } from 'internxt-crypto/email-crypto';
-import type { EncryptionBlock } from '@internxt/sdk/dist/mail/types';
+import type { EmailResponse, EncryptionBlock } from '@internxt/sdk/dist/mail/types';
 import { BuildEncryptionBlockError, EnvelopeDecryptionError } from '@/errors/mail';
+import { MailKeysService } from '../mail-keys';
+import { ErrorService } from '../error';
 
 export type RecipientPublicKey = { address: string; publicKey: string };
 export type EmailContent = { body: string; previewText: string };
@@ -17,6 +19,9 @@ interface EncryptedAttachment {
   sessionKey: Uint8Array;
   encryptedFile: Uint8Array;
 }
+export type DecryptedMailBody =
+  | { ok: true; text: string; envelope: EncryptionBlock | null; isEncrypted: boolean }
+  | { ok: false; decryptError: string; isEncrypted: true; reason: 'no-keys' | 'decrypt-failed' };
 const PREVIEW_PLAINTEXT_LENGTH = 256;
 
 export const ENCRYPTED_EMAIL_PREFIX = 'INTERNXT-ENCRYPTED-EMAIL-v1';
@@ -151,6 +156,36 @@ export class MailEncryptionService {
    */
   decryptSummaryPreview(summary: EncryptedSummary, keypair: HybridKeyPair): Promise<string> {
     return this.trialDecrypt(summary.wrappedKeys, summary.encryptedPreview, keypair);
+  }
+
+  /**
+   * Decrypt the body of a given email
+   * @param mail - The email to decrypt
+   * @returns - An object indicating if the decryption was ok and the decrypted text
+   */
+  async decryptMailBody(mail: EmailResponse): Promise<DecryptedMailBody> {
+    const rawBody = (mail.textBody ?? '') as string;
+    const isEncrypted = this.isEncryptedEmailBody(rawBody);
+
+    if (!isEncrypted) {
+      const text = mail.htmlBody && mail.htmlBody.length > 0 ? mail.htmlBody : rawBody;
+      return { ok: true, text, envelope: null, isEncrypted: false };
+    }
+
+    const senderKeys = MailKeysService.instance.getCurrentKeys();
+    if (!senderKeys) {
+      return { ok: false, isEncrypted: true, decryptError: 'No sender keys received', reason: 'no-keys' };
+    }
+
+    try {
+      const envelope = this.parseEncryptionBlock(rawBody);
+      const text = await this.decryptEnvelope(envelope, senderKeys);
+      return { ok: true, text, envelope, isEncrypted: true };
+    } catch (error) {
+      const castedError = ErrorService.instance.castError(error);
+      console.error('Failed to decrypt mail body', error);
+      return { ok: false, decryptError: castedError.message, isEncrypted: true, reason: 'decrypt-failed' };
+    }
   }
 
   /**

@@ -1,11 +1,10 @@
 import { Activity, useState } from 'react';
 import { useTranslationContext } from '@/i18n';
 import type { FolderType } from '@/types/mail';
-import PreviewMail from './components/mail-preview';
 import Settings from './components/settings';
 import {
   useDeleteMailsMutation,
-  useGetMailMessageQuery,
+  useGetThreadQuery,
   useMoveToFolderMutation,
   useUpdateReadStatusMutation,
 } from '@/store/api/mail';
@@ -13,7 +12,6 @@ import { ErrorService } from '@/services/error';
 import useListFolderPaginated from '@/hooks/mail/useListFolderPaginated';
 import { useUnreadByMailbox } from '@/hooks/mail/useUnreadByMailbox';
 import { useMailSelection } from '@/hooks/mail/useMailSelection';
-import { useDecryptedMail } from '@/hooks/mail/useDecryptedMail';
 import { useDecryptedPreviews } from '@/hooks/mail/useDecryptedPreviews';
 import PreviewEmailEmptyState from './components/mail-preview/preview-empty-state';
 import TrayHeader from './components/tray/header';
@@ -23,6 +21,8 @@ import { formatEmailsToList } from '@/utils/format-emails';
 import { useListActionContext } from '@/hooks/mail/useListActionContext';
 import { usePreviewMailActions } from '@/hooks/mail/usePreviewMailActions';
 import ActionsBar from './components/mail-preview/actions-bar';
+import { useActionDialog } from '@/context/dialog-manager';
+import { ThreadView } from './components/thread-view';
 
 interface MailViewProps {
   folder: FolderType;
@@ -34,10 +34,11 @@ const MailView = ({ folder }: MailViewProps) => {
   const [updateReadStatus] = useUpdateReadStatusMutation();
   const [moveToFolder] = useMoveToFolderMutation();
   const [deleteEmails] = useDeleteMailsMutation();
+  const { openDialog } = useActionDialog();
 
-  const { data: activeMailData } = useGetMailMessageQuery({ emailId: activeMailId! }, { skip: !activeMailId });
-  const activeMail = activeMailId ? activeMailData : undefined;
-  const decrypted = useDecryptedMail(activeMail);
+  const { data: activeMailData } = useGetThreadQuery({ emailId: activeMailId! }, { skip: !activeMailId });
+  const thread = activeMailId ? activeMailData : undefined;
+  const activeMail = thread?.find((m) => m.id === activeMailId);
   const {
     isLoadingListFolder,
     listFolderEmails,
@@ -61,7 +62,9 @@ const MailView = ({ folder }: MailViewProps) => {
   const previewActions = usePreviewMailActions({
     activeMailId,
     folder,
+    decryptedMail: activeMail,
     clearActiveMail: () => setActiveMailId(undefined),
+
     updateReadStatus: async (args) => {
       await updateReadStatus(args).unwrap();
     },
@@ -71,15 +74,11 @@ const MailView = ({ folder }: MailViewProps) => {
     deleteEmails: async (args) => {
       await deleteEmails(args).unwrap();
     },
+    openDialog,
   });
   const { unreadByMailbox } = useUnreadByMailbox();
 
   const folderName = translate(`mail.${folder}`);
-
-  const from = activeMail?.from[0];
-  const to = activeMail?.to ?? [];
-  const cc = activeMail?.cc ?? [];
-  const bcc = activeMail?.bcc ?? [];
 
   const onSelectEmail = async (id: string, isRead?: boolean) => {
     setActiveMailId(id);
@@ -102,7 +101,7 @@ const MailView = ({ folder }: MailViewProps) => {
   const formattedMails = formatEmailsToList(listFolderEmails, decryptedPreviews) ?? [];
 
   return (
-    <div className="flex flex-row w-full h-full">
+    <div className="flex flex-row w-full h-full overflow-hidden">
       {/* Tray */}
       <div className="flex flex-col border-r border-gray-5 h-full">
         <div className="flex z-10">
@@ -142,25 +141,7 @@ const MailView = ({ folder }: MailViewProps) => {
           <PreviewEmailEmptyState unreadEmailsCount={unreadByMailbox[folder]} />
         </Activity>
 
-        {activeMail && (
-          <PreviewMail
-            from={{ name: from?.name ?? from?.email ?? '', email: from?.email ?? '' }}
-            to={to.map((u) => ({ name: u.name ?? '', email: u.email }))}
-            cc={cc.map((u) => ({ name: u.name ?? '', email: u.email }))}
-            bcc={bcc.map((u) => ({ name: u.name ?? '', email: u.email }))}
-            mail={{
-              id: activeMail.id,
-              subject: decrypted.subject || activeMail.subject,
-              receivedAt: activeMail.receivedAt,
-              htmlBody: decrypted.htmlBody,
-              attachments: activeMail.attachments,
-              isEncrypted: decrypted.isEncrypted,
-              isDecrypting: decrypted.isDecrypting,
-              decryptError: decrypted.decryptError,
-              envelope: decrypted.envelope,
-            }}
-          />
-        )}
+        {thread && <ThreadView key={activeMailId} thread={thread} />}
       </div>
     </div>
   );

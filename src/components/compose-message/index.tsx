@@ -1,5 +1,6 @@
 import { LockKeyIcon, PaperclipIcon, WarningIcon, XIcon } from '@phosphor-icons/react';
 import { useCallback, useRef, useState, type ChangeEvent } from 'react';
+
 import { genSymmetricKey } from 'internxt-crypto';
 import type { Recipient } from './types';
 import { RecipientInput } from './components/RecipientInput';
@@ -14,6 +15,8 @@ import useAttachments from './hooks/useAttachments';
 import { useEditor } from '@tiptap/react';
 import { EDITOR_CONFIG } from './config';
 import useComposeSend from './hooks/useComposeSend';
+import type { ComposePayload } from '@/types/mail';
+import { useInitialComposeState } from './hooks/useInitialComposeState';
 
 export interface DraftMessage {
   subject?: string;
@@ -26,8 +29,11 @@ export interface DraftMessage {
 export const ComposeMessageDialog = () => {
   const { translate } = useTranslationContext();
   const { closeDialog: onComposeMessageDialogClose, getDialogData: getComposeMessageDialogData } = useActionDialog();
+  const composeDialogData = getComposeMessageDialogData(ActionDialog.ComposeMessage) as ComposePayload | undefined;
 
-  const draft = (getComposeMessageDialogData(ActionDialog.ComposeMessage) ?? {}) as DraftMessage;
+  const { data: item, mode } = useInitialComposeState(composeDialogData);
+  const inReplyItemId = mode === 'reply' ? item.replyToEmailId : undefined;
+
   const {
     showBcc,
     showCc,
@@ -45,9 +51,14 @@ export const ComposeMessageDialog = () => {
     onShowCcRecipient,
     onSubjectChange,
     clear: clearComposeMessage,
-  } = useComposeMessage();
+  } = useComposeMessage({
+    subject: item.subject,
+    to: item.to,
+    cc: item.cc,
+    bcc: item.bcc,
+  });
 
-  const title = draft.subject ?? translate('modals.composeMessageDialog.title');
+  const title = item.subject ?? translate('modals.composeMessageDialog.title');
   const editor = useEditor(EDITOR_CONFIG);
 
   const [attachmentsSessionKey] = useState<Uint8Array>(() => genSymmetricKey());
@@ -79,6 +90,7 @@ export const ComposeMessageDialog = () => {
     editor,
     subject: subjectValue,
     toRecipients,
+    inReplyTo: inReplyItemId,
     onSent: onClose,
   });
 
