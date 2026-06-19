@@ -13,6 +13,7 @@ import type {
   SearchFiltersQuery,
   SendEmailRequest,
   SetupMailAccountPayload,
+  UpdateDraftResponse,
   UpdateEmailRequest,
   UploadAttachmentResponse,
 } from '@internxt/sdk/dist/mail/types';
@@ -156,7 +157,7 @@ export class MailService {
    * @param payload - The draft request (recipients, subject, body, optional encryption block, attachments)
    * @returns A promise that resolves when the update operation is complete
    */
-  async updateDraft(draftId: string, payload: DraftEmailRequest): Promise<void> {
+  async updateDraft(draftId: string, payload: DraftEmailRequest): Promise<UpdateDraftResponse> {
     return this.client.updateDraft(draftId, payload);
   }
 

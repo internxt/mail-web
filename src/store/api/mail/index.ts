@@ -31,6 +31,7 @@ import type {
   MailboxResponse,
   RecipientKey,
   SendEmailRequest,
+  UpdateDraftResponse,
 } from '@internxt/sdk/dist/mail/types';
 import type { AppDispatch } from '@/store';
 import { MailEncryptionService } from '@/services/mail-encryption';
@@ -322,7 +323,7 @@ export const mailApi = api.injectEndpoints({
           return { error: new SendEmailError(err.message, err.requestId) };
         }
       },
-      invalidatesTags: [{ type: 'ListFolder', id: 'sent' }, 'Mailbox', 'ThreadMessage'],
+      invalidatesTags: () => [{ type: 'ListFolder' }],
     }),
     draftEmail: builder.mutation<EmailCreatedResponse, DraftEmailRequest>({
       async queryFn(payload): Promise<{ data: EmailCreatedResponse } | { error: DraftMessageError }> {
@@ -336,11 +337,11 @@ export const mailApi = api.injectEndpoints({
       },
       invalidatesTags: [{ type: 'ListFolder', id: 'drafts' }],
     }),
-    updateDraft: builder.mutation<void, { draftId: string; payload: DraftEmailRequest }>({
-      async queryFn({ draftId, payload }): Promise<{ data: void } | { error: DraftMessageError }> {
+    updateDraft: builder.mutation<UpdateDraftResponse, { draftId: string; payload: DraftEmailRequest }>({
+      async queryFn({ draftId, payload }): Promise<{ data: UpdateDraftResponse } | { error: DraftMessageError }> {
         try {
-          await MailService.instance.updateDraft(draftId, payload);
-          return { data: undefined };
+          const updatedDraft = await MailService.instance.updateDraft(draftId, payload);
+          return { data: updatedDraft };
         } catch (error) {
           const err = ErrorService.instance.castError(error);
           return { error: new DraftMessageError(err.message, err.requestId) };
@@ -358,6 +359,7 @@ export const {
   useGetListFolderQuery,
   useGetMailMessageQuery,
   useGetThreadQuery,
+  useLazyGetThreadQuery,
   useUpdateReadStatusMutation,
   useDeleteMailsMutation,
   useMoveToFolderMutation,

@@ -144,12 +144,63 @@ describe('Preparing the initial state of the compose dialog', () => {
     expect(result.current.data.htmlBody).toContain('alice@inxt.me');
   });
 
-  test('When the dialog is opened in replyAll or draft mode, then it falls back to an empty draft', () => {
-    const sourceMail = getMockedMail();
-    const draftPayload: ComposePayload = { mode: 'draft', draft: sourceMail };
+  test('When the dialog is opened with a persisted draft, then the compose hydrates with its subject, recipients, body and id', () => {
+    const draft = getMockedMail({
+      id: 'draft-77',
+      subject: 'Draft in progress',
+      to: [{ email: 'bob@inxt.me', name: 'Bob' }],
+      cc: [{ email: 'carol@inxt.me' }],
+      htmlBody: '<p>Half-written body</p>',
+      attachments: [],
+    });
+    const draftPayload: ComposePayload = { mode: 'draft', draft };
 
     const { result } = renderHook(() => useInitialComposeState(draftPayload));
 
-    expect(result.current).toEqual({ mode: 'draft', data: { subject: '', to: [], cc: [], bcc: [] } });
+    expect(result.current.mode).toBe('draft');
+    expect(result.current.data.draftId).toBe('draft-77');
+    expect(result.current.data.subject).toBe('Draft in progress');
+    expect(result.current.data.to).toHaveLength(1);
+    expect(result.current.data.to[0]).toMatchObject({ email: 'bob@inxt.me', name: 'Bob' });
+    expect(result.current.data.cc).toHaveLength(1);
+    expect(result.current.data.cc[0]).toMatchObject({ email: 'carol@inxt.me' });
+    expect(result.current.data.htmlBody).toBe('<p>Half-written body</p>');
+    expect(result.current.data.persistedAttachments).toEqual([]);
+  });
+
+  test('When opening a draft without attachments, then persistedAttachments is an empty array', () => {
+    const draft = getMockedMail({ id: 'draft-empty', attachments: [] });
+    const draftPayload: ComposePayload = { mode: 'draft', draft };
+
+    const { result } = renderHook(() => useInitialComposeState(draftPayload));
+
+    expect(result.current.data.persistedAttachments).toEqual([]);
+  });
+
+  test('When opening a draft with attachments, then persistedAttachments mirrors the stored blob refs', () => {
+    const draft = getMockedMail({
+      id: 'draft-with-att',
+      attachments: [
+        { blobId: 'blob-1', name: 'one.pdf', size: 100, type: 'application/pdf' },
+        { blobId: 'blob-2', name: 'two.png', size: 200, type: 'image/png' },
+      ],
+    });
+    const draftPayload: ComposePayload = { mode: 'draft', draft };
+
+    const { result } = renderHook(() => useInitialComposeState(draftPayload));
+
+    expect(result.current.data.persistedAttachments).toEqual([
+      { blobId: 'blob-1', name: 'one.pdf', size: 100, type: 'application/pdf' },
+      { blobId: 'blob-2', name: 'two.png', size: 200, type: 'image/png' },
+    ]);
+  });
+
+  test('When the dialog is opened in replyAll mode, then it falls back to an empty draft', () => {
+    const sourceMail = getMockedMail();
+    const payload: ComposePayload = { mode: 'replyAll', sourceMail };
+
+    const { result } = renderHook(() => useInitialComposeState(payload));
+
+    expect(result.current.mode).toBe('replyAll');
   });
 });

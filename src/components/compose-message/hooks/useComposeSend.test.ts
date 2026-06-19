@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   senderKeys: undefined as { address: string; publicKey: string } | undefined,
   triggerLookup: vi.fn(),
   sendEmail: vi.fn(),
+  deleteEmails: vi.fn(),
 }));
 
 vi.mock('@/store/api/mail', () => ({
@@ -19,6 +20,7 @@ vi.mock('@/store/api/mail', () => ({
   useGetMailAccountKeysQuery: () => ({ data: mocks.senderKeys }),
   useLazyLookupRecipientKeysQuery: () => [mocks.triggerLookup],
   useSendEmailMutation: () => [mocks.sendEmail, { isLoading: false }],
+  useDeleteMailsMutation: () => [mocks.deleteEmails],
 }));
 
 vi.mock('@/i18n', () => ({ useTranslationContext: () => ({ translate: (key: string) => key }) }));
@@ -69,12 +71,14 @@ describe('useComposeSend', () => {
     vi.restoreAllMocks();
     mocks.triggerLookup.mockReset();
     mocks.sendEmail.mockReset();
+    mocks.deleteEmails.mockReset();
     show.mockReset();
 
     mocks.activeDomains = [{ domain: 'inxt.me' }];
     mocks.senderKeys = { address: 'me@inxt.me', publicKey: 'sender-pk' };
     mocks.triggerLookup.mockReturnValue({ unwrap: () => Promise.resolve([]) });
     mocks.sendEmail.mockReturnValue({ unwrap: () => Promise.resolve({ id: 'mail-1' }) });
+    mocks.deleteEmails.mockReturnValue({ unwrap: () => Promise.resolve(null) });
   });
 
   test('When there are no recipients, then it warns and does not send', async () => {
@@ -296,6 +300,40 @@ describe('useComposeSend', () => {
       expect(buildSpy).not.toHaveBeenCalled();
       expect(mocks.sendEmail).not.toHaveBeenCalled();
       expect(onSent).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('sending from a persisted draft', () => {
+    beforeEach(() => {
+      mocks.triggerLookup.mockReturnValue({
+        unwrap: () => Promise.resolve([{ address: 'bob@inxt.me', publicKey: 'bob-pk' }]),
+      });
+      vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
+    });
+
+    test('When sending an email opened from a draft, then the draftId is forwarded to sendEmail so the server consumes the draft', async () => {
+      const { result, onSent } = renderSend({
+        toRecipients: [recipient('bob@inxt.me')],
+        draftId: 'draft-42',
+      });
+
+      await act(async () => {
+        await result.current.send();
+      });
+
+      expect(mocks.sendEmail).toHaveBeenCalledWith(expect.objectContaining({ draftId: 'draft-42' }));
+      expect(onSent).toHaveBeenCalled();
+    });
+
+    test('When sending a brand-new email (no draftId), then sendEmail is called without a draftId', async () => {
+      const { result, onSent } = renderSend({ toRecipients: [recipient('bob@inxt.me')] });
+
+      await act(async () => {
+        await result.current.send();
+      });
+
+      expect(mocks.sendEmail).toHaveBeenCalledWith(expect.objectContaining({ draftId: undefined }));
+      expect(onSent).toHaveBeenCalled();
     });
   });
 });

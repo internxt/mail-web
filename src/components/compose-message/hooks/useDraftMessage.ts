@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import type { DraftEmailRequest, EmailAddress } from '@internxt/sdk/dist/mail/types';
-import { useDraftEmailMutation, useUpdateDraftMutation } from '@/store/api/mail';
+import { useDraftEmailMutation, useGetMailAccountKeysQuery, useUpdateDraftMutation } from '@/store/api/mail';
+import { MailEncryptionService } from '@/services/mail-encryption';
 import type { Recipient } from '../types';
 import type { AttachmentTask } from './useAttachments';
 
@@ -17,6 +18,7 @@ interface UseDraftMessageParams {
   subject: string;
   editor: Editor | null;
   attachments: AttachmentTask[];
+  attachmentsSessionKey: Uint8Array;
 }
 
 interface UseDraftMessageResult {
@@ -33,16 +35,29 @@ export const useDraftMessage = ({
   subject,
   editor,
   attachments,
+  attachmentsSessionKey,
 }: UseDraftMessageParams): UseDraftMessageResult => {
-  const [draftId, setDraftId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const draftIdRef = useRef<string | null>(existentDraftId);
+  // Using a ref instead an state to avoid losing data on re-renders
+  const draftIdRef = useRef<string | null>(existentDraftId ?? null);
 
   const [createDraft] = useDraftEmailMutation();
   const [updateDraft] = useUpdateDraftMutation();
+  const { data: senderKeys } = useGetMailAccountKeysQuery();
 
-  const buildPayload = useCallback((): DraftEmailRequest => {
+  const buildPayload = useCallback(async (): Promise<DraftEmailRequest | null> => {
+    if (!senderKeys?.address || !senderKeys.publicKey) return null;
+
+    const htmlBody = editor?.getHTML() ?? '';
+    const textBody = editor?.getText() ?? '';
+
+    const encryption = await MailEncryptionService.instance.buildEncryptionBlock(
+      { body: htmlBody, previewText: textBody },
+      [{ address: senderKeys.address, publicKey: senderKeys.publicKey }],
+      attachmentsSessionKey,
+    );
+
     const doneAttachments = attachments
       .filter((a): a is AttachmentTask & { blobId: string } => a.status === 'done' && !!a.blobId)
       .map((a) => ({ blobId: a.blobId, name: a.name, size: a.size, type: a.type }));
@@ -52,11 +67,10 @@ export const useDraftMessage = ({
       cc: ccRecipients.length ? ccRecipients.map(toEmailAddress) : undefined,
       bcc: bccRecipients.length ? bccRecipients.map(toEmailAddress) : undefined,
       subject: subject || undefined,
-      htmlBody: editor?.getHTML() || undefined,
-      textBody: editor?.getText() || undefined,
+      encryption,
       attachments: doneAttachments.length ? doneAttachments : undefined,
     };
-  }, [toRecipients, ccRecipients, bccRecipients, subject, editor, attachments]);
+  }, [toRecipients, ccRecipients, bccRecipients, subject, editor, attachments, attachmentsSessionKey, senderKeys]);
 
   const saveDraft = useCallback(async () => {
     if (timerRef.current) {
@@ -66,20 +80,20 @@ export const useDraftMessage = ({
 
     setIsSaving(true);
     try {
-      const payload = buildPayload();
+      const payload = await buildPayload();
+      if (!payload) return;
       if (draftIdRef.current) {
-        await updateDraft({ draftId: draftIdRef.current, payload }).unwrap();
+        const { newDraftId } = await updateDraft({ draftId: draftIdRef.current, payload }).unwrap();
+        draftIdRef.current = newDraftId;
       } else {
         const { id } = await createDraft(payload).unwrap();
         draftIdRef.current = id;
-        setDraftId(id);
       }
     } finally {
       setIsSaving(false);
     }
   }, [buildPayload, createDraft, updateDraft]);
 
-  // Debounced autosave on any content change
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
@@ -93,7 +107,7 @@ export const useDraftMessage = ({
     };
   }, [toRecipients, ccRecipients, bccRecipients, subject, editor, attachments, saveDraft]);
 
-  return { draftId, isSaving, saveDraft };
+  return { draftId: draftIdRef.current, isSaving, saveDraft };
 };
 
 export default useDraftMessage;

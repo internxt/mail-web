@@ -17,6 +17,11 @@ import { EDITOR_CONFIG } from './config';
 import useComposeSend from './hooks/useComposeSend';
 import type { ComposePayload } from '@/types/mail';
 import { useInitialComposeState } from './hooks/useInitialComposeState';
+import { useDraftMessage } from './hooks/useDraftMessage';
+import { MailEncryptionService } from '@/services/mail-encryption';
+import { MailKeysService } from '@/services/mail-keys';
+import type { EncryptionBlock } from '@internxt/sdk/dist/mail/types';
+import { useDeleteMailsMutation } from '@/store/api/mail';
 
 export interface DraftMessage {
   subject?: string;
@@ -26,10 +31,13 @@ export interface DraftMessage {
   body?: string;
 }
 
+const ALLOWED_MODES_TO_FILL_BODY = new Set(['draft', 'forward']);
+
 export const ComposeMessageDialog = () => {
   const { translate } = useTranslationContext();
   const { closeDialog: onComposeMessageDialogClose, getDialogData: getComposeMessageDialogData } = useActionDialog();
   const composeDialogData = getComposeMessageDialogData(ActionDialog.ComposeMessage) as ComposePayload | undefined;
+  const [deleteEmails] = useDeleteMailsMutation();
 
   const { data: item, mode } = useInitialComposeState(composeDialogData);
   const inReplyItemId = mode === 'reply' ? item.replyToEmailId : undefined;
@@ -62,12 +70,14 @@ export const ComposeMessageDialog = () => {
   }, [item, mode]);
 
   useEffect(() => {
-    if (mode !== 'forward' || !editor || !item.htmlBody) return;
-    editor.commands.setContent(`<p></p><p></p> ${item.htmlBody}`);
+    if (!ALLOWED_MODES_TO_FILL_BODY.has(mode) || !editor || !item.htmlBody) return;
+    const content = mode === 'draft' ? item.htmlBody : `<p></p><p></p> ${item.htmlBody}`;
+    editor.commands.setContent(content);
     editor.commands.focus('start');
   }, [editor, mode, item.htmlBody]);
 
-  const [attachmentsSessionKey] = useState<Uint8Array>(() => genSymmetricKey());
+  const [attachmentsSessionKey, setAttachmentsSessionKey] = useState<Uint8Array>(() => genSymmetricKey());
+  const sessionKeyHydratedRef = useRef(false);
 
   const {
     attachments,
@@ -76,6 +86,7 @@ export const ComposeMessageDialog = () => {
     hasErrors: hasAttachmentErrors,
     addFiles: addAttachmentFiles,
     addInheritedAttachments,
+    addPersistedAttachments,
     markResolvingInherited,
     markInheritedResolved,
     markInheritedFailed,
@@ -95,25 +106,60 @@ export const ComposeMessageDialog = () => {
     hydratedForwardAttachmentsRef.current = true;
     addInheritedAttachments(inherited);
   }, [mode, item.inheritedAttachments, addInheritedAttachments]);
+
+  const hydratedPersistedAttachmentsRef = useRef(false);
+  useEffect(() => {
+    if (mode !== 'draft' || hydratedPersistedAttachmentsRef.current) return;
+    const persisted = item.persistedAttachments ?? [];
+    if (persisted.length === 0) return;
+    hydratedPersistedAttachmentsRef.current = true;
+    addPersistedAttachments(persisted);
+  }, [mode, item.persistedAttachments, addPersistedAttachments]);
+
+  useEffect(() => {
+    if (mode !== 'draft' || sessionKeyHydratedRef.current) return;
+    const envelope = composeDialogData?.mode === 'draft' ? composeDialogData.draft.encryption : undefined;
+    if (!envelope) return;
+    const keys = MailKeysService.instance.getCurrentKeys();
+    if (!keys) return;
+    sessionKeyHydratedRef.current = true;
+    MailEncryptionService.instance
+      .decryptAttachmentsSessionKey(envelope as EncryptionBlock, keys)
+      .then(setAttachmentsSessionKey)
+      .catch((e) => console.error('Failed to recover draft session key', e));
+  }, [mode, composeDialogData]);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // const { saveDraft } = useDraftMessage({
-  //   attachments,
-  //   toRecipients,
-  //   ccRecipients,
-  //   bccRecipients,
-  //   subject: subjectValue,
-  //   editor,
-  // });
+  const { saveDraft, draftId } = useDraftMessage({
+    existentDraftId: item.draftId,
+    attachments,
+    toRecipients,
+    ccRecipients,
+    bccRecipients,
+    subject: subjectValue,
+    editor,
+    attachmentsSessionKey,
+  });
 
-  const onClose = useCallback(async () => {
-    // await saveDraft();
+  const clearDialog = useCallback(() => {
     clearAttachments();
     clearComposeMessage();
     editor.commands.clearContent();
     onComposeMessageDialogClose(ActionDialog.ComposeMessage);
     hydratedForwardAttachmentsRef.current = false;
+    hydratedPersistedAttachmentsRef.current = false;
+    sessionKeyHydratedRef.current = false;
   }, [editor, clearComposeMessage, onComposeMessageDialogClose, clearAttachments]);
+
+  const onClose = useCallback(async () => {
+    await saveDraft().catch(() => {});
+    clearDialog();
+  }, [clearDialog, saveDraft]);
+
+  const onSent = useCallback(async () => {
+    clearDialog();
+  }, [item, draftId, mode, deleteEmails, clearDialog]);
 
   const { send, encryptionState, isSending } = useComposeSend({
     attachments,
@@ -124,7 +170,8 @@ export const ComposeMessageDialog = () => {
     subject: subjectValue,
     toRecipients,
     inReplyTo: inReplyItemId,
-    onSent: onClose,
+    draftId: draftId ?? undefined,
+    onSent,
     markResolvingInherited,
     markInheritedResolved,
     markInheritedFailed,
@@ -143,7 +190,7 @@ export const ComposeMessageDialog = () => {
         className={`absolute inset-0 bg-gray-100/50 transition-opacity
      duration-150 dark:bg-black/75
     `}
-        onClick={onClose}
+        onClick={isSending ? undefined : onClose}
         data-testid="dialog-overlay"
         aria-label="Close dialog"
       ></button>
@@ -166,7 +213,7 @@ export const ComposeMessageDialog = () => {
         <div className="flex flex-col space-y-2">
           <div className=" flex flex-row justify-between">
             <p className="text-lg font-medium text-gray-100">{title}</p>
-            <XIcon onClick={onClose} className="cursor-pointer" />
+            <XIcon onClick={isSending ? undefined : onClose} className={isSending ? 'opacity-40' : 'cursor-pointer'} />
           </div>
           <RecipientInput
             label={translate('modals.composeMessageDialog.to')}
