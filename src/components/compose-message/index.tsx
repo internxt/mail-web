@@ -21,7 +21,6 @@ import { useDraftMessage } from './hooks/useDraftMessage';
 import { MailEncryptionService } from '@/services/mail-encryption';
 import { MailKeysService } from '@/services/mail-keys';
 import type { EncryptionBlock } from '@internxt/sdk/dist/mail/types';
-import { useDeleteMailsMutation } from '@/store/api/mail';
 
 export interface DraftMessage {
   subject?: string;
@@ -37,7 +36,6 @@ export const ComposeMessageDialog = () => {
   const { translate } = useTranslationContext();
   const { closeDialog: onComposeMessageDialogClose, getDialogData: getComposeMessageDialogData } = useActionDialog();
   const composeDialogData = getComposeMessageDialogData(ActionDialog.ComposeMessage) as ComposePayload | undefined;
-  const [deleteEmails] = useDeleteMailsMutation();
 
   const { data: item, mode } = useInitialComposeState(composeDialogData);
   const inReplyItemId = mode === 'reply' ? item.replyToEmailId : undefined;
@@ -159,7 +157,7 @@ export const ComposeMessageDialog = () => {
 
   const onSent = useCallback(async () => {
     clearDialog();
-  }, [item, draftId, mode, deleteEmails, clearDialog]);
+  }, [clearDialog]);
 
   const { send, encryptionState, isSending } = useComposeSend({
     attachments,

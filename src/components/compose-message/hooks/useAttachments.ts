@@ -6,6 +6,7 @@ import { bytesToString } from '@/utils/bytes-to-string';
 import { MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL } from '@/constants';
 import { ErrorService } from '@/services/error';
 import { UploadManager } from '@/services/upload-manager';
+import type { PersistedAttachmentInput } from './useInitialComposeState';
 
 export type AttachmentStatus = 'pending' | 'uploading' | 'done' | 'error';
 
@@ -36,13 +37,6 @@ export interface InheritedAttachmentInput {
   originalMailId: string;
   originalBlobId: string;
   originalEnvelope: EncryptionBlock;
-  name: string;
-  size: number;
-  type: string;
-}
-
-export interface PersistedAttachmentInput {
-  blobId: string;
   name: string;
   size: number;
   type: string;
@@ -92,7 +86,7 @@ const useAttachments = (sessionKey: Uint8Array) => {
         file,
       }));
       setAttachments((prev) => [...prev, ...pending]);
-      pending.forEach(({ id, file }) => manager.enqueue(id, file));
+      pending.forEach(({ id, file }) => manager.enqueue(id, file as File));
     },
     [totalSize, translate, manager],
   );
