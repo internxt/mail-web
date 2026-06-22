@@ -10,11 +10,14 @@ const mocks = vi.hoisted(() => ({
   senderKeys: undefined as { address: string; publicKey: string } | undefined,
   createDraft: vi.fn(),
   updateDraft: vi.fn(),
+  discardDraft: vi.fn(),
+  resetDiscardDraft: vi.fn(),
 }));
 
 vi.mock('@/store/api/mail', () => ({
   useDraftEmailMutation: () => [mocks.createDraft],
   useUpdateDraftMutation: () => [mocks.updateDraft],
+  useDiscardDraftMutation: () => [mocks.discardDraft, { isLoading: false, reset: mocks.resetDiscardDraft }],
   useGetMailAccountKeysQuery: () => ({ data: mocks.senderKeys }),
 }));
 
@@ -50,9 +53,15 @@ describe('useDraftMessage', () => {
     vi.useFakeTimers();
     mocks.createDraft.mockReset();
     mocks.updateDraft.mockReset();
+    mocks.discardDraft.mockReset();
+    mocks.resetDiscardDraft.mockReset();
     mocks.senderKeys = { address: 'me@inxt.me', publicKey: 'sender-pk' };
-    mocks.createDraft.mockReturnValue({ unwrap: () => Promise.resolve({ id: 'new-draft-1' }) });
-    mocks.updateDraft.mockReturnValue({ unwrap: () => Promise.resolve({ newDraftId: 'new-draft-1' }) });
+    mocks.createDraft.mockReturnValue({
+      unwrap: () => Promise.resolve({ id: 'new-draft-1', receivedAt: '2026-06-22T13:42:30Z' }),
+    });
+    mocks.updateDraft.mockReturnValue({
+      unwrap: () => Promise.resolve({ id: 'new-draft-1', receivedAt: '2026-06-22T13:42:30Z' }),
+    });
   });
 
   test('When autosaving, then the payload is built with an encryption block wrapped only for the sender', async () => {

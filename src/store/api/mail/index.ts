@@ -31,7 +31,6 @@ import type {
   MailboxResponse,
   RecipientKey,
   SendEmailRequest,
-  UpdateDraftResponse,
 } from '@internxt/sdk/dist/mail/types';
 import type { AppDispatch } from '@/store';
 import { MailEncryptionService } from '@/services/mail-encryption';
@@ -323,10 +322,14 @@ export const mailApi = api.injectEndpoints({
           return { error: new SendEmailError(err.message, err.requestId) };
         }
       },
-      invalidatesTags: () => [{ type: 'ListFolder' }],
+      invalidatesTags: () => [
+        { type: 'ListFolder', id: 'inbox' },
+        { type: 'ListFolder', id: 'sent' },
+        { type: 'ListFolder', id: 'drafts' },
+      ],
     }),
-    draftEmail: builder.mutation<EmailCreatedResponse, DraftEmailRequest>({
-      async queryFn(payload): Promise<{ data: EmailCreatedResponse } | { error: DraftMessageError }> {
+    draftEmail: builder.mutation<EmailResponse, DraftEmailRequest>({
+      async queryFn(payload): Promise<{ data: EmailResponse } | { error: DraftMessageError }> {
         try {
           const result = await MailService.instance.draftEmail(payload);
           return { data: result };
@@ -337,8 +340,8 @@ export const mailApi = api.injectEndpoints({
       },
       invalidatesTags: [{ type: 'ListFolder', id: 'drafts' }],
     }),
-    updateDraft: builder.mutation<UpdateDraftResponse, { draftId: string; payload: DraftEmailRequest }>({
-      async queryFn({ draftId, payload }): Promise<{ data: UpdateDraftResponse } | { error: DraftMessageError }> {
+    updateDraft: builder.mutation<EmailResponse, { draftId: string; payload: DraftEmailRequest }>({
+      async queryFn({ draftId, payload }): Promise<{ data: EmailResponse } | { error: DraftMessageError }> {
         try {
           const updatedDraft = await MailService.instance.updateDraft(draftId, payload);
           return { data: updatedDraft };
@@ -346,6 +349,26 @@ export const mailApi = api.injectEndpoints({
           const err = ErrorService.instance.castError(error);
           return { error: new DraftMessageError(err.message, err.requestId) };
         }
+      },
+      invalidatesTags: [{ type: 'ListFolder', id: 'drafts' }],
+    }),
+    discardDraft: builder.mutation<void, { draftId: string }>({
+      async queryFn({ draftId }): Promise<{ data: void } | { error: DraftMessageError }> {
+        try {
+          await MailService.instance.discardDraft(draftId);
+          return { data: undefined };
+        } catch (error) {
+          const err = ErrorService.instance.castError(error);
+          return { error: new DraftMessageError(err.message, err.requestId) };
+        }
+      },
+      async onQueryStarted({ draftId }, { dispatch, queryFulfilled }) {
+        await patchMailsAfterAction({
+          emailIds: [draftId],
+          queryFulfilled,
+          sourceMailbox: 'drafts',
+          dispatch,
+        });
       },
       invalidatesTags: [{ type: 'ListFolder', id: 'drafts' }],
     }),
@@ -369,4 +392,5 @@ export const {
   useSendEmailMutation,
   useDraftEmailMutation,
   useUpdateDraftMutation,
+  useDiscardDraftMutation,
 } = mailApi;

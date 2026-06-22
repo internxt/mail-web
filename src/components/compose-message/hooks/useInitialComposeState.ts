@@ -16,6 +16,7 @@ export type PersistedAttachmentInput = {
 type InitialComposeData = {
   draftId?: string;
   replyToEmailId?: string;
+  receivedAt?: string;
   subject: string;
   to: Recipient[];
   cc: Recipient[];
@@ -93,6 +94,7 @@ export const useInitialComposeState = (compose: ComposePayload | undefined): Ini
           data: {
             draftId: d.id,
             subject: d.subject ?? '',
+            receivedAt: d.receivedAt,
             to: withIds(d.to),
             cc: withIds(d.cc),
             bcc: withIds(d.bcc),

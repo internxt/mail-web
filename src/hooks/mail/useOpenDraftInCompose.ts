@@ -9,7 +9,7 @@ export const useOpenDraftInCompose = () => {
   return useCallback(
     async (draftId: string) => {
       const thread = await fetchThread({ emailId: draftId }).unwrap();
-      const draft = thread.find((m) => m.id === draftId) ?? thread[0];
+      const draft = thread.find((m) => m.id === draftId);
       if (!draft) return;
       openDialog(ActionDialog.ComposeMessage, {
         data: { mode: 'draft', draft },

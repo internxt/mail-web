@@ -13,7 +13,6 @@ import type {
   SearchFiltersQuery,
   SendEmailRequest,
   SetupMailAccountPayload,
-  UpdateDraftResponse,
   UpdateEmailRequest,
   UploadAttachmentResponse,
 } from '@internxt/sdk/dist/mail/types';
@@ -146,7 +145,7 @@ export class MailService {
    * @param payload - The draft request (recipients, subject, body, optional encryption block, attachments)
    * @returns The id of the drafted email
    */
-  async draftEmail(payload: DraftEmailRequest): Promise<EmailCreatedResponse> {
+  async draftEmail(payload: DraftEmailRequest): Promise<EmailResponse> {
     return this.client.saveDraft(payload);
   }
 
@@ -157,7 +156,7 @@ export class MailService {
    * @param payload - The draft request (recipients, subject, body, optional encryption block, attachments)
    * @returns A promise that resolves when the update operation is complete
    */
-  async updateDraft(draftId: string, payload: DraftEmailRequest): Promise<UpdateDraftResponse> {
+  async updateDraft(draftId: string, payload: DraftEmailRequest): Promise<EmailResponse> {
     return this.client.updateDraft(draftId, payload);
   }
 
@@ -169,6 +168,15 @@ export class MailService {
    */
   async getDraft(draftId: string): Promise<EmailResponse> {
     return this.client.getDraft(draftId);
+  }
+
+  /**
+   * Discards an existing draft
+   * @param draftId - The ID of the drad
+   * @returns
+   */
+  async discardDraft(draftId: string): Promise<void> {
+    return this.client.discardDraft(draftId);
   }
 
   /**

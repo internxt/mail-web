@@ -1,4 +1,4 @@
-import { LockKeyIcon, PaperclipIcon, WarningIcon, XIcon } from '@phosphor-icons/react';
+import { LockKeyIcon, PaperclipIcon, TrashIcon, WarningIcon, XIcon } from '@phosphor-icons/react';
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
 
 import { genSymmetricKey } from 'internxt-crypto';
@@ -21,6 +21,13 @@ import { useDraftMessage } from './hooks/useDraftMessage';
 import { MailEncryptionService } from '@/services/mail-encryption';
 import { MailKeysService } from '@/services/mail-keys';
 import type { EncryptionBlock } from '@internxt/sdk/dist/mail/types';
+import { ErrorService } from '@/services/error';
+import dayjs from 'dayjs';
+
+const formatDraftSavedAt = (iso: string): string => {
+  const d = dayjs(iso);
+  return d.isSame(dayjs(), 'day') ? d.format('HH:mm') : d.format('DD MMM');
+};
 
 export interface DraftMessage {
   subject?: string;
@@ -39,6 +46,8 @@ export const ComposeMessageDialog = () => {
 
   const { data: item, mode } = useInitialComposeState(composeDialogData);
   const inReplyItemId = mode === 'reply' ? item.replyToEmailId : undefined;
+  const initialDraftId = mode === 'draft' ? item.draftId : undefined;
+  const initialReceivedAtDraft = mode === 'draft' ? item.receivedAt : undefined;
 
   const {
     showBcc,
@@ -120,17 +129,23 @@ export const ComposeMessageDialog = () => {
     if (!envelope) return;
     const keys = MailKeysService.instance.getCurrentKeys();
     if (!keys) return;
-    sessionKeyHydratedRef.current = true;
     MailEncryptionService.instance
       .decryptAttachmentsSessionKey(envelope as EncryptionBlock, keys)
-      .then(setAttachmentsSessionKey)
-      .catch((e) => console.error('Failed to recover draft session key', e));
+      .then((key) => {
+        setAttachmentsSessionKey(key);
+        sessionKeyHydratedRef.current = true;
+      })
+      .catch((e) => {
+        console.error('Failed to recover draft session key', e);
+        sessionKeyHydratedRef.current = false;
+      });
   }, [mode, composeDialogData]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { saveDraft, draftId, clearDraftRef } = useDraftMessage({
-    existentDraftId: item.draftId,
+  const { saveDraft, handleDraftDiscard, isDiscarding, draftId, draftSavedAt, clearDraftRef } = useDraftMessage({
+    existentDraftId: initialDraftId,
+    draftReceivedAt: initialReceivedAtDraft,
     attachments,
     toRecipients,
     ccRecipients,
@@ -140,7 +155,7 @@ export const ComposeMessageDialog = () => {
     attachmentsSessionKey,
   });
 
-  const clearDialog = useCallback(() => {
+  const closeDialog = useCallback(() => {
     clearAttachments();
     clearDraftRef();
     clearComposeMessage();
@@ -152,13 +167,26 @@ export const ComposeMessageDialog = () => {
   }, [editor, clearDraftRef, clearComposeMessage, onComposeMessageDialogClose, clearAttachments]);
 
   const onClose = useCallback(async () => {
-    await saveDraft().catch(() => {});
-    clearDialog();
-  }, [clearDialog, saveDraft]);
+    try {
+      await saveDraft();
+      closeDialog();
+    } catch {
+      ErrorService.instance.notifyUser(translate('errors.mail.draftSaveFailed'));
+    }
+  }, [closeDialog, saveDraft, translate]);
 
   const onSent = useCallback(async () => {
-    clearDialog();
-  }, [clearDialog]);
+    closeDialog();
+  }, [closeDialog]);
+
+  const onDiscardDraft = useCallback(async () => {
+    try {
+      await handleDraftDiscard();
+      closeDialog();
+    } catch {
+      ErrorService.instance.notifyUser(translate('errors.mail.draftDiscardFailed'));
+    }
+  }, [handleDraftDiscard, closeDialog, translate]);
 
   const { send, encryptionState, isSending } = useComposeSend({
     attachments,
@@ -266,36 +294,46 @@ export const ComposeMessageDialog = () => {
         />
         <input ref={fileInputRef} type="file" multiple hidden onChange={onFilesPicked} />
 
-        <div className="mt-5 flex justify-end items-center space-x-2">
-          {encryptionState === 'internxt' && (
-            <span
-              data-testid="encryption-badge-encrypted"
-              className="inline-flex items-center gap-1 rounded-full bg-green/10 px-2.5 py-1 text-sm font-medium text-green"
-            >
-              <LockKeyIcon size={14} weight="fill" />
-              {translate('modals.composeMessageDialog.encryptedBadge')}
-            </span>
+        <div className="flex flex-row justify-between items center">
+          {draftSavedAt && (
+            <div className="flex flex-row gap-2 items-center">
+              <p>{translate('modals.composeMessageDialog.savedAt', { value: formatDraftSavedAt(draftSavedAt) })}</p>
+              <Button variant="destructive" onClick={onDiscardDraft} disabled={isDiscarding}>
+                <TrashIcon size={24} />
+              </Button>
+            </div>
           )}
-          {encryptionState === 'external' && (
-            <span
-              data-testid="encryption-badge-cleartext"
-              className="inline-flex items-center gap-1 rounded-full bg-yellow/10 px-2.5 py-1 text-sm font-medium text-yellow"
+          <div className="mt-5 flex justify-end items-center space-x-2">
+            {encryptionState === 'internxt' && (
+              <span
+                data-testid="encryption-badge-encrypted"
+                className="inline-flex items-center gap-1 rounded-full bg-green/10 px-2.5 py-1 text-sm font-medium text-green"
+              >
+                <LockKeyIcon size={14} weight="fill" />
+                {translate('modals.composeMessageDialog.encryptedBadge')}
+              </span>
+            )}
+            {encryptionState === 'external' && (
+              <span
+                data-testid="encryption-badge-cleartext"
+                className="inline-flex items-center gap-1 rounded-full bg-yellow/10 px-2.5 py-1 text-sm font-medium text-yellow"
+              >
+                <WarningIcon size={14} weight="fill" />
+                {translate('modals.composeMessageDialog.cleartextBadge')}
+              </span>
+            )}
+            <Button variant="ghost" onClick={() => fileInputRef.current?.click()} disabled={isSending}>
+              <PaperclipIcon size={24} />
+            </Button>
+            <Button
+              onClick={send}
+              loading={isSending}
+              disabled={isSending || isUploadingAttachments || hasAttachmentErrors}
+              variant={'primary'}
             >
-              <WarningIcon size={14} weight="fill" />
-              {translate('modals.composeMessageDialog.cleartextBadge')}
-            </span>
-          )}
-          <Button variant="ghost" onClick={() => fileInputRef.current?.click()} disabled={isSending}>
-            <PaperclipIcon size={24} />
-          </Button>
-          <Button
-            onClick={send}
-            loading={isSending}
-            disabled={isSending || isUploadingAttachments || hasAttachmentErrors}
-            variant={'primary'}
-          >
-            {translate('actions.send')}
-          </Button>
+              {translate('actions.send')}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
