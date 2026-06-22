@@ -129,7 +129,7 @@ export const ComposeMessageDialog = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { saveDraft, draftId } = useDraftMessage({
+  const { saveDraft, draftId, clearDraftRef } = useDraftMessage({
     existentDraftId: item.draftId,
     attachments,
     toRecipients,
@@ -142,13 +142,14 @@ export const ComposeMessageDialog = () => {
 
   const clearDialog = useCallback(() => {
     clearAttachments();
+    clearDraftRef();
     clearComposeMessage();
     editor.commands.clearContent();
     onComposeMessageDialogClose(ActionDialog.ComposeMessage);
     hydratedForwardAttachmentsRef.current = false;
     hydratedPersistedAttachmentsRef.current = false;
     sessionKeyHydratedRef.current = false;
-  }, [editor, clearComposeMessage, onComposeMessageDialogClose, clearAttachments]);
+  }, [editor, clearDraftRef, clearComposeMessage, onComposeMessageDialogClose, clearAttachments]);
 
   const onClose = useCallback(async () => {
     await saveDraft().catch(() => {});
