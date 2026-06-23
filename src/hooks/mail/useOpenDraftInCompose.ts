@@ -14,7 +14,10 @@ export const useOpenDraftInCompose = () => {
       try {
         const thread = await fetchThread({ emailId: draftId }).unwrap();
         const draft = thread.find((m) => m.id === draftId);
-        if (!draft) return;
+        if (!draft) {
+          ErrorService.instance.notifyUser(translate('errors.mail.draftOpenFailed'));
+          return;
+        }
         openDialog(ActionDialog.ComposeMessage, {
           data: { mode: 'draft', draft },
           closeAllDialogsFirst: true,
