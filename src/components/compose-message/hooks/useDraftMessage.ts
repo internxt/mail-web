@@ -32,7 +32,7 @@ const buildSignature = (payload: DraftEmailRequest, editor: Editor | null): stri
     bcc: payload.bcc?.map((r) => r.email) ?? [],
     subject: payload.subject ?? '',
     body: getPlainBody(editor),
-    attachments: [...(payload.attachments?.map((a) => a.blobId) ?? [])].sort(),
+    attachments: [...(payload.attachments?.map((a) => a.blobId) ?? [])].sort((a, b) => a.localeCompare(b)),
   });
 
 interface UseDraftMessageParams {
