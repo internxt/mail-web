@@ -49,7 +49,7 @@ const MailView = ({ folder }: MailViewProps) => {
     toggleUnreadFilter,
   } = useListFolderPaginated(folder);
 
-  const { selectedEmails, selectAll, selectNone, selectRead, selectUnread, toggleSelectAll } =
+  const { selectedEmails, selectAll, selectEmail, selectNone, selectRead, selectUnread, toggleSelectAll } =
     useMailSelection(listFolderEmails);
   const { listActionContext, bulkActionContext } = useListActionContext(folder, selectedEmails, {
     selectAll,
@@ -127,6 +127,7 @@ const MailView = ({ folder }: MailViewProps) => {
             onLoadMore={onLoadMore}
             emptyState={<TrayEmptyState folderName={folderName} />}
             onMailSelected={onSelectEmail}
+            onMailChecked={selectEmail}
           />
         </div>
       </div>
