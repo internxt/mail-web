@@ -89,13 +89,37 @@ describe('useDraftMessage', () => {
     );
   });
 
-  test('When an existing draftId is provided, then updateDraft is invoked instead of createDraft', async () => {
+  test('When an existing draftId is provided and the content changes, then updateDraft is invoked instead of createDraft', async () => {
     vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
 
-    const { result } = renderDraft({
+    const { result, rerender } = renderHook((props: Parameters<typeof useDraftMessage>[0]) => useDraftMessage(props), {
+      initialProps: {
+        existentDraftId: 'draft-77',
+        attachments: [] as AttachmentTask[],
+        toRecipients: [recipient('bob@inxt.me')],
+        ccRecipients: [] as Recipient[],
+        bccRecipients: [] as Recipient[],
+        subject: 'Original subject',
+        editor,
+        attachmentsSessionKey: new Uint8Array(32),
+      },
+    });
+
+    // First save calibrates the baseline signature for the existing draft and does not hit the API.
+    await act(async () => {
+      await result.current.saveDraft();
+    });
+    expect(mocks.updateDraft).not.toHaveBeenCalled();
+
+    rerender({
       existentDraftId: 'draft-77',
-      subject: 'Edited subject',
+      attachments: [],
       toRecipients: [recipient('bob@inxt.me')],
+      ccRecipients: [],
+      bccRecipients: [],
+      subject: 'Edited subject',
+      editor,
+      attachmentsSessionKey: new Uint8Array(32),
     });
 
     await act(async () => {
@@ -109,6 +133,40 @@ describe('useDraftMessage', () => {
       }),
     );
     expect(mocks.createDraft).not.toHaveBeenCalled();
+  });
+
+  test('When an existing draft is opened and nothing changes, then updateDraft is not invoked', async () => {
+    vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
+
+    const { result } = renderDraft({
+      existentDraftId: 'draft-77',
+      subject: 'Hello',
+      toRecipients: [recipient('bob@inxt.me')],
+    });
+
+    await act(async () => {
+      await result.current.saveDraft();
+    });
+    await act(async () => {
+      await result.current.saveDraft();
+    });
+
+    expect(mocks.updateDraft).not.toHaveBeenCalled();
+    expect(mocks.createDraft).not.toHaveBeenCalled();
+  });
+
+  test('When a new compose is empty, then createDraft is not invoked', async () => {
+    vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
+    const emptyEditor = { getHTML: () => '<p></p>', getText: () => '' } as unknown as Editor;
+
+    const { result } = renderDraft({ editor: emptyEditor });
+
+    await act(async () => {
+      await result.current.saveDraft();
+    });
+
+    expect(mocks.createDraft).not.toHaveBeenCalled();
+    expect(mocks.updateDraft).not.toHaveBeenCalled();
   });
 
   test('When sender keys are not available, then autosave is skipped silently', async () => {
@@ -165,10 +223,30 @@ describe('useDraftMessage', () => {
   test('When the first save completes, then the returned draftId is remembered for subsequent autosaves', async () => {
     vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
 
-    const { result } = renderDraft({ subject: 'First', toRecipients: [recipient('bob@inxt.me')] });
+    const { result, rerender } = renderHook((props: Parameters<typeof useDraftMessage>[0]) => useDraftMessage(props), {
+      initialProps: {
+        attachments: [] as AttachmentTask[],
+        toRecipients: [recipient('bob@inxt.me')],
+        ccRecipients: [] as Recipient[],
+        bccRecipients: [] as Recipient[],
+        subject: 'First',
+        editor,
+        attachmentsSessionKey: new Uint8Array(32),
+      },
+    });
 
     await act(async () => {
       await result.current.saveDraft();
+    });
+
+    rerender({
+      attachments: [],
+      toRecipients: [recipient('bob@inxt.me')],
+      ccRecipients: [],
+      bccRecipients: [],
+      subject: 'Second',
+      editor,
+      attachmentsSessionKey: new Uint8Array(32),
     });
 
     await act(async () => {

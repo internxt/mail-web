@@ -15,6 +15,26 @@ const AUTOSAVE_DELAY_MS = 10000;
 
 const toEmailAddress = (r: Recipient): EmailAddress => (r.name ? { name: r.name, email: r.email } : { email: r.email });
 
+const getPlainBody = (editor: Editor | null): string => editor?.getText().trim() ?? '';
+
+const isPayloadEmpty = (payload: DraftEmailRequest, editor: Editor | null): boolean =>
+  !payload.to?.length &&
+  !payload.cc?.length &&
+  !payload.bcc?.length &&
+  !payload.subject &&
+  !payload.attachments?.length &&
+  !getPlainBody(editor);
+
+const buildSignature = (payload: DraftEmailRequest, editor: Editor | null): string =>
+  JSON.stringify({
+    to: payload.to?.map((r) => r.email) ?? [],
+    cc: payload.cc?.map((r) => r.email) ?? [],
+    bcc: payload.bcc?.map((r) => r.email) ?? [],
+    subject: payload.subject ?? '',
+    body: getPlainBody(editor),
+    attachments: [...(payload.attachments?.map((a) => a.blobId) ?? [])].sort(),
+  });
+
 interface UseDraftMessageParams {
   existentDraftId?: string;
   draftReceivedAt?: string;
@@ -53,6 +73,7 @@ export const useDraftMessage = ({
   // Using a ref instead an state to avoid losing data on re-renders
   const draftIdRef = useRef<string | null>(existentDraftId ?? null);
   const draftReceivedAtRef = useRef<string | null>(draftReceivedAt ?? null);
+  const lastSavedSignatureRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (existentDraftId && draftIdRef.current === null) {
@@ -107,6 +128,16 @@ export const useDraftMessage = ({
     try {
       const payload = await buildPayload();
       if (!payload) return;
+
+      const signature = buildSignature(payload, editor);
+
+      if (!draftIdRef.current && isPayloadEmpty(payload, editor)) return;
+      if (draftIdRef.current && lastSavedSignatureRef.current === null) {
+        lastSavedSignatureRef.current = signature;
+        return;
+      }
+      if (signature === lastSavedSignatureRef.current) return;
+
       if (draftIdRef.current) {
         const { id: newDraftId, receivedAt } = await updateDraft({ draftId: draftIdRef.current, payload }).unwrap();
         draftIdRef.current = newDraftId;
@@ -116,10 +147,11 @@ export const useDraftMessage = ({
         draftIdRef.current = id;
         draftReceivedAtRef.current = receivedAt;
       }
+      lastSavedSignatureRef.current = signature;
     } finally {
       setIsSaving(false);
     }
-  }, [buildPayload, createDraft, updateDraft]);
+  }, [buildPayload, createDraft, updateDraft, editor]);
 
   const handleDraftDiscard = useCallback(async () => {
     if (!draftIdRef.current) return;
@@ -133,6 +165,7 @@ export const useDraftMessage = ({
     }
     draftIdRef.current = null;
     draftReceivedAtRef.current = null;
+    lastSavedSignatureRef.current = null;
     resetDiscardDraft();
   }, [resetDiscardDraft]);
 

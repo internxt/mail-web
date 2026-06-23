@@ -294,11 +294,11 @@ export const ComposeMessageDialog = () => {
         />
         <input ref={fileInputRef} type="file" multiple hidden onChange={onFilesPicked} />
 
-        <div className="flex flex-row justify-between items center">
+        <div className="flex flex-row justify-between items-center">
           {draftSavedAt && (
             <div className="flex flex-row gap-2 items-center">
               <p>{translate('modals.composeMessageDialog.savedAt', { value: formatDraftSavedAt(draftSavedAt) })}</p>
-              <Button variant="destructive" onClick={onDiscardDraft} disabled={isDiscarding}>
+              <Button variant="destructive" onClick={onDiscardDraft} disabled={isDiscarding || isSending}>
                 <TrashIcon size={24} />
               </Button>
             </div>
@@ -328,7 +328,7 @@ export const ComposeMessageDialog = () => {
             <Button
               onClick={send}
               loading={isSending}
-              disabled={isSending || isUploadingAttachments || hasAttachmentErrors}
+              disabled={isSending || isUploadingAttachments || hasAttachmentErrors || isDiscarding}
               variant={'primary'}
             >
               {translate('actions.send')}

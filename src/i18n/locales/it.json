@@ -172,7 +172,8 @@
       "internxtKeyMissing": "Impossibile trovare le chiavi di cifratura per un destinatario Internxt. Riprova più tardi.",
       "encryptionUnavailable": "La crittografia non è ancora pronta. Riprova tra un momento.",
       "draftSaveFailed": "Impossibile salvare la bozza. Le tue modifiche sono ancora qui.",
-      "draftDiscardFailed": "Impossibile eliminare la bozza. Riprova."
+      "draftDiscardFailed": "Impossibile eliminare la bozza. Riprova.",
+      "draftOpenFailed": "Impossibile aprire la bozza. Riprova."
     }
   },
   "modals": {

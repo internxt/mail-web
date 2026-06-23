@@ -172,7 +172,8 @@
       "internxtKeyMissing": "No se encontraron claves de cifrado para un destinatario de Internxt. Inténtalo de nuevo más tarde.",
       "encryptionUnavailable": "El cifrado aún no está listo. Inténtalo de nuevo en un momento.",
       "draftSaveFailed": "No se pudo guardar el borrador. Tus cambios siguen aquí.",
-      "draftDiscardFailed": "No se pudo eliminar el borrador. Inténtalo de nuevo."
+      "draftDiscardFailed": "No se pudo eliminar el borrador. Inténtalo de nuevo.",
+      "draftOpenFailed": "No se pudo abrir el borrador. Inténtalo de nuevo."
     }
   },
   "modals": {
