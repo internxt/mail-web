@@ -294,16 +294,18 @@ export const ComposeMessageDialog = () => {
         />
         <input ref={fileInputRef} type="file" multiple hidden onChange={onFilesPicked} />
 
-        <div className="flex flex-row justify-between items-center">
+        <div className="mt-5 flex flex-row justify-between items-center w-full">
           {draftSavedAt && (
             <div className="flex flex-row gap-2 items-center">
-              <p>{translate('modals.composeMessageDialog.savedAt', { value: formatDraftSavedAt(draftSavedAt) })}</p>
-              <Button variant="destructive" onClick={onDiscardDraft} disabled={isDiscarding || isSending}>
-                <TrashIcon size={24} />
+              <Button variant="ghost" onClick={onDiscardDraft} disabled={isDiscarding || isSending}>
+                <TrashIcon size={24} className="text-red" />
               </Button>
+              <p className="text-gray-50 font-medium">
+                {translate('modals.composeMessageDialog.savedAt', { value: formatDraftSavedAt(draftSavedAt) })}
+              </p>
             </div>
           )}
-          <div className="mt-5 flex justify-end items-center space-x-2">
+          <div className="ml-auto flex justify-end items-center space-x-2">
             {encryptionState === 'internxt' && (
               <span
                 data-testid="encryption-badge-encrypted"

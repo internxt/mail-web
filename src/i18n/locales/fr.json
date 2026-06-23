@@ -253,6 +253,10 @@
       }
     }
   },
+  "composeMessage": {
+    "attachment": "pièce jointe",
+    "attachments": "pièces jointes"
+  },
   "accountPopover": {
     "spaceUsed": "{{space}}% d'espace utilisé",
     "settings": "Paramètres",

@@ -1,8 +1,7 @@
-import { bytesToString } from '@/utils/bytes-to-string';
 import { useTranslationContext } from '@/i18n';
 import { type AttachmentTask } from '../hooks/useAttachments';
-import { MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL } from '@/constants';
 import AttachmentChip from '@/components/attachment-chip';
+import { bytesToString } from '@/utils/bytes-to-string';
 
 interface AttachmentListProps {
   attachments: AttachmentTask[];
@@ -13,10 +12,19 @@ interface AttachmentListProps {
 
 export const AttachmentList = ({ attachments, totalSize, onRemove, onRetry }: AttachmentListProps) => {
   const { translate } = useTranslationContext();
-  if (attachments.length === 0) return null;
+  const attachmentsLength = attachments.length;
+  if (attachmentsLength === 0) return null;
 
   return (
     <div className="flex flex-col gap-2">
+      <div className="px-5 border border-gray-10" />
+      <div className="flex flex-row gap-2 items-center">
+        <p className="text-sm">{bytesToString({ size: totalSize, removeSpace: false })}</p>
+        <p className="text-sm text-gray-50">
+          {attachmentsLength}{' '}
+          {attachmentsLength > 1 ? translate('composeMessage.attachments') : translate('composeMessage.attachment')}
+        </p>
+      </div>
       <div className="flex pt-3 flex-row gap-2 overflow-x-auto">
         {attachments.map((a) => (
           <div key={a.id} className="shrink-0">
@@ -31,12 +39,6 @@ export const AttachmentList = ({ attachments, totalSize, onRemove, onRetry }: At
           </div>
         ))}
       </div>
-      <p className="text-xs text-gray-50">
-        {translate('modals.composeMessageDialog.attachments.totalSize', {
-          used: bytesToString({ size: totalSize }),
-          max: bytesToString({ size: MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL }),
-        })}
-      </p>
     </div>
   );
 };

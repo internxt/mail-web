@@ -251,6 +251,10 @@
       }
     }
   },
+  "composeMessage": {
+    "attachment": "attachment",
+    "attachments": "attachments"
+  },
   "accountPopover": {
     "spaceUsed": "{{space}}% space used",
     "settings": "Settings",

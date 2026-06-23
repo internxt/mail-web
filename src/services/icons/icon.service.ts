@@ -37,17 +37,16 @@ const iconsByFileExtensionGroup = {
 };
 const extensionsList = fileExtensionService.computeExtensionsLists();
 
-type FileExtensionGroupKey = keyof typeof FileExtensionGroup;
-
 export const getItemIcon = (isFolder: boolean, itemExtension?: string): FunctionComponent<SVGProps<SVGSVGElement>> => {
   let groupId: FileExtensionGroup = FileExtensionGroup.Default;
 
   if (itemExtension) {
+    const normalized = itemExtension.toLowerCase();
     Object.entries(extensionsList).every(([key, list]) => {
-      const matched = list.includes(itemExtension.toLowerCase());
+      const matched = list.includes(normalized);
 
       if (matched) {
-        groupId = FileExtensionGroup[key as FileExtensionGroupKey];
+        groupId = Number(key) as FileExtensionGroup;
       }
 
       return !matched;

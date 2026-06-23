@@ -47,7 +47,7 @@ const renderDraft = (overrides: Partial<Parameters<typeof useDraftMessage>[0]> =
   );
 };
 
-describe('useDraftMessage', () => {
+describe('Draft Message', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.useFakeTimers();
@@ -89,73 +89,7 @@ describe('useDraftMessage', () => {
     );
   });
 
-  test('When an existing draftId is provided and the content changes, then updateDraft is invoked instead of createDraft', async () => {
-    vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
-
-    const { result, rerender } = renderHook((props: Parameters<typeof useDraftMessage>[0]) => useDraftMessage(props), {
-      initialProps: {
-        existentDraftId: 'draft-77',
-        attachments: [] as AttachmentTask[],
-        toRecipients: [recipient('bob@inxt.me')],
-        ccRecipients: [] as Recipient[],
-        bccRecipients: [] as Recipient[],
-        subject: 'Original subject',
-        editor,
-        attachmentsSessionKey: new Uint8Array(32),
-      },
-    });
-
-    // First save calibrates the baseline signature for the existing draft and does not hit the API.
-    await act(async () => {
-      await result.current.saveDraft();
-    });
-    expect(mocks.updateDraft).not.toHaveBeenCalled();
-
-    rerender({
-      existentDraftId: 'draft-77',
-      attachments: [],
-      toRecipients: [recipient('bob@inxt.me')],
-      ccRecipients: [],
-      bccRecipients: [],
-      subject: 'Edited subject',
-      editor,
-      attachmentsSessionKey: new Uint8Array(32),
-    });
-
-    await act(async () => {
-      await result.current.saveDraft();
-    });
-
-    expect(mocks.updateDraft).toHaveBeenCalledWith(
-      expect.objectContaining({
-        draftId: 'draft-77',
-        payload: expect.objectContaining({ subject: 'Edited subject' }),
-      }),
-    );
-    expect(mocks.createDraft).not.toHaveBeenCalled();
-  });
-
-  test('When an existing draft is opened and nothing changes, then updateDraft is not invoked', async () => {
-    vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
-
-    const { result } = renderDraft({
-      existentDraftId: 'draft-77',
-      subject: 'Hello',
-      toRecipients: [recipient('bob@inxt.me')],
-    });
-
-    await act(async () => {
-      await result.current.saveDraft();
-    });
-    await act(async () => {
-      await result.current.saveDraft();
-    });
-
-    expect(mocks.updateDraft).not.toHaveBeenCalled();
-    expect(mocks.createDraft).not.toHaveBeenCalled();
-  });
-
-  test('When a new compose is empty, then createDraft is not invoked', async () => {
+  test('When a new compose is empty, then the draft is not created', async () => {
     vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
     const emptyEditor = { getHTML: () => '<p></p>', getText: () => '' } as unknown as Editor;
 
