@@ -1,13 +1,12 @@
 import type { EmailResponse, EncryptionBlock } from '@internxt/sdk/dist/mail/types';
-import { DownloadSimpleIcon, PaperclipIcon } from '@phosphor-icons/react';
-import { bytesToString } from '@/utils/bytes-to-string';
 import notificationsService, { ToastType } from '@/services/notifications';
 import { useTranslationContext } from '@/i18n';
 import { useAttachmentsSessionKey } from '@/hooks/mail/useAttachmentsSessionKey';
 import { NetworkService } from '@/services/network';
 import { useSanitizedMailHtml } from '../utils/useSanitizedMailHtml';
+import AttachmentChip from '@/components/attachment-chip';
 
-type EmailAttachment = NonNullable<EmailResponse['attachments']>[number];
+export type EmailAttachment = NonNullable<EmailResponse['attachments']>[number];
 
 interface PreviewProps {
   mailId: string;
@@ -54,17 +53,13 @@ const Preview = ({ mailId, subject, body, attachments, envelope }: PreviewProps)
       {attachments && attachments.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-2">
           {attachments.map((attachment) => (
-            <div key={attachment.blobId} className="flex items-center gap-1.5 rounded-md bg-gray-5 px-2 py-1">
-              <PaperclipIcon size={14} />
-              <span className="text-sm font-medium text-gray-80">{attachment.name}</span>
-              <span className="text-xs text-gray-50">{bytesToString({ size: attachment.size })}</span>
-              <DownloadSimpleIcon
-                size={14}
-                weight="bold"
-                className="cursor-pointer"
-                onClick={() => onDownload(attachment)}
-              />
-            </div>
+            <AttachmentChip
+              key={attachment.blobId}
+              fileName={attachment.name}
+              size={attachment.size}
+              type={attachment.type}
+              onDownload={() => onDownload(attachment)}
+            />
           ))}
         </div>
       )}

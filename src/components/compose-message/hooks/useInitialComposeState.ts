@@ -6,14 +6,24 @@ import { useTranslationContext } from '@/i18n';
 import type { InheritedAttachmentInput } from './useAttachments';
 import type { EncryptionBlock } from '@internxt/sdk/dist/mail/types';
 
+export type PersistedAttachmentInput = {
+  blobId: string;
+  name: string;
+  size: number;
+  type: string;
+};
+
 type InitialComposeData = {
+  draftId?: string;
   replyToEmailId?: string;
+  receivedAt?: string;
   subject: string;
   to: Recipient[];
   cc: Recipient[];
   bcc: Recipient[];
   htmlBody?: string;
   inheritedAttachments?: InheritedAttachmentInput[];
+  persistedAttachments?: PersistedAttachmentInput[];
 };
 
 type InitialComposeState = {
@@ -77,7 +87,27 @@ export const useInitialComposeState = (compose: ComposePayload | undefined): Ini
           },
         };
       }
-      case 'draft':
+      case 'draft': {
+        const d = compose.draft;
+        return {
+          mode: 'draft',
+          data: {
+            draftId: d.id,
+            subject: d.subject ?? '',
+            receivedAt: d.receivedAt,
+            to: withIds(d.to),
+            cc: withIds(d.cc),
+            bcc: withIds(d.bcc),
+            htmlBody: d.htmlBody ?? undefined,
+            persistedAttachments: (d.attachments ?? []).map((a) => ({
+              blobId: a.blobId,
+              name: a.name,
+              size: a.size,
+              type: a.type,
+            })),
+          },
+        };
+      }
       case 'new':
         return { mode: compose.mode, data: EMPTY_DATA };
     }
