@@ -14,7 +14,7 @@ export const formatEmailsToList = (
 ) => {
   return listFolderEmails?.map((mail) => ({
     id: mail.id,
-    from: (mail.participants ?? mail.from).map(toParticipant),
+    from: (mail.participants?.length ? mail.participants : mail.from).map(toParticipant),
     subject: mail.subject,
     createdAt: DateService.formatMailTimestamp(mail.lastReceivedAt ?? mail.receivedAt),
     body: decryptedPreviews?.[mail.id] ?? (mail.encryption ? '' : mail.preview),
