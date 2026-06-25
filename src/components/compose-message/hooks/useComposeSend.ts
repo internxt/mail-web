@@ -30,6 +30,7 @@ interface UseComposeSendParams {
   attachments: AttachmentTask[];
   attachmentsSessionKey: Uint8Array;
   inReplyTo?: string;
+  draftId?: string;
   onSent: () => void;
   markResolvingInherited: (id: string) => void;
   markInheritedResolved: (id: string, blobId: string) => void;
@@ -58,6 +59,7 @@ export const useComposeSend = ({
   attachments,
   attachmentsSessionKey,
   inReplyTo,
+  draftId,
   onSent,
   markResolvingInherited,
   markInheritedResolved,
@@ -231,6 +233,7 @@ export const useComposeSend = ({
         encryption,
         deliveryMode,
         inReplyToEmailId: inReplyTo,
+        draftId,
       }).unwrap();
 
       onSent();
@@ -251,6 +254,7 @@ export const useComposeSend = ({
     attachments,
     attachmentsSessionKey,
     inReplyTo,
+    draftId,
     triggerLookup,
     sendEmail,
     onSent,

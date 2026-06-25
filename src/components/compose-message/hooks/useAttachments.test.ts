@@ -180,4 +180,62 @@ describe('Attachments - custom hook', () => {
       expect(result.current.attachments).toHaveLength(0);
     });
   });
+
+  describe('persisted attachments (drafts)', () => {
+    test('When persisted attachments are added, then they appear as done with their blobId and no File', () => {
+      const { result } = renderHook(() => useAttachments(new Uint8Array(32)));
+
+      act(() =>
+        result.current.addPersistedAttachments([
+          { blobId: 'blob-X', name: 'one.pdf', size: 100, type: 'application/pdf' },
+          { blobId: 'blob-Y', name: 'two.png', size: 200, type: 'image/png' },
+        ]),
+      );
+
+      expect(enqueue).not.toHaveBeenCalled();
+      expect(result.current.attachments).toEqual([
+        {
+          kind: 'uploaded',
+          id: 'id-0',
+          name: 'one.pdf',
+          size: 100,
+          type: 'application/pdf',
+          status: 'done',
+          blobId: 'blob-X',
+        },
+        {
+          kind: 'uploaded',
+          id: 'id-1',
+          name: 'two.png',
+          size: 200,
+          type: 'image/png',
+          status: 'done',
+          blobId: 'blob-Y',
+        },
+      ]);
+      expect(result.current.totalSize).toBe(300);
+      expect(result.current.isUploading).toBe(false);
+    });
+
+    test('When persisted attachments would exceed the per-mail size limit, then they are rejected with a warning', () => {
+      const { result } = renderHook(() => useAttachments(new Uint8Array(32)));
+
+      act(() =>
+        result.current.addPersistedAttachments([
+          {
+            blobId: 'blob-Z',
+            name: 'huge.bin',
+            size: MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL + 1,
+            type: 'application/octet-stream',
+          },
+        ]),
+      );
+
+      expect(show).toHaveBeenCalledWith({
+        text: 'modals.composeMessageDialog.errors.attachmentsTooLarge',
+        type: ToastType.Warning,
+      });
+      expect(result.current.attachments).toHaveLength(0);
+    });
+  });
 });

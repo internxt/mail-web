@@ -171,7 +171,10 @@
       "keyLookupFailed": "Impossibile recuperare le chiavi del destinatario",
       "forwardAttachmentFailed": "Impossibile preparare un allegato per l'inoltro. Riprova.",
       "internxtKeyMissing": "Impossibile trovare le chiavi di cifratura per un destinatario Internxt. Riprova più tardi.",
-      "encryptionUnavailable": "La crittografia non è ancora pronta. Riprova tra un momento."
+      "encryptionUnavailable": "La crittografia non è ancora pronta. Riprova tra un momento.",
+      "draftSaveFailed": "Impossibile salvare la bozza. Le tue modifiche sono ancora qui.",
+      "draftDiscardFailed": "Impossibile eliminare la bozza. Riprova.",
+      "draftOpenFailed": "Impossibile aprire la bozza. Riprova."
     }
   },
   "modals": {
@@ -213,6 +216,7 @@
       "message": "Messaggio",
       "encryptedBadge": "Crittografia end-to-end",
       "cleartextBadge": "Non crittografato",
+      "savedAt": "Salvato alle {{value}}",
       "errors": {
         "noRecipients": "Aggiungi almeno un destinatario prima di inviare",
         "sendFailed": "Impossibile inviare l'email",
@@ -249,6 +253,10 @@
         }
       }
     }
+  },
+  "composeMessage": {
+    "attachment": "allegato",
+    "attachments": "allegati"
   },
   "accountPopover": {
     "spaceUsed": "{{space}}% di spazio utilizzato",

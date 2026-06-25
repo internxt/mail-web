@@ -1,0 +1,193 @@
+import { renderHook, act } from '@testing-library/react';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+import type { Editor } from '@tiptap/react';
+import { useDraftMessage } from './useDraftMessage';
+import { MailEncryptionService } from '@/services/mail-encryption';
+import type { Recipient } from '../types';
+import type { AttachmentTask } from './useAttachments';
+
+const mocks = vi.hoisted(() => ({
+  senderKeys: undefined as { address: string; publicKey: string } | undefined,
+  createDraft: vi.fn(),
+  updateDraft: vi.fn(),
+  discardDraft: vi.fn(),
+  resetDiscardDraft: vi.fn(),
+}));
+
+vi.mock('@/store/api/mail', () => ({
+  useDraftEmailMutation: () => [mocks.createDraft],
+  useUpdateDraftMutation: () => [mocks.updateDraft],
+  useDiscardDraftMutation: () => [mocks.discardDraft, { isLoading: false, reset: mocks.resetDiscardDraft }],
+  useGetMailAccountKeysQuery: () => ({ data: mocks.senderKeys }),
+}));
+
+const editor = { getHTML: () => '<p>hi</p>', getText: () => 'hi' } as unknown as Editor;
+const recipient = (email: string): Recipient => ({ id: email, email });
+
+const mockEncryptionBlock = {
+  version: 'v1',
+  encryptedText: 'ct',
+  encryptedPreview: 'cp',
+  wrappedKeys: [],
+  attachmentWrappedKeys: [],
+};
+
+const renderDraft = (overrides: Partial<Parameters<typeof useDraftMessage>[0]> = {}) => {
+  return renderHook(() =>
+    useDraftMessage({
+      attachments: [],
+      toRecipients: [],
+      ccRecipients: [],
+      bccRecipients: [],
+      subject: '',
+      editor,
+      attachmentsSessionKey: new Uint8Array(32),
+      ...overrides,
+    }),
+  );
+};
+
+describe('Draft Message', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    vi.useFakeTimers();
+    mocks.createDraft.mockReset();
+    mocks.updateDraft.mockReset();
+    mocks.discardDraft.mockReset();
+    mocks.resetDiscardDraft.mockReset();
+    mocks.senderKeys = { address: 'me@inxt.me', publicKey: 'sender-pk' };
+    mocks.createDraft.mockReturnValue({
+      unwrap: () => Promise.resolve({ id: 'new-draft-1', receivedAt: '2026-06-22T13:42:30Z' }),
+    });
+    mocks.updateDraft.mockReturnValue({
+      unwrap: () => Promise.resolve({ id: 'new-draft-1', receivedAt: '2026-06-22T13:42:30Z' }),
+    });
+  });
+
+  test('When autosaving, then the payload is built with an encryption block wrapped only for the sender', async () => {
+    const buildSpy = vi
+      .spyOn(MailEncryptionService.instance, 'buildEncryptionBlock')
+      .mockResolvedValue(mockEncryptionBlock);
+
+    const { result } = renderDraft({ subject: 'A subject', toRecipients: [recipient('bob@inxt.me')] });
+
+    await act(async () => {
+      await result.current.saveDraft();
+    });
+
+    expect(buildSpy).toHaveBeenCalledWith(
+      { body: '<p>hi</p>', previewText: 'hi' },
+      [{ address: 'me@inxt.me', publicKey: 'sender-pk' }],
+      expect.any(Uint8Array),
+    );
+    expect(mocks.createDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subject: 'A subject',
+        to: [{ email: 'bob@inxt.me' }],
+        encryption: expect.objectContaining({ version: 'v1' }),
+      }),
+    );
+  });
+
+  test('When a new compose is empty, then the draft is not created', async () => {
+    vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
+    const emptyEditor = { getHTML: () => '<p></p>', getText: () => '' } as unknown as Editor;
+
+    const { result } = renderDraft({ editor: emptyEditor });
+
+    await act(async () => {
+      await result.current.saveDraft();
+    });
+
+    expect(mocks.createDraft).not.toHaveBeenCalled();
+    expect(mocks.updateDraft).not.toHaveBeenCalled();
+  });
+
+  test('When sender keys are not available, then autosave is skipped silently', async () => {
+    mocks.senderKeys = undefined;
+    const buildSpy = vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock');
+
+    const { result } = renderDraft({ subject: 'Whatever', toRecipients: [recipient('bob@inxt.me')] });
+
+    await act(async () => {
+      await result.current.saveDraft();
+    });
+
+    expect(buildSpy).not.toHaveBeenCalled();
+    expect(mocks.createDraft).not.toHaveBeenCalled();
+    expect(mocks.updateDraft).not.toHaveBeenCalled();
+  });
+
+  test('When only done attachments exist, then only those are included in the payload', async () => {
+    vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
+
+    const attachments: AttachmentTask[] = [
+      {
+        kind: 'uploaded',
+        id: 'a-1',
+        name: 'ready.pdf',
+        size: 10,
+        type: 'application/pdf',
+        status: 'done',
+        blobId: 'blob-ready',
+      },
+      {
+        kind: 'uploaded',
+        id: 'a-2',
+        name: 'still-uploading.bin',
+        size: 20,
+        type: 'application/octet-stream',
+        status: 'uploading',
+      },
+    ];
+
+    const { result } = renderDraft({ attachments, toRecipients: [recipient('bob@inxt.me')] });
+
+    await act(async () => {
+      await result.current.saveDraft();
+    });
+
+    expect(mocks.createDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        attachments: [{ blobId: 'blob-ready', name: 'ready.pdf', size: 10, type: 'application/pdf' }],
+      }),
+    );
+  });
+
+  test('When the first save completes, then the returned draftId is remembered for subsequent autosaves', async () => {
+    vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
+
+    const { result, rerender } = renderHook((props: Parameters<typeof useDraftMessage>[0]) => useDraftMessage(props), {
+      initialProps: {
+        attachments: [] as AttachmentTask[],
+        toRecipients: [recipient('bob@inxt.me')],
+        ccRecipients: [] as Recipient[],
+        bccRecipients: [] as Recipient[],
+        subject: 'First',
+        editor,
+        attachmentsSessionKey: new Uint8Array(32),
+      },
+    });
+
+    await act(async () => {
+      await result.current.saveDraft();
+    });
+
+    rerender({
+      attachments: [],
+      toRecipients: [recipient('bob@inxt.me')],
+      ccRecipients: [],
+      bccRecipients: [],
+      subject: 'Second',
+      editor,
+      attachmentsSessionKey: new Uint8Array(32),
+    });
+
+    await act(async () => {
+      await result.current.saveDraft();
+    });
+
+    expect(mocks.createDraft).toHaveBeenCalledTimes(1);
+    expect(mocks.updateDraft).toHaveBeenCalledWith(expect.objectContaining({ draftId: 'new-draft-1' }));
+  });
+});

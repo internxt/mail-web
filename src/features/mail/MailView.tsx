@@ -23,6 +23,7 @@ import { usePreviewMailActions } from '@/hooks/mail/usePreviewMailActions';
 import ActionsBar from './components/mail-preview/actions-bar';
 import { useActionDialog } from '@/context/dialog-manager';
 import { ThreadView } from './components/thread-view';
+import { useOpenDraftInCompose } from '@/hooks/mail/useOpenDraftInCompose';
 
 interface MailViewProps {
   folder: FolderType;
@@ -35,6 +36,7 @@ const MailView = ({ folder }: MailViewProps) => {
   const [moveToFolder] = useMoveToFolderMutation();
   const [deleteEmails] = useDeleteMailsMutation();
   const { openDialog } = useActionDialog();
+  const openDraftInCompose = useOpenDraftInCompose();
 
   const { data: activeMailData } = useGetThreadQuery({ emailId: activeMailId! }, { skip: !activeMailId });
   const thread = activeMailId ? activeMailData : undefined;
@@ -81,6 +83,11 @@ const MailView = ({ folder }: MailViewProps) => {
   const folderName = translate(`mail.${folder}`);
 
   const onSelectEmail = async (id: string, isRead?: boolean) => {
+    if (folder === 'drafts') {
+      await openDraftInCompose(id);
+      return;
+    }
+
     setActiveMailId(id);
 
     if (isRead) return;

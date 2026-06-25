@@ -6,6 +6,7 @@ import { bytesToString } from '@/utils/bytes-to-string';
 import { MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL } from '@/constants';
 import { ErrorService } from '@/services/error';
 import { UploadManager } from '@/services/upload-manager';
+import type { PersistedAttachmentInput } from './useInitialComposeState';
 
 export type AttachmentStatus = 'pending' | 'uploading' | 'done' | 'error';
 
@@ -20,7 +21,7 @@ interface AttachmentBase {
 
 export interface UploadedAttachment extends AttachmentBase {
   kind: 'uploaded';
-  file: File;
+  file?: File;
 }
 
 export interface InheritedAttachment extends AttachmentBase {
@@ -85,7 +86,7 @@ const useAttachments = (sessionKey: Uint8Array) => {
         file,
       }));
       setAttachments((prev) => [...prev, ...pending]);
-      pending.forEach(({ id, file }) => manager.enqueue(id, file));
+      pending.forEach(({ id, file }) => manager.enqueue(id, file as File));
     },
     [totalSize, translate, manager],
   );
@@ -116,6 +117,34 @@ const useAttachments = (sessionKey: Uint8Array) => {
         originalEnvelope: item.originalEnvelope,
       }));
       setAttachments((prev) => [...prev, ...inherited]);
+    },
+    [totalSize, translate],
+  );
+
+  const addPersistedAttachments = useCallback(
+    (items: PersistedAttachmentInput[]) => {
+      if (items.length === 0) return;
+      const incoming = items.reduce((s, item) => s + item.size, 0);
+      if (totalSize + incoming > MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL) {
+        notificationsService.show({
+          text: translate('modals.composeMessageDialog.errors.attachmentsTooLarge', {
+            maxSize: bytesToString({ size: MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL }),
+          }),
+          type: ToastType.Warning,
+        });
+        return;
+      }
+
+      const persisted: UploadedAttachment[] = items.map((item) => ({
+        kind: 'uploaded',
+        id: crypto.randomUUID(),
+        name: item.name,
+        size: item.size,
+        type: item.type ?? 'application/octet-stream',
+        status: 'done',
+        blobId: item.blobId,
+      }));
+      setAttachments((prev) => [...prev, ...persisted]);
     },
     [totalSize, translate],
   );
@@ -160,6 +189,7 @@ const useAttachments = (sessionKey: Uint8Array) => {
     hasErrors,
     addFiles,
     addInheritedAttachments,
+    addPersistedAttachments,
     markResolvingInherited,
     markInheritedResolved,
     markInheritedFailed,

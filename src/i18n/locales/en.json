@@ -169,7 +169,10 @@
       "keyLookupFailed": "Could not fetch recipient keys",
       "forwardAttachmentFailed": "Could not prepare an attachment for forwarding. Please try again.",
       "internxtKeyMissing": "Could not find encryption keys for an Internxt recipient. Please try again later.",
-      "encryptionUnavailable": "Encryption isn't ready yet. Please try again in a moment."
+      "encryptionUnavailable": "Encryption isn't ready yet. Please try again in a moment.",
+      "draftSaveFailed": "Could not save the draft. Your changes are still here.",
+      "draftDiscardFailed": "Could not delete the draft. Please try again.",
+      "draftOpenFailed": "Could not open the draft. Please try again."
     }
   },
   "modals": {
@@ -211,6 +214,7 @@
       "message": "Message",
       "encryptedBadge": "End-to-end encrypted",
       "cleartextBadge": "Not encrypted",
+      "savedAt": "Saved at {{value}}",
       "errors": {
         "noRecipients": "Add at least one recipient before sending",
         "sendFailed": "Could not send the email",
@@ -247,6 +251,10 @@
         }
       }
     }
+  },
+  "composeMessage": {
+    "attachment": "attachment",
+    "attachments": "attachments"
   },
   "accountPopover": {
     "spaceUsed": "{{space}}% space used",
