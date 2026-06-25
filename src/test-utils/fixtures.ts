@@ -169,6 +169,7 @@ export const getMockedMail = (overrides?: Partial<EmailResponse>): EmailResponse
   hasAttachment: faker.datatype.boolean(),
   size: faker.number.int({ min: 1024, max: 16384 }),
   attachments: faker.datatype.boolean() ? [getMockedAttachment()] : [],
+  isDraft: false,
   ...overrides,
 });
 
@@ -176,6 +177,7 @@ export const getMockedMails = (count = 3): EmailListResponse => ({
   emails: Array.from({ length: count }, () => {
     const mail = getMockedMail();
     return {
+      isDraft: false,
       id: mail.id,
       mailboxIds: mail.mailboxIds,
       threadId: mail.threadId,
