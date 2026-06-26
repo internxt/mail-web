@@ -28,9 +28,32 @@ describe('Formatting emails to list format', () => {
       expect(item.subject).toBe(emails[i].subject);
       expect(item.body).toBe(emails[i].preview);
       expect(item.read).toBe(emails[i].isRead);
-      expect(item.from.avatar).toBe('');
+      expect(item.from).toEqual(expect.arrayContaining([expect.objectContaining({ avatar: '' })]));
       expect(DateService.formatMailTimestamp).toHaveBeenCalledWith(emails[0].receivedAt);
     });
+  });
+
+  test('When the row carries thread participants, then those are used instead of the message sender', () => {
+    const { emails } = getMockedMails(1);
+    emails[0].from = [{ email: 'alice@inxt.me', name: 'Alice' }];
+    (emails[0] as { participants?: { email: string; name?: string }[] }).participants = [
+      { email: 'alice@inxt.me', name: 'Alice' },
+      { email: 'bob@inxt.me', name: 'Bob' },
+    ];
+
+    const result = formatEmailsToList(emails);
+
+    expect(result?.[0].from.map((p) => p.name)).toEqual(['Alice', 'Bob']);
+  });
+
+  test('When the row has no participants, then the message sender is used as fallback', () => {
+    const { emails } = getMockedMails(1);
+    emails[0].from = [{ email: 'alice@inxt.me', name: 'Alice' }];
+    delete (emails[0] as { participants?: unknown }).participants;
+
+    const result = formatEmailsToList(emails);
+
+    expect(result?.[0].from.map((p) => p.name)).toEqual(['Alice']);
   });
 
   test('When a row is encrypted, then it uses the decrypted preview when available and never the ciphertext', () => {

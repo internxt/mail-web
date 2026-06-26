@@ -10,6 +10,14 @@ export const useMailSelection = (emails: EmailListResponse['emails'] | undefined
 
   const selectNone = () => setSelectedEmails([]);
 
+  const selectEmail = (emailId: string) => {
+    setSelectedEmails((prev) => {
+      if (prev.includes(emailId)) return prev.filter((id) => id !== emailId);
+      if (!emails?.some((email) => email.id === emailId)) return prev;
+      return [...prev, emailId];
+    });
+  };
+
   const selectRead = () => {
     setSelectedEmails(emails?.filter((email) => email.isRead).map((email) => email.id) ?? []);
   };
@@ -31,6 +39,7 @@ export const useMailSelection = (emails: EmailListResponse['emails'] | undefined
   return {
     selectedEmails,
     selectAll,
+    selectEmail,
     selectNone,
     selectRead,
     selectUnread,

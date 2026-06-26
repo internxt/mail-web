@@ -42,7 +42,13 @@ const SearchEmailList = ({ mails, hasMoreItems, loading, onLoadMore, onMailSelec
           >
             {formattedMails.map((email) => (
               <div key={email.id} className="flex items-center w-full flex-col">
-                <MessageCheap email={email} onClick={onMailSelected} />
+                <MessageCheap
+                  email={{
+                    ...email,
+                    from: email.from[0],
+                  }}
+                  onClick={onMailSelected}
+                />
               </div>
             ))}
           </InfiniteScroll>
