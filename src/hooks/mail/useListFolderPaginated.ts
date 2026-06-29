@@ -4,8 +4,15 @@ import type { FolderType } from '@/types/mail';
 import { useState } from 'react';
 
 const useListFolderPaginated = (mailbox: FolderType) => {
+  const [currentMailbox, setCurrentMailbox] = useState(mailbox);
   const [anchorId, setAnchorId] = useState<string | undefined>(undefined);
   const [unreadFilter, setUnreadFilter] = useState<boolean | undefined>(undefined);
+
+  if (currentMailbox !== mailbox) {
+    setCurrentMailbox(mailbox);
+    setAnchorId(undefined);
+    setUnreadFilter(undefined);
+  }
 
   const {
     data: listFolder,
@@ -40,11 +47,6 @@ const useListFolderPaginated = (mailbox: FolderType) => {
     applyUnreadFilter(unreadFilter === true ? undefined : true);
   };
 
-  const resetListFolder = () => {
-    setAnchorId(undefined);
-    setUnreadFilter(undefined);
-  };
-
   const listFolderEmails = listFolder?.emails;
 
   return {
@@ -55,7 +57,6 @@ const useListFolderPaginated = (mailbox: FolderType) => {
     listEmailsCount: listFolderEmails?.length,
     onLoadMore,
     toggleUnreadFilter,
-    resetListFolder,
   };
 };
 
