@@ -1,4 +1,4 @@
-import { DEFAULT_FOLDER_LIMIT } from '@/constants';
+import { AUTO_POLLING_INTERVAL_IN_MILLISECONDS, DEFAULT_FOLDER_LIMIT } from '@/constants';
 import { useGetListFolderQuery } from '@/store/api/mail';
 import type { FolderType } from '@/types/mail';
 import { useState } from 'react';
@@ -19,7 +19,7 @@ const useListFolderPaginated = (mailbox: FolderType) => {
       unread: unreadFilter,
     },
     {
-      pollingInterval: 30000,
+      pollingInterval: AUTO_POLLING_INTERVAL_IN_MILLISECONDS,
       skipPollingIfUnfocused: true,
       skip: !mailbox,
     },
@@ -40,16 +40,22 @@ const useListFolderPaginated = (mailbox: FolderType) => {
     applyUnreadFilter(unreadFilter === true ? undefined : true);
   };
 
+  const resetListFolder = () => {
+    setAnchorId(undefined);
+    setUnreadFilter(undefined);
+  };
+
   const listFolderEmails = listFolder?.emails;
 
   return {
     listFolderEmails,
     isLoadingListFolder,
-    onLoadMore,
     hasMoreEmails: listFolder?.hasMoreMails,
     isUnreadFilter: unreadFilter,
     listEmailsCount: listFolderEmails?.length,
+    onLoadMore,
     toggleUnreadFilter,
+    resetListFolder,
   };
 };
 

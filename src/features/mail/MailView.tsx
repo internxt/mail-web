@@ -1,4 +1,4 @@
-import { Activity, useState } from 'react';
+import { Activity, useEffect, useState } from 'react';
 import { useTranslationContext } from '@/i18n';
 import type { FolderType } from '@/types/mail';
 import Settings from './components/settings';
@@ -49,7 +49,13 @@ const MailView = ({ folder }: MailViewProps) => {
     listEmailsCount,
     onLoadMore,
     toggleUnreadFilter,
+    resetListFolder,
   } = useListFolderPaginated(folder);
+
+  useEffect(() => {
+    // Needed to clear the anchorId when the folder changes
+    resetListFolder();
+  }, [folder]);
 
   const { selectedEmails, selectAll, selectEmail, selectNone, selectRead, selectUnread, toggleSelectAll } =
     useMailSelection(listFolderEmails);
