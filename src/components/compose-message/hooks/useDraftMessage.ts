@@ -44,6 +44,7 @@ interface UseDraftMessageResult {
   isDiscarding: boolean;
   handleDraftDiscard: () => Promise<void>;
   saveDraft: () => Promise<void>;
+  flushPendingDraftSave: () => Promise<string | null>;
   clearDraftRef: () => void;
 }
 
@@ -63,6 +64,8 @@ export const useDraftMessage = ({
   // Using a ref instead an state to avoid losing data on re-renders
   const draftIdRef = useRef<string | null>(existentDraftId ?? null);
   const draftReceivedAtRef = useRef<string | null>(draftReceivedAt ?? null);
+  const pendingSaveRef = useRef<Promise<void> | null>(null);
+  const activeSavesRef = useRef(0);
 
   useEffect(() => {
     if (existentDraftId && draftIdRef.current === null) {
@@ -107,32 +110,58 @@ export const useDraftMessage = ({
     };
   }, [toRecipients, ccRecipients, bccRecipients, subject, editor, attachments, attachmentsSessionKey, senderKeys]);
 
+  const performSave = useCallback(async () => {
+    const payload = await buildPayload();
+    if (!payload) return;
+
+    if (!draftIdRef.current && isPayloadEmpty(payload, editor)) return;
+
+    if (draftIdRef.current) {
+      const { id: newDraftId, receivedAt } = await updateDraft({ draftId: draftIdRef.current, payload }).unwrap();
+      draftIdRef.current = newDraftId;
+      draftReceivedAtRef.current = receivedAt;
+    } else {
+      const { id, receivedAt } = await createDraft(payload).unwrap();
+      draftIdRef.current = id;
+      draftReceivedAtRef.current = receivedAt;
+    }
+  }, [buildPayload, createDraft, updateDraft, editor]);
+
   const saveDraft = useCallback(async () => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
 
+    const previous = pendingSaveRef.current ?? Promise.resolve();
+    const current = previous.catch(() => undefined).then(performSave);
+    pendingSaveRef.current = current;
+
+    activeSavesRef.current += 1;
     setIsSaving(true);
     try {
-      const payload = await buildPayload();
-      if (!payload) return;
-
-      if (!draftIdRef.current && isPayloadEmpty(payload, editor)) return;
-
-      if (draftIdRef.current) {
-        const { id: newDraftId, receivedAt } = await updateDraft({ draftId: draftIdRef.current, payload }).unwrap();
-        draftIdRef.current = newDraftId;
-        draftReceivedAtRef.current = receivedAt;
-      } else {
-        const { id, receivedAt } = await createDraft(payload).unwrap();
-        draftIdRef.current = id;
-        draftReceivedAtRef.current = receivedAt;
-      }
+      await current;
     } finally {
-      setIsSaving(false);
+      activeSavesRef.current -= 1;
+      if (activeSavesRef.current === 0) setIsSaving(false);
+      if (pendingSaveRef.current === current) pendingSaveRef.current = null;
     }
-  }, [buildPayload, createDraft, updateDraft, editor]);
+  }, [performSave]);
+
+  const flushPendingDraftSave = useCallback(async (): Promise<string | null> => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    if (pendingSaveRef.current) {
+      try {
+        await pendingSaveRef.current;
+      } catch {
+        // Save failed; proceed with the last id that reached the server. no op
+      }
+    }
+    return draftIdRef.current;
+  }, []);
 
   const handleDraftDiscard = useCallback(async () => {
     if (!draftIdRef.current) return;
@@ -149,18 +178,31 @@ export const useDraftMessage = ({
     resetDiscardDraft();
   }, [resetDiscardDraft]);
 
-  useEffect(() => {
+  const scheduleAutosave = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       saveDraft().catch(() => {
         // Autosave failures are silent; user can retry on close
       });
     }, AUTOSAVE_DELAY_MS);
+  }, [saveDraft]);
+
+  useEffect(() => {
+    scheduleAutosave();
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [toRecipients, ccRecipients, bccRecipients, subject, editor, attachments, saveDraft]);
+  }, [toRecipients, ccRecipients, bccRecipients, subject, editor, attachments, scheduleAutosave]);
+
+  useEffect(() => {
+    if (!editor) return;
+    const onUpdate = () => scheduleAutosave();
+    editor.on('update', onUpdate);
+    return () => {
+      editor.off('update', onUpdate);
+    };
+  }, [editor, scheduleAutosave]);
 
   return {
     draftId: draftIdRef.current,
@@ -169,6 +211,7 @@ export const useDraftMessage = ({
     isDiscarding,
     handleDraftDiscard,
     saveDraft,
+    flushPendingDraftSave,
     clearDraftRef,
   };
 };

@@ -21,7 +21,7 @@ vi.mock('@/store/api/mail', () => ({
   useGetMailAccountKeysQuery: () => ({ data: mocks.senderKeys }),
 }));
 
-const editor = { getHTML: () => '<p>hi</p>', getText: () => 'hi' } as unknown as Editor;
+const editor = { getHTML: () => '<p>hi</p>', getText: () => 'hi', on: vi.fn(), off: vi.fn() } as unknown as Editor;
 const recipient = (email: string): Recipient => ({ id: email, email });
 
 const mockEncryptionBlock = {
@@ -91,7 +91,7 @@ describe('Draft Message', () => {
 
   test('When a new compose is empty, then the draft is not created', async () => {
     vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
-    const emptyEditor = { getHTML: () => '<p></p>', getText: () => '' } as unknown as Editor;
+    const emptyEditor = { getHTML: () => '<p></p>', getText: () => '', on: vi.fn(), off: vi.fn() } as unknown as Editor;
 
     const { result } = renderDraft({ editor: emptyEditor });
 
@@ -189,5 +189,87 @@ describe('Draft Message', () => {
 
     expect(mocks.createDraft).toHaveBeenCalledTimes(1);
     expect(mocks.updateDraft).toHaveBeenCalledWith(expect.objectContaining({ draftId: 'new-draft-1' }));
+  });
+
+  test('When a save is triggered while another is in flight, then it waits and updates instead of creating a duplicate', async () => {
+    vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
+
+    let resolveCreate!: (value: { id: string; receivedAt: string }) => void;
+    mocks.createDraft.mockReturnValue({
+      unwrap: () =>
+        new Promise((resolve) => {
+          resolveCreate = resolve;
+        }),
+    });
+
+    const { result } = renderDraft({ subject: 'Racy', toRecipients: [recipient('bob@inxt.me')] });
+
+    await act(async () => {
+      const first = result.current.saveDraft();
+      const second = result.current.saveDraft();
+
+      await vi.advanceTimersByTimeAsync(0);
+
+      resolveCreate({ id: 'new-draft-1', receivedAt: '2026-06-22T13:42:30Z' });
+      await Promise.all([first, second]);
+    });
+
+    expect(mocks.createDraft).toHaveBeenCalledTimes(1);
+    expect(mocks.updateDraft).toHaveBeenCalledTimes(1);
+    expect(mocks.updateDraft).toHaveBeenCalledWith(expect.objectContaining({ draftId: 'new-draft-1' }));
+  });
+
+  test('When flushing before send, then it waits for the in-flight save and returns the fresh draft id', async () => {
+    vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
+
+    let resolveCreate!: (value: { id: string; receivedAt: string }) => void;
+    mocks.createDraft.mockReturnValue({
+      unwrap: () =>
+        new Promise((resolve) => {
+          resolveCreate = resolve;
+        }),
+    });
+
+    const { result } = renderDraft({ subject: 'Send race', toRecipients: [recipient('bob@inxt.me')] });
+
+    let flushedId: string | null = null;
+    await act(async () => {
+      const save = result.current.saveDraft();
+      await vi.advanceTimersByTimeAsync(0);
+      const flush = result.current.flushPendingDraftSave();
+      resolveCreate({ id: 'new-draft-1', receivedAt: '2026-06-22T13:42:30Z' });
+      [, flushedId] = await Promise.all([save, flush]);
+    });
+
+    expect(flushedId).toBe('new-draft-1');
+  });
+
+  test('When the body is edited, then autosave re-arms from the editor update event', async () => {
+    vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
+
+    let updateHandler: (() => void) | undefined;
+    const typedEditor = {
+      getHTML: () => '<p>hi</p>',
+      getText: () => 'hi',
+      on: (event: string, cb: () => void) => {
+        if (event === 'update') updateHandler = cb;
+      },
+      off: vi.fn(),
+    } as unknown as Editor;
+
+    renderDraft({ editor: typedEditor, subject: 'Typing' });
+    expect(updateHandler).toBeDefined();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(6000);
+      updateHandler!();
+      await vi.advanceTimersByTimeAsync(6000);
+    });
+    expect(mocks.createDraft).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(4000);
+    });
+    expect(mocks.createDraft).toHaveBeenCalledTimes(1);
   });
 });
