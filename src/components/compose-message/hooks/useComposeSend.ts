@@ -30,7 +30,7 @@ interface UseComposeSendParams {
   attachments: AttachmentTask[];
   attachmentsSessionKey: Uint8Array;
   inReplyTo?: string;
-  draftId?: string;
+  resolveDraftId?: () => Promise<string | null>;
   onSent: () => void;
   markResolvingInherited: (id: string) => void;
   markInheritedResolved: (id: string, blobId: string) => void;
@@ -59,7 +59,7 @@ export const useComposeSend = ({
   attachments,
   attachmentsSessionKey,
   inReplyTo,
-  draftId,
+  resolveDraftId,
   onSent,
   markResolvingInherited,
   markInheritedResolved,
@@ -224,6 +224,8 @@ export const useComposeSend = ({
 
       const deliveryMode = (encryptionState === 'internxt' ? 'INTERNXT' : 'EXTERNAL') as DeliveryMode;
 
+      const draftId = (await resolveDraftId?.()) ?? undefined;
+
       await sendEmail({
         to: toRecipients.map(toEmailAddress),
         cc: ccRecipients.length ? ccRecipients.map(toEmailAddress) : undefined,
@@ -254,7 +256,7 @@ export const useComposeSend = ({
     attachments,
     attachmentsSessionKey,
     inReplyTo,
-    draftId,
+    resolveDraftId,
     triggerLookup,
     sendEmail,
     onSent,
