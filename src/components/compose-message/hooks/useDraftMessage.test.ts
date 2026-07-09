@@ -219,7 +219,7 @@ describe('Draft Message', () => {
     expect(mocks.updateDraft).toHaveBeenCalledWith(expect.objectContaining({ draftId: 'new-draft-1' }));
   });
 
-  test('When flushing before send, then it waits for the in-flight save and returns the fresh draft id', async () => {
+  test('When resolving the draft id before send, then it waits for the in-flight save and returns the fresh draft id', async () => {
     vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
 
     let resolveCreate!: (value: { id: string; receivedAt: string }) => void;
@@ -232,16 +232,16 @@ describe('Draft Message', () => {
 
     const { result } = renderDraft({ subject: 'Send race', toRecipients: [recipient('bob@inxt.me')] });
 
-    let flushedId: string | null = null;
+    let resolvedId: string | null = null;
     await act(async () => {
       const save = result.current.saveDraft();
       await vi.advanceTimersByTimeAsync(0);
-      const flush = result.current.flushPendingDraftSave();
+      const resolve = result.current.resolveDraftId();
       resolveCreate({ id: 'new-draft-1', receivedAt: '2026-06-22T13:42:30Z' });
-      [, flushedId] = await Promise.all([save, flush]);
+      [, resolvedId] = await Promise.all([save, resolve]);
     });
 
-    expect(flushedId).toBe('new-draft-1');
+    expect(resolvedId).toBe('new-draft-1');
   });
 
   test('When the body is edited, then autosave re-arms from the editor update event', async () => {

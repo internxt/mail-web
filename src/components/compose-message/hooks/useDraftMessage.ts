@@ -44,7 +44,7 @@ interface UseDraftMessageResult {
   isDiscarding: boolean;
   handleDraftDiscard: () => Promise<void>;
   saveDraft: () => Promise<void>;
-  flushPendingDraftSave: () => Promise<string | null>;
+  resolveDraftId: () => Promise<string | null>;
   clearDraftRef: () => void;
 }
 
@@ -110,6 +110,13 @@ export const useDraftMessage = ({
     };
   }, [toRecipients, ccRecipients, bccRecipients, subject, editor, attachments, attachmentsSessionKey, senderKeys]);
 
+  const clearAutosaveTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
   const performSave = useCallback(async () => {
     const payload = await buildPayload();
     if (!payload) return;
@@ -128,10 +135,7 @@ export const useDraftMessage = ({
   }, [buildPayload, createDraft, updateDraft, editor]);
 
   const saveDraft = useCallback(async () => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
+    clearAutosaveTimer();
 
     const previous = pendingSaveRef.current ?? Promise.resolve();
     const current = previous.catch(() => undefined).then(performSave);
@@ -146,13 +150,10 @@ export const useDraftMessage = ({
       if (activeSavesRef.current === 0) setIsSaving(false);
       if (pendingSaveRef.current === current) pendingSaveRef.current = null;
     }
-  }, [performSave]);
+  }, [performSave, clearAutosaveTimer]);
 
-  const flushPendingDraftSave = useCallback(async (): Promise<string | null> => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
+  const resolveDraftId = useCallback(async (): Promise<string | null> => {
+    clearAutosaveTimer();
     if (pendingSaveRef.current) {
       try {
         await pendingSaveRef.current;
@@ -161,7 +162,7 @@ export const useDraftMessage = ({
       }
     }
     return draftIdRef.current;
-  }, []);
+  }, [clearAutosaveTimer]);
 
   const handleDraftDiscard = useCallback(async () => {
     if (!draftIdRef.current) return;
@@ -169,23 +170,20 @@ export const useDraftMessage = ({
   }, [discardDraft]);
 
   const clearDraftRef = useCallback(() => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
+    clearAutosaveTimer();
     draftIdRef.current = null;
     draftReceivedAtRef.current = null;
     resetDiscardDraft();
-  }, [resetDiscardDraft]);
+  }, [resetDiscardDraft, clearAutosaveTimer]);
 
   const scheduleAutosave = useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
+    clearAutosaveTimer();
     timerRef.current = setTimeout(() => {
       saveDraft().catch(() => {
         // Autosave failures are silent; user can retry on close
       });
     }, AUTOSAVE_DELAY_MS);
-  }, [saveDraft]);
+  }, [saveDraft, clearAutosaveTimer]);
 
   useEffect(() => {
     scheduleAutosave();
@@ -211,7 +209,7 @@ export const useDraftMessage = ({
     isDiscarding,
     handleDraftDiscard,
     saveDraft,
-    flushPendingDraftSave,
+    resolveDraftId,
     clearDraftRef,
   };
 };

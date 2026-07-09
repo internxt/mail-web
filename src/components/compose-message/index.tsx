@@ -143,18 +143,17 @@ export const ComposeMessageDialog = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { saveDraft, flushPendingDraftSave, handleDraftDiscard, isDiscarding, draftSavedAt, clearDraftRef } =
-    useDraftMessage({
-      existentDraftId: initialDraftId,
-      draftReceivedAt: initialReceivedAtDraft,
-      attachments,
-      toRecipients,
-      ccRecipients,
-      bccRecipients,
-      subject: subjectValue,
-      editor,
-      attachmentsSessionKey,
-    });
+  const { saveDraft, resolveDraftId, handleDraftDiscard, isDiscarding, draftSavedAt, clearDraftRef } = useDraftMessage({
+    existentDraftId: initialDraftId,
+    draftReceivedAt: initialReceivedAtDraft,
+    attachments,
+    toRecipients,
+    ccRecipients,
+    bccRecipients,
+    subject: subjectValue,
+    editor,
+    attachmentsSessionKey,
+  });
 
   const closeDialog = useCallback(() => {
     clearAttachments();
@@ -198,7 +197,7 @@ export const ComposeMessageDialog = () => {
     subject: subjectValue,
     toRecipients,
     inReplyTo: inReplyItemId,
-    resolveDraftId: flushPendingDraftSave,
+    resolveDraftId,
     onSent,
     markResolvingInherited,
     markInheritedResolved,
