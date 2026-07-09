@@ -311,7 +311,7 @@ describe('useComposeSend', () => {
       vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
     });
 
-    test('When sending an email opened from a draft, then the resolved draftId is forwarded to sendEmail so the server consumes the draft', async () => {
+    test('When sending an email opened from a draft, then the saved draft identifier is included in the send request so the server can consume it', async () => {
       const resolveDraftId = vi.fn().mockResolvedValue('draft-42');
       const { result, onSent } = renderSend({
         toRecipients: [recipient('bob@inxt.me')],
@@ -327,7 +327,7 @@ describe('useComposeSend', () => {
       expect(onSent).toHaveBeenCalled();
     });
 
-    test('When sending a brand-new email (no draft saved), then sendEmail is called without a draftId', async () => {
+    test('When sending a brand-new email with no saved draft, then the send request omits any draft identifier', async () => {
       const resolveDraftId = vi.fn().mockResolvedValue(null);
       const { result, onSent } = renderSend({ toRecipients: [recipient('bob@inxt.me')], resolveDraftId });
 
