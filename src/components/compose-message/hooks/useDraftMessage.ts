@@ -165,10 +165,10 @@ export const useDraftMessage = ({
   }, [clearAutosaveTimer]);
 
   const handleDraftDiscard = useCallback(async () => {
-    clearAutosaveTimer();
-    if (!draftIdRef.current) return;
-    await discardDraft({ draftId: draftIdRef.current }).unwrap();
-  }, [discardDraft, clearAutosaveTimer]);
+    const draftId = await resolveDraftId();
+    if (!draftId) return;
+    await discardDraft({ draftId }).unwrap();
+  }, [discardDraft, resolveDraftId]);
 
   const clearDraftRef = useCallback(() => {
     clearAutosaveTimer();
