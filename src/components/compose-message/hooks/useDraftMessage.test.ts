@@ -244,6 +244,31 @@ describe('Draft Message', () => {
     expect(resolvedId).toBe('new-draft-1');
   });
 
+  test('When discarding while a save is in flight, then it waits for the save to resolve and discards the fresh draft id', async () => {
+    vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
+
+    let resolveCreate!: (value: { id: string; receivedAt: string }) => void;
+    mocks.createDraft.mockReturnValue({
+      unwrap: () =>
+        new Promise((resolve) => {
+          resolveCreate = resolve;
+        }),
+    });
+    mocks.discardDraft.mockReturnValue({ unwrap: () => Promise.resolve(undefined) });
+
+    const { result } = renderDraft({ subject: 'Discard race', toRecipients: [recipient('bob@inxt.me')] });
+
+    await act(async () => {
+      const save = result.current.saveDraft();
+      await vi.advanceTimersByTimeAsync(0);
+      const discard = result.current.handleDraftDiscard();
+      resolveCreate({ id: 'new-draft-1', receivedAt: '2026-06-22T13:42:30Z' });
+      await Promise.all([save, discard]);
+    });
+
+    expect(mocks.discardDraft).toHaveBeenCalledWith({ draftId: 'new-draft-1' });
+  });
+
   test('When the body is edited, then autosave re-arms from the editor update event', async () => {
     vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
 
