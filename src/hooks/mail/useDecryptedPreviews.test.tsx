@@ -15,6 +15,7 @@ const plainSummary = (id: string): Summary => ({ id }) as unknown as Summary;
 
 const setKeys = (keys: HybridKeyPair | null) => {
   vi.spyOn(MailKeysService.instance, 'getCurrentKeys').mockReturnValue(keys);
+  vi.spyOn(MailKeysService.instance, 'getCurrentAddress').mockReturnValue(keys ? 'me@inxt.me' : null);
 };
 
 const spyOnPreviewDecrypt = () => vi.spyOn(MailEncryptionService.instance, 'decryptSummaryPreview');

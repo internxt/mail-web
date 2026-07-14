@@ -96,7 +96,8 @@ export const useComposeSend = ({
 
     if (pendingInherited.length > 0) {
       const senderKeysForAttachments = MailKeysService.instance.getCurrentKeys();
-      if (!senderKeysForAttachments) {
+      const senderAddress = MailKeysService.instance.getCurrentAddress();
+      if (!senderKeysForAttachments || !senderAddress) {
         notificationsService.show({
           text: translate('errors.mail.forwardAttachmentFailed'),
           type: ToastType.Error,
@@ -110,6 +111,7 @@ export const useComposeSend = ({
           const originalSessionKey = await MailEncryptionService.instance.decryptAttachmentsSessionKey(
             item.originalEnvelope,
             senderKeysForAttachments,
+            senderAddress,
           );
 
           const { blob } = await NetworkService.instance.download({
@@ -164,6 +166,12 @@ export const useComposeSend = ({
 
     if (encryptionState === 'unknown') {
       notificationsService.show({ text: translate('errors.mail.encryptionUnavailable'), type: ToastType.Error });
+      return;
+    }
+
+    // TODO: remove this once per-recipient delivery is implemented
+    if (encryptionState === 'internxt' && bccRecipients.length > 0) {
+      notificationsService.show({ text: translate('errors.mail.bccNotSupportedEncrypted'), type: ToastType.Warning });
       return;
     }
 

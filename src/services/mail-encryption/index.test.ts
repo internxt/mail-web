@@ -20,11 +20,11 @@ describe('buildEncryptionBlock + decryptEnvelope', () => {
 
     const envelope = await mailEncryption.buildEncryptionBlock(content('<p>hi bob</p>'), recipients, attachmentsKey());
 
-    expect(envelope.version).toBe('v1');
+    expect(envelope.version).toBe('v2');
     expect(Array.isArray(envelope.wrappedKeys)).toBe(true);
     expect(envelope.wrappedKeys).toHaveLength(1);
 
-    const text = await mailEncryption.decryptEnvelope(envelope, bob);
+    const text = await mailEncryption.decryptEnvelope(envelope, bob, 'bob@inxt.me');
     expect(text).toBe('<p>hi bob</p>');
   });
 
@@ -53,55 +53,46 @@ describe('buildEncryptionBlock + decryptEnvelope', () => {
       attachmentsKey(),
     );
 
-    const aliceView = await mailEncryption.decryptEnvelope(envelope, alice);
-    const bobView = await mailEncryption.decryptEnvelope(envelope, bob);
+    const aliceView = await mailEncryption.decryptEnvelope(envelope, alice, 'alice@inxt.me');
+    const bobView = await mailEncryption.decryptEnvelope(envelope, bob, 'bob@inxt.me');
 
     expect(aliceView).toBe('hey team');
     expect(bobView).toBe('hey team');
   });
 
-  test('When a multi-recipient message includes a Bcc, then the serialized envelope leaks no recipient address', async () => {
-    const sender = await generateEmailKeys();
-    const to = await generateEmailKeys();
-    const cc = await generateEmailKeys();
-    const bcc = await generateEmailKeys();
+  test('When a message is encrypted, then every wrapped key is labeled with its recipient address', async () => {
+    const alice = await generateEmailKeys();
+    const bob = await generateEmailKeys();
 
-    const addresses = ['sender@inxt.me', 'to@inxt.me', 'cc@inxt.me', 'secret-bcc@inxt.me'];
     const envelope = await mailEncryption.buildEncryptionBlock(
-      content('hidden recipients'),
+      content('labeled'),
       [
-        { address: addresses[0], publicKey: uint8ArrayToBase64(sender.publicKey) },
-        { address: addresses[1], publicKey: uint8ArrayToBase64(to.publicKey) },
-        { address: addresses[2], publicKey: uint8ArrayToBase64(cc.publicKey) },
-        { address: addresses[3], publicKey: uint8ArrayToBase64(bcc.publicKey) },
+        { address: 'alice@inxt.me', publicKey: uint8ArrayToBase64(alice.publicKey) },
+        { address: 'bob@inxt.me', publicKey: uint8ArrayToBase64(bob.publicKey) },
       ],
       attachmentsKey(),
     );
 
-    const wire = `${ENCRYPTED_EMAIL_PREFIX}\n${Buffer.from(JSON.stringify(envelope)).toString('base64')}`;
-    const serialized = JSON.stringify(envelope);
-    for (const addr of addresses) {
-      expect(serialized).not.toContain(addr);
-      expect(wire).not.toContain(addr);
-    }
-    expect(serialized).not.toContain('secret-bcc');
+    expect(envelope.wrappedKeys.map((k) => k.encryptedForEmail)).toStrictEqual(['alice@inxt.me', 'bob@inxt.me']);
+  });
 
-    expect(envelope.wrappedKeys).toHaveLength(4);
-    for (const entry of envelope.wrappedKeys) {
-      expect(Object.keys(entry).sort()).toStrictEqual(['encryptedKey', 'hybridCiphertext']);
-    }
+  test('When the caller address is cased differently from the label, then the wrapped key is still found', async () => {
+    const bob = await generateEmailKeys();
 
-    expect(await mailEncryption.decryptEnvelope(envelope, bcc)).toBe('hidden recipients');
-    expect(await mailEncryption.decryptEnvelope(envelope, sender)).toBe('hidden recipients');
-    expect(await mailEncryption.decryptEnvelope(envelope, to)).toBe('hidden recipients');
-    expect(await mailEncryption.decryptEnvelope(envelope, cc)).toBe('hidden recipients');
+    const envelope = await mailEncryption.buildEncryptionBlock(
+      content('case-insensitive'),
+      [{ address: 'Bob@Inxt.me', publicKey: uint8ArrayToBase64(bob.publicKey) }],
+      attachmentsKey(),
+    );
+
+    expect(await mailEncryption.decryptEnvelope(envelope, bob, 'bob@inxt.me')).toBe('case-insensitive');
   });
 
   test('When no recipients are provided, then encryption should fail', async () => {
     await expect(mailEncryption.buildEncryptionBlock(content('t'), [], attachmentsKey())).rejects.toThrow();
   });
 
-  test('When decrypting with a key that was not a recipient, then decryption should fail cleanly', async () => {
+  test('When decrypting with an address that has no wrapped key, then decryption should fail cleanly', async () => {
     const bob = await generateEmailKeys();
     const eve = await generateEmailKeys();
     const envelope = await mailEncryption.buildEncryptionBlock(
@@ -110,7 +101,46 @@ describe('buildEncryptionBlock + decryptEnvelope', () => {
       attachmentsKey(),
     );
 
-    await expect(mailEncryption.decryptEnvelope(envelope, eve)).rejects.toThrow(/not a recipient or wrong key/);
+    await expect(mailEncryption.decryptEnvelope(envelope, eve, 'eve@inxt.me')).rejects.toThrow(
+      /not a recipient or wrong key/,
+    );
+  });
+});
+
+describe('attachments session key', () => {
+  test('When a message is encrypted, then each recipient can recover the attachments session key', async () => {
+    const alice = await generateEmailKeys();
+    const bob = await generateEmailKeys();
+    const sessionKey = attachmentsKey();
+
+    const envelope = await mailEncryption.buildEncryptionBlock(
+      content('with attachments'),
+      [
+        { address: 'alice@inxt.me', publicKey: uint8ArrayToBase64(alice.publicKey) },
+        { address: 'bob@inxt.me', publicKey: uint8ArrayToBase64(bob.publicKey) },
+      ],
+      sessionKey,
+    );
+
+    expect(await mailEncryption.decryptAttachmentsSessionKey(envelope, alice, 'alice@inxt.me')).toStrictEqual(
+      sessionKey,
+    );
+    expect(await mailEncryption.decryptAttachmentsSessionKey(envelope, bob, 'bob@inxt.me')).toStrictEqual(sessionKey);
+  });
+
+  test('When an address with no wrapped key asks for the attachments session key, then it fails cleanly', async () => {
+    const bob = await generateEmailKeys();
+    const eve = await generateEmailKeys();
+
+    const envelope = await mailEncryption.buildEncryptionBlock(
+      content('x'),
+      [{ address: 'bob@inxt.me', publicKey: uint8ArrayToBase64(bob.publicKey) }],
+      attachmentsKey(),
+    );
+
+    await expect(mailEncryption.decryptAttachmentsSessionKey(envelope, eve, 'eve@inxt.me')).rejects.toThrow(
+      /not a recipient or wrong key/,
+    );
   });
 });
 
@@ -126,8 +156,9 @@ describe('encrypted preview', () => {
     );
 
     const preview = await mailEncryption.decryptSummaryPreview(
-      { encryptedPreview: envelope.encryptedPreview, wrappedKeys: envelope.wrappedKeys },
+      { encryptedPreview: envelope.encryptedPreview, wrappedKeys: envelope.previewWrappedKeys },
       bob,
+      'bob@inxt.me',
     );
 
     expect(preview.length).toBe(256);
@@ -135,7 +166,7 @@ describe('encrypted preview', () => {
     expect(preview).not.toContain('\n');
   });
 
-  test('When a non-recipient tries to read the preview, then it fails cleanly', async () => {
+  test('When an address with no wrapped key tries to read the preview, then it fails cleanly', async () => {
     const bob = await generateEmailKeys();
     const eve = await generateEmailKeys();
     const envelope = await mailEncryption.buildEncryptionBlock(
@@ -146,14 +177,16 @@ describe('encrypted preview', () => {
 
     expect(
       await mailEncryption.decryptSummaryPreview(
-        { encryptedPreview: envelope.encryptedPreview, wrappedKeys: envelope.wrappedKeys },
+        { encryptedPreview: envelope.encryptedPreview, wrappedKeys: envelope.previewWrappedKeys },
         bob,
+        'bob@inxt.me',
       ),
     ).toBe('snippet');
     await expect(
       mailEncryption.decryptSummaryPreview(
-        { encryptedPreview: envelope.encryptedPreview, wrappedKeys: envelope.wrappedKeys },
+        { encryptedPreview: envelope.encryptedPreview, wrappedKeys: envelope.previewWrappedKeys },
         eve,
+        'eve@inxt.me',
       ),
     ).rejects.toThrow(/not a recipient or wrong key/);
   });
@@ -169,10 +202,11 @@ describe('isEncryptedEmailBody / parseEncryptionBlock', () => {
 
   test('When the body contains a valid encrypted bundle, then it should parse the encryption block', () => {
     const block = {
-      version: 'v1' as const,
+      version: 'v2' as const,
       encryptedText: 'et',
+      wrappedKeys: [{ hybridCiphertext: 'h', encryptedKey: 'k', encryptedForEmail: 'bob@inxt.me' }],
       encryptedPreview: 'ep',
-      wrappedKeys: [{ hybridCiphertext: 'h', encryptedKey: 'k' }],
+      previewWrappedKeys: [{ hybridCiphertext: 'hp', encryptedKey: 'kp', encryptedForEmail: 'bob@inxt.me' }],
     };
     const wire = `${ENCRYPTED_EMAIL_PREFIX}\n${Buffer.from(JSON.stringify(block)).toString('base64')}`;
     expect(mailEncryption.parseEncryptionBlock(wire)).toStrictEqual(block);
