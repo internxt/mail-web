@@ -16,15 +16,16 @@ export const useAttachmentsSessionKey = (
   envelope: EncryptionBlock | null,
 ): Uint8Array | null => {
   const keypair = MailKeysService.instance.getCurrentKeys();
+  const address = MailKeysService.instance.getCurrentAddress();
   const [cache, setCache] = useState<Record<string, CachedKey>>({});
 
   useEffect(() => {
-    if (!mailId || !envelope || !keypair) return;
+    if (!mailId || !envelope || !keypair || !address) return;
     if (cache[mailId]) return;
 
     let cancelled = false;
     MailEncryptionService.instance
-      .decryptAttachmentsSessionKey(envelope, keypair)
+      .decryptAttachmentsSessionKey(envelope, keypair, address)
       .then((key) => {
         if (!cancelled) setCache((prev) => ({ ...prev, [mailId]: { ok: true, key } }));
       })
@@ -36,7 +37,7 @@ export const useAttachmentsSessionKey = (
     return () => {
       cancelled = true;
     };
-  }, [mailId, envelope, keypair, cache]);
+  }, [mailId, envelope, keypair, address, cache]);
 
   if (!mailId) return null;
   const entry = cache[mailId];

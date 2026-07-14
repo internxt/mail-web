@@ -172,6 +172,7 @@
       "forwardAttachmentFailed": "Impossible de préparer une pièce jointe pour le transfert. Veuillez réessayer.",
       "internxtKeyMissing": "Impossible de trouver les clés de chiffrement pour un destinataire Internxt. Veuillez réessayer plus tard.",
       "encryptionUnavailable": "Le chiffrement n'est pas encore prêt. Veuillez réessayer dans un instant.",
+      "bccNotSupportedEncrypted": "Le Cci n'est pas encore disponible pour les e-mails chiffrés. Déplacez le destinataire vers À ou Cc.",
       "draftSaveFailed": "Impossible d'enregistrer le brouillon. Vos modifications sont toujours là.",
       "draftDiscardFailed": "Impossible de supprimer le brouillon. Veuillez réessayer.",
       "draftOpenFailed": "Impossible d'ouvrir le brouillon. Veuillez réessayer."

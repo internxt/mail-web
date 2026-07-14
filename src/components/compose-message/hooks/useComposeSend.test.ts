@@ -35,11 +35,11 @@ const recipient = (email: string): Recipient => ({ id: email, email });
 const show = vi.mocked(notificationsService.show);
 
 const mockEncryptionBlock = {
-  version: 'v1',
+  version: 'v2',
   encryptedText: 'ct',
-  encryptedPreview: 'cp',
   wrappedKeys: [],
-  attachmentWrappedKeys: [],
+  encryptedPreview: 'cp',
+  previewWrappedKeys: [],
 };
 
 const renderSend = (overrides: Partial<Parameters<typeof useComposeSend>[0]> = {}) => {
@@ -175,9 +175,29 @@ describe('useComposeSend', () => {
       expect.any(Uint8Array),
     );
     expect(mocks.sendEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ encryption: expect.objectContaining({ version: 'v1' }), deliveryMode: 'INTERNXT' }),
+      expect.objectContaining({ encryption: expect.objectContaining({ version: 'v2' }), deliveryMode: 'INTERNXT' }),
     );
     expect(onSent).toHaveBeenCalled();
+  });
+
+  test('When all recipients are Internxt and one is Bcc, then the send is blocked', async () => {
+    const buildSpy = vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock');
+
+    const { result, onSent } = renderSend({
+      toRecipients: [recipient('bob@inxt.me')],
+      bccRecipients: [recipient('carol@inxt.me')],
+    });
+
+    expect(result.current.encryptionState).toBe('internxt');
+
+    await act(async () => {
+      await result.current.send();
+    });
+
+    expect(show).toHaveBeenCalledWith(expect.objectContaining({ text: 'errors.mail.bccNotSupportedEncrypted' }));
+    expect(buildSpy).not.toHaveBeenCalled();
+    expect(mocks.sendEmail).not.toHaveBeenCalled();
+    expect(onSent).not.toHaveBeenCalled();
   });
 
   describe('external recipients', () => {
@@ -226,7 +246,7 @@ describe('useComposeSend', () => {
         expect.any(Uint8Array),
       );
       expect(mocks.sendEmail).toHaveBeenCalledWith(
-        expect.objectContaining({ deliveryMode: 'EXTERNAL', encryption: expect.objectContaining({ version: 'v1' }) }),
+        expect.objectContaining({ deliveryMode: 'EXTERNAL', encryption: expect.objectContaining({ version: 'v2' }) }),
       );
       expect(onSent).toHaveBeenCalled();
     });

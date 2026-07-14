@@ -128,9 +128,10 @@ export const ComposeMessageDialog = () => {
     const envelope = composeDialogData?.mode === 'draft' ? composeDialogData.draft.encryption : undefined;
     if (!envelope) return;
     const keys = MailKeysService.instance.getCurrentKeys();
-    if (!keys) return;
+    const address = MailKeysService.instance.getCurrentAddress();
+    if (!keys || !address) return;
     MailEncryptionService.instance
-      .decryptAttachmentsSessionKey(envelope as EncryptionBlock, keys)
+      .decryptAttachmentsSessionKey(envelope as EncryptionBlock, keys, address)
       .then((key) => {
         setAttachmentsSessionKey(key);
         sessionKeyHydratedRef.current = true;

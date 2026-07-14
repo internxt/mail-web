@@ -170,6 +170,7 @@
       "forwardAttachmentFailed": "Could not prepare an attachment for forwarding. Please try again.",
       "internxtKeyMissing": "Could not find encryption keys for an Internxt recipient. Please try again later.",
       "encryptionUnavailable": "Encryption isn't ready yet. Please try again in a moment.",
+      "bccNotSupportedEncrypted": "Bcc isn't available for encrypted emails yet. Move the recipient to To or Cc.",
       "draftSaveFailed": "Could not save the draft. Your changes are still here.",
       "draftDiscardFailed": "Could not delete the draft. Please try again.",
       "draftOpenFailed": "Could not open the draft. Please try again."
