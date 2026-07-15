@@ -1,4 +1,4 @@
-import { base64ToUint8Array, uint8ArrayToBase64, encryptSymmetrically, type HybridKeyPair } from 'internxt-crypto';
+import { base64ToUint8Array, encryptSymmetrically, type HybridKeyPair } from 'internxt-crypto';
 import { decryptEmailHybrid, encryptEmailHybridForMultipleRecipients } from 'internxt-crypto/email-crypto';
 import type { EmailResponse, EncryptionBlock } from '@internxt/sdk/dist/mail/types';
 import { BuildEncryptionBlockError, EnvelopeDecryptionError } from '@/errors/mail';
@@ -17,8 +17,6 @@ export type DecryptedMailBody =
   | { ok: true; text: string; envelope: EncryptionBlock | null; isEncrypted: boolean }
   | { ok: false; decryptError: string; isEncrypted: true; reason: 'no-keys' | 'decrypt-failed' };
 
-type EncryptedBodyPayload = { body: string; attachmentsSessionKey: string };
-
 const PREVIEW_PLAINTEXT_LENGTH = 256;
 
 export const ENCRYPTED_EMAIL_PREFIX = 'INTERNXT-ENCRYPTED-EMAIL-v1';
@@ -33,19 +31,16 @@ export class MailEncryptionService {
   private constructor() {}
 
   /**
-   * Only the body and preview are encrypted; the subject travels as cleartext so
-   * the backend can index it.
+   * Only the body, preview and attachments session key are encrypted; the
+   * subject travels as cleartext so the backend can index it.
    *
-   * Every wrapped key is labeled with the recipient address it was encrypted
-   * for (`encryptedForEmail`), so each recipient finds their entry with a
-   * direct lookup — no trial decryption. Because the labels expose the full
-   * recipient set to anyone holding the envelope, Bcc recipients must not be
-   * part of an encrypted send (compose enforces this).
-   *
-   * The body payload carries the attachments session key inside the ciphertext,
-   * so one wrapped key per recipient covers the body and every attachment. The
-   * preview snippet is sealed separately (`previewWrappedKeys`) so list
-   * summaries can travel without the full body ciphertext.
+   * A single session key seals all three ciphertexts, so one wrapped key per
+   * recipient unlocks everything. Every wrapped key is labeled with the
+   * recipient address it was encrypted for (`encryptedForEmail`), so each
+   * recipient finds their entry with a direct lookup — no trial decryption.
+   * Because the labels expose the full recipient set to anyone holding the
+   * envelope, Bcc recipients must not be part of an encrypted send (compose
+   * enforces this).
    */
   async buildEncryptionBlock(
     content: EmailContent,
@@ -61,25 +56,21 @@ export class MailEncryptionService {
       publicHybridKey: base64ToUint8Array(r.publicKey),
     }));
 
-    const payload: EncryptedBodyPayload = {
-      body: content.body,
-      attachmentsSessionKey: uint8ArrayToBase64(attachmentsSessionKey),
-    };
-
-    const [encryptedBodies, encryptedPreviews] = await Promise.all([
-      encryptEmailHybridForMultipleRecipients({ text: JSON.stringify(payload) }, recipientsWithKeys),
-      encryptEmailHybridForMultipleRecipients(
-        { text: buildPreviewSnippet(content.previewText) || ' ' },
-        recipientsWithKeys,
-      ),
-    ]);
+    const { encryptedKeys, encEmail } = await encryptEmailHybridForMultipleRecipients(
+      {
+        text: content.body,
+        preview: buildPreviewSnippet(content.previewText),
+        attachmentsSessionKey,
+      },
+      recipientsWithKeys,
+    );
 
     return {
-      version: 'v2',
-      encryptedText: encryptedBodies[0].encEmail.encText,
-      wrappedKeys: encryptedBodies.map((e) => e.encryptedKey),
-      encryptedPreview: encryptedPreviews[0].encEmail.encText,
-      previewWrappedKeys: encryptedPreviews.map((e) => e.encryptedKey),
+      version: 'v3',
+      encryptedText: encEmail.encText,
+      encryptedPreview: encEmail.encPreview,
+      encryptedAttachmentsSessionKey: encEmail.encAttachmentsSessionKey,
+      wrappedKeys: encryptedKeys,
     };
   }
 
@@ -95,31 +86,33 @@ export class MailEncryptionService {
   }
 
   /**
-   * Finds the caller's wrapped key by its `encryptedForEmail` label and
-   * decrypts a ciphertext sealed with the shared session key.
-   *
+   * Finds the caller's wrapped key by its `encryptedForEmail` label.
    * @throws {EnvelopeDecryptionError} if no wrapped key is labeled for the caller.
    */
-  private async decryptForCaller(
-    wrappedKeys: WrappedKey[],
-    ciphertextB64: string,
-    keypair: HybridKeyPair,
-    address: string,
-  ): Promise<string> {
+  private findKeyFor(wrappedKeys: WrappedKey[], address: string): WrappedKey {
     const normalized = address.toLowerCase();
     const wrapped = wrappedKeys.find((k) => k.encryptedForEmail?.toLowerCase() === normalized);
     if (!wrapped) {
       throw new EnvelopeDecryptionError();
     }
-    const { text } = await decryptEmailHybrid(
-      { encryptedKey: wrapped, encEmail: { encText: ciphertextB64 } },
-      keypair.secretKey,
-    );
-    return text;
+    return wrapped;
   }
 
-  private parseBodyPayload(text: string): EncryptedBodyPayload {
-    return JSON.parse(text) as EncryptedBodyPayload;
+  /**
+   * Decrypts the full envelope (body, preview and attachments session key)
+   * using the caller's wrapped key.
+   */
+  private decryptForCaller(envelope: EncryptionBlock, keypair: HybridKeyPair, address: string) {
+    const wrapped = this.findKeyFor(envelope.wrappedKeys, address);
+    return decryptEmailHybrid(
+      {
+        encText: envelope.encryptedText,
+        encPreview: envelope.encryptedPreview,
+        encAttachmentsSessionKey: envelope.encryptedAttachmentsSessionKey,
+      },
+      wrapped,
+      keypair.secretKey,
+    );
   }
 
   /**
@@ -128,17 +121,34 @@ export class MailEncryptionService {
    * @throws {EnvelopeDecryptionError} if no wrapped key is labeled for the caller.
    */
   async decryptEnvelope(envelope: EncryptionBlock, keypair: HybridKeyPair, address: string): Promise<string> {
-    const text = await this.decryptForCaller(envelope.wrappedKeys, envelope.encryptedText, keypair, address);
-    return this.parseBodyPayload(text).body;
+    const { text } = await this.decryptForCaller(envelope, keypair, address);
+    return text;
   }
 
   /**
-   * Decrypts the list preview snippet from an encrypted summary using the caller's keypair.
+   * Decrypts the list preview snippet from an encrypted summary using the
+   * caller's keypair.
+   *
+   * The summary carries only the preview ciphertext, but the crypto library's
+   * decrypt requires every `EmailEncrypted` field to be present. All three
+   * ciphertexts share one session key, so the preview ciphertext is passed in
+   * every slot and only the decrypted `preview` is read.
+   *
    * @returns the cleartext preview snippet.
    * @throws {EnvelopeDecryptionError} if no wrapped key is labeled for the caller.
    */
-  decryptSummaryPreview(summary: EncryptedSummary, keypair: HybridKeyPair, address: string): Promise<string> {
-    return this.decryptForCaller(summary.wrappedKeys, summary.encryptedPreview, keypair, address);
+  async decryptSummaryPreview(summary: EncryptedSummary, keypair: HybridKeyPair, address: string): Promise<string> {
+    const wrapped = this.findKeyFor(summary.wrappedKeys, address);
+    const { preview } = await decryptEmailHybrid(
+      {
+        encText: summary.encryptedPreview,
+        encPreview: summary.encryptedPreview,
+        encAttachmentsSessionKey: summary.encryptedPreview,
+      },
+      wrapped,
+      keypair.secretKey,
+    );
+    return preview;
   }
 
   /**
@@ -174,9 +184,7 @@ export class MailEncryptionService {
 
   /**
    * Recovers the symmetric session key used to encrypt every attachment in the
-   * email. It travels inside the encrypted body payload, so this decrypts the
-   * body and extracts it. Pair with `decryptSymmetrically` over the downloaded
-   * blob bytes.
+   * email. Pair with `decryptSymmetrically` over the downloaded blob bytes.
    * @throws {EnvelopeDecryptionError} if no wrapped key is labeled for the caller.
    */
   async decryptAttachmentsSessionKey(
@@ -184,12 +192,8 @@ export class MailEncryptionService {
     keypair: HybridKeyPair,
     address: string,
   ): Promise<Uint8Array> {
-    const text = await this.decryptForCaller(envelope.wrappedKeys, envelope.encryptedText, keypair, address);
-    const { attachmentsSessionKey } = this.parseBodyPayload(text);
-    if (!attachmentsSessionKey) {
-      throw new EnvelopeDecryptionError();
-    }
-    return base64ToUint8Array(attachmentsSessionKey);
+    const { attachmentsSessionKey } = await this.decryptForCaller(envelope, keypair, address);
+    return attachmentsSessionKey;
   }
 
   /**

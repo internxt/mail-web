@@ -9,11 +9,11 @@ import { MailKeysService } from '@/services/mail-keys';
 const KEY = new Uint8Array([1, 2, 3, 4]);
 const KEYPAIR = { secretKey: new Uint8Array(32), publicKey: new Uint8Array(32) } as unknown as HybridKeyPair;
 const ENVELOPE = {
-  version: 'v2',
+  version: 'v3',
   encryptedText: 'ct',
-  wrappedKeys: [],
   encryptedPreview: 'cp',
-  previewWrappedKeys: [],
+  encryptedAttachmentsSessionKey: 'ck',
+  wrappedKeys: [],
 } as unknown as EncryptionBlock;
 
 const setKeys = (keys: HybridKeyPair | null) => {

@@ -323,11 +323,11 @@ describe('Mail Service', () => {
         to: [{ email: 'bob@inxt.me' }],
         subject: 'Weekly sync notes',
         encryption: {
-          version: 'v2' as const,
+          version: 'v3' as const,
           encryptedText: 'enc-text',
-          wrappedKeys: [{ hybridCiphertext: 'ct', encryptedKey: 'ek', encryptedForEmail: 'bob@inxt.me' }],
           encryptedPreview: 'enc-preview',
-          previewWrappedKeys: [{ hybridCiphertext: 'ct', encryptedKey: 'ek', encryptedForEmail: 'bob@inxt.me' }],
+          encryptedAttachmentsSessionKey: 'enc-att-key',
+          wrappedKeys: [{ hybridCiphertext: 'ct', encryptedKey: 'ek', encryptedForEmail: 'bob@inxt.me' }],
         },
       };
       const mockMailClient = {

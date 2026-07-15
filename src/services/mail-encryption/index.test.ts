@@ -20,7 +20,7 @@ describe('buildEncryptionBlock + decryptEnvelope', () => {
 
     const envelope = await mailEncryption.buildEncryptionBlock(content('<p>hi bob</p>'), recipients, attachmentsKey());
 
-    expect(envelope.version).toBe('v2');
+    expect(envelope.version).toBe('v3');
     expect(Array.isArray(envelope.wrappedKeys)).toBe(true);
     expect(envelope.wrappedKeys).toHaveLength(1);
 
@@ -156,7 +156,7 @@ describe('encrypted preview', () => {
     );
 
     const preview = await mailEncryption.decryptSummaryPreview(
-      { encryptedPreview: envelope.encryptedPreview, wrappedKeys: envelope.previewWrappedKeys },
+      { encryptedPreview: envelope.encryptedPreview, wrappedKeys: envelope.wrappedKeys },
       bob,
       'bob@inxt.me',
     );
@@ -177,14 +177,14 @@ describe('encrypted preview', () => {
 
     expect(
       await mailEncryption.decryptSummaryPreview(
-        { encryptedPreview: envelope.encryptedPreview, wrappedKeys: envelope.previewWrappedKeys },
+        { encryptedPreview: envelope.encryptedPreview, wrappedKeys: envelope.wrappedKeys },
         bob,
         'bob@inxt.me',
       ),
     ).toBe('snippet');
     await expect(
       mailEncryption.decryptSummaryPreview(
-        { encryptedPreview: envelope.encryptedPreview, wrappedKeys: envelope.previewWrappedKeys },
+        { encryptedPreview: envelope.encryptedPreview, wrappedKeys: envelope.wrappedKeys },
         eve,
         'eve@inxt.me',
       ),
@@ -202,11 +202,11 @@ describe('isEncryptedEmailBody / parseEncryptionBlock', () => {
 
   test('When the body contains a valid encrypted bundle, then it should parse the encryption block', () => {
     const block = {
-      version: 'v2' as const,
+      version: 'v3' as const,
       encryptedText: 'et',
-      wrappedKeys: [{ hybridCiphertext: 'h', encryptedKey: 'k', encryptedForEmail: 'bob@inxt.me' }],
       encryptedPreview: 'ep',
-      previewWrappedKeys: [{ hybridCiphertext: 'hp', encryptedKey: 'kp', encryptedForEmail: 'bob@inxt.me' }],
+      encryptedAttachmentsSessionKey: 'ek',
+      wrappedKeys: [{ hybridCiphertext: 'h', encryptedKey: 'k', encryptedForEmail: 'bob@inxt.me' }],
     };
     const wire = `${ENCRYPTED_EMAIL_PREFIX}\n${Buffer.from(JSON.stringify(block)).toString('base64')}`;
     expect(mailEncryption.parseEncryptionBlock(wire)).toStrictEqual(block);
