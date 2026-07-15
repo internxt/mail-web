@@ -25,11 +25,11 @@ const editor = { getHTML: () => '<p>hi</p>', getText: () => 'hi', on: vi.fn(), o
 const recipient = (email: string): Recipient => ({ id: email, email });
 
 const mockEncryptionBlock = {
-  version: 'v2',
+  version: 'v3',
   encryptedText: 'ct',
-  wrappedKeys: [],
   encryptedPreview: 'cp',
-  previewWrappedKeys: [],
+  encryptedAttachmentsSessionKey: 'ck',
+  wrappedKeys: [],
 };
 
 const renderDraft = (overrides: Partial<Parameters<typeof useDraftMessage>[0]> = {}) => {
@@ -84,7 +84,7 @@ describe('Draft Message', () => {
       expect.objectContaining({
         subject: 'A subject',
         to: [{ email: 'bob@inxt.me' }],
-        encryption: expect.objectContaining({ version: 'v2' }),
+        encryption: expect.objectContaining({ version: 'v3' }),
       }),
     );
   });

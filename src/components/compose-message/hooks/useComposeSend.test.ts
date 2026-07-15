@@ -35,11 +35,11 @@ const recipient = (email: string): Recipient => ({ id: email, email });
 const show = vi.mocked(notificationsService.show);
 
 const mockEncryptionBlock = {
-  version: 'v2',
+  version: 'v3',
   encryptedText: 'ct',
-  wrappedKeys: [],
   encryptedPreview: 'cp',
-  previewWrappedKeys: [],
+  encryptedAttachmentsSessionKey: 'ck',
+  wrappedKeys: [],
 };
 
 const renderSend = (overrides: Partial<Parameters<typeof useComposeSend>[0]> = {}) => {
@@ -175,7 +175,7 @@ describe('useComposeSend', () => {
       expect.any(Uint8Array),
     );
     expect(mocks.sendEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ encryption: expect.objectContaining({ version: 'v2' }), deliveryMode: 'INTERNXT' }),
+      expect.objectContaining({ encryption: expect.objectContaining({ version: 'v3' }), deliveryMode: 'INTERNXT' }),
     );
     expect(onSent).toHaveBeenCalled();
   });
@@ -246,7 +246,7 @@ describe('useComposeSend', () => {
         expect.any(Uint8Array),
       );
       expect(mocks.sendEmail).toHaveBeenCalledWith(
-        expect.objectContaining({ deliveryMode: 'EXTERNAL', encryption: expect.objectContaining({ version: 'v2' }) }),
+        expect.objectContaining({ deliveryMode: 'EXTERNAL', encryption: expect.objectContaining({ version: 'v3' }) }),
       );
       expect(onSent).toHaveBeenCalled();
     });
