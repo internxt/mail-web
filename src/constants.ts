@@ -11,4 +11,5 @@ export const INTERNXT_EMAIL_DOMAINS = ['@inxt.me', '@inxt.eu', '@encrypt.eu'] as
 
 export const DEFAULT_FOLDER_LIMIT = 15;
 export const MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL = 25 * 1024 * 1024;
+export const MAX_INLINE_IMAGE_BYTES = 5 * 1024 * 1024;
 export const AUTO_POLLING_INTERVAL_IN_MILLISECONDS = 30000;
