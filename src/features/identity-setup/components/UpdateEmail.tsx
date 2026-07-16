@@ -81,7 +81,7 @@ export const UpdateEmail = ({ userFullName, activeDomains, currentEmail, onNext 
         >
           <div className="overflow-hidden">{isPanelVisible && <EmailAddressRulesPanel rules={rules} />}</div>
         </div>
-        {!isPanelVisible && <p className="text-sm text-gray-50">{translate('identitySetup.updateEmail.mailType')}</p>}
+        {!isPanelVisible && <p className="text-xs text-gray-50">{translate('identitySetup.updateEmail.mailType')}</p>}
       </div>
 
       <div className="flex flex-col w-full">

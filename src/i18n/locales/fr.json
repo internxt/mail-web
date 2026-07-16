@@ -55,7 +55,7 @@
         "Votre e-mail précédent {{current_email}} sera conservé pour la récupération du compte."
       ],
       "mail": "E-mail",
-      "mailType": "Vous pouvez utiliser des minuscules, des chiffres, des points, des tirets et des underscores",
+      "mailType": "Minuscules, chiffres, ., - et _",
       "action": "Enregistrer le nouvel e-mail",
       "rules": {
         "length": "Entre 3 et 30 caractères",
