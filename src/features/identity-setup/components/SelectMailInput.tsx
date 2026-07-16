@@ -9,9 +9,17 @@ interface SelectMailInputProps {
   domains: EmailDomainsResponse;
   onChangeValue: (value: string) => void;
   onChangeDomain: (domain: string) => void;
+  onFocusChange?: (isFocused: boolean) => void;
 }
 
-const SelectMailInput = ({ value, onChangeValue, selectedDomain, domains, onChangeDomain }: SelectMailInputProps) => {
+const SelectMailInput = ({
+  value,
+  onChangeValue,
+  selectedDomain,
+  domains,
+  onChangeDomain,
+  onFocusChange,
+}: SelectMailInputProps) => {
   const [isFocused, setIsFocused] = useState(false);
 
   const menuItems = domains.map(({ domain }) => (
@@ -38,11 +46,19 @@ const SelectMailInput = ({ value, onChangeValue, selectedDomain, domains, onChan
         className="h-full min-w-0 flex-1 bg-transparent pl-3 text-lg text-gray-100 outline-none placeholder:text-gray-40"
         value={value}
         onChange={(e) => onChangeValue(e.target.value)}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
+        onFocus={() => {
+          setIsFocused(true);
+          onFocusChange?.(true);
+        }}
+        onBlur={() => {
+          setIsFocused(false);
+          onFocusChange?.(false);
+        }}
       />
 
-      <div className="flex flex-col z-10">
+      {/* The Dropdown's internal buttons don't expose a `type` prop, so inside a
+      <form> they'd default to type="submit" and prematurely submit it. */}
+      <div className="flex flex-col z-10" onClick={(e) => e.preventDefault()}>
         <Dropdown
           classButton="flex items-center gap-1 px-3 text-sm font-medium text-gray-60transition-colors whitespace-nowrap"
           classMenuItems="right-0 top-1 min-w-[160px] rounded-lg shadow-subtle-hard text-gray-100"
