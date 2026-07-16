@@ -55,8 +55,14 @@
         "Tu correo anterior {{current_email}} se guardará para la recuperación de cuenta."
       ],
       "mail": "Correo",
-      "mailType": "Puedes usar letras, números y puntos",
-      "action": "Guardar nuevo correo"
+      "mailType": "Puedes usar minúsculas, números, puntos, guiones y guiones bajos",
+      "action": "Guardar nuevo correo",
+      "rules": {
+        "length": "Entre 3 y 30 caracteres",
+        "charset": "Minúsculas, números, ., - y _",
+        "edges": "Debe empezar y terminar con una letra o número",
+        "available": "El nombre de usuario debe estar disponible"
+      }
     },
     "confirmPassword": {
       "goBack": "Elegir correo",
@@ -154,7 +160,6 @@
       "authTimeout": "Tiempo de autenticación agotado. Por favor, inténtalo de nuevo."
     },
     "identitySetup": {
-      "usernameRequired": "El nombre de usuario es obligatorio",
       "passwordWrong": "La contraseña es incorrecta. Por favor, inténtalo de nuevo.",
       "emailNotSelected": "Por favor, elige una dirección de correo primero",
       "passwordCheckFailed": "Algo ha ido mal al verificar tu contraseña",

@@ -18,6 +18,11 @@ export const ConfirmPassword = ({ userFullName, onBack, onNext }: ConfirmPasswor
     onNext(password);
   };
 
+  const handleSubmit = (e: React.SubmitEvent) => {
+    e.preventDefault();
+    onConfirmPassword();
+  };
+
   return (
     <Fragment>
       <div>
@@ -28,7 +33,7 @@ export const ConfirmPassword = ({ userFullName, onBack, onNext }: ConfirmPasswor
           </div>
         </Button>
       </div>
-      <div className="flex flex-col gap-5 justify-center items-center">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5 justify-center items-center">
         {/* Avatar */}
         <div className="flex flex-col">
           <Avatar fullName={userFullName} diameter={80} />
@@ -54,9 +59,9 @@ export const ConfirmPassword = ({ userFullName, onBack, onNext }: ConfirmPasswor
         </div>
 
         <div className="flex flex-col w-full">
-          <Button onClick={onConfirmPassword}>{translate('identitySetup.confirmPassword.action')}</Button>
+          <Button type="submit">{translate('identitySetup.confirmPassword.action')}</Button>
         </div>
-      </div>
+      </form>
     </Fragment>
   );
 };

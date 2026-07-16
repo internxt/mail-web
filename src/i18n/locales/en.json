@@ -53,8 +53,14 @@
         "Your previous email {{current_email}} will be saved for account recovery."
       ],
       "mail": "Mail",
-      "mailType": "You can use letters, numbers and periods",
-      "action": "Save new email"
+      "mailType": "You can use lowercase letters, numbers, periods, hyphens and underscores",
+      "action": "Save new email",
+      "rules": {
+        "length": "3 to 30 characters",
+        "charset": "Lowercase letters, numbers, ., - and _",
+        "edges": "Start and end with a letter or number",
+        "available": "Username must be available"
+      }
     },
     "confirmPassword": {
       "goBack": "Choose email",
@@ -152,7 +158,6 @@
       "authTimeout": "Authentication timeout. Please try again."
     },
     "identitySetup": {
-      "usernameRequired": "The username is required",
       "passwordWrong": "The password is incorrect. Please try again.",
       "emailNotSelected": "Please choose an email address first",
       "passwordCheckFailed": "Something went wrong while verifying your password",

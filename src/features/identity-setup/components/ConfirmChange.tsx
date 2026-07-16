@@ -24,8 +24,14 @@ export const ConfirmChange = ({
   const { translate } = useTranslationContext();
   const newEmail = userNewEmail.address + '@' + userNewEmail.domain;
 
+  const handleSubmit = (e: React.SubmitEvent) => {
+    e.preventDefault();
+    if (isDisabled) return;
+    onConfirmChanges();
+  };
+
   return (
-    <div className="flex flex-col gap-5 justify-center items-center">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5 justify-center items-center">
       {/* Avatar */}
       <div className="flex flex-col">
         <Avatar fullName={userFullName} diameter={80} />
@@ -49,10 +55,10 @@ export const ConfirmChange = ({
       <div className="flex border w-full border-gray-10" />
 
       <div className="flex flex-col w-full">
-        <Button loading={isLoading} disabled={isDisabled} onClick={onConfirmChanges}>
+        <Button type="submit" loading={isLoading} disabled={isDisabled}>
           {translate('identitySetup.confirmChanges.action')}
         </Button>
       </div>
-    </div>
+    </form>
   );
 };

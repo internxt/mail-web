@@ -55,8 +55,14 @@
         "Votre e-mail précédent {{current_email}} sera conservé pour la récupération du compte."
       ],
       "mail": "E-mail",
-      "mailType": "Vous pouvez utiliser des lettres, des chiffres et des points",
-      "action": "Enregistrer le nouvel e-mail"
+      "mailType": "Vous pouvez utiliser des minuscules, des chiffres, des points, des tirets et des underscores",
+      "action": "Enregistrer le nouvel e-mail",
+      "rules": {
+        "length": "Entre 3 et 30 caractères",
+        "charset": "Minuscules, chiffres, ., - et _",
+        "edges": "Doit commencer et se terminer par une lettre ou un chiffre",
+        "available": "Le nom d'utilisateur doit être disponible"
+      }
     },
     "confirmPassword": {
       "goBack": "Choisir un e-mail",
@@ -154,7 +160,6 @@
       "authTimeout": "Délai d'authentification dépassé. Veuillez réessayer."
     },
     "identitySetup": {
-      "usernameRequired": "Le nom d'utilisateur est obligatoire",
       "passwordWrong": "Le mot de passe est incorrect. Veuillez réessayer.",
       "emailNotSelected": "Veuillez d'abord choisir une adresse e-mail",
       "passwordCheckFailed": "Une erreur s'est produite lors de la vérification de votre mot de passe",
