@@ -18,7 +18,7 @@ export const ConfirmPassword = ({ userFullName, onBack, onNext }: ConfirmPasswor
     onNext(password);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
     onConfirmPassword();
   };

@@ -24,7 +24,7 @@ export const ConfirmChange = ({
   const { translate } = useTranslationContext();
   const newEmail = userNewEmail.address + '@' + userNewEmail.domain;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
     if (isDisabled) return;
     onConfirmChanges();

@@ -160,7 +160,6 @@
       "authTimeout": "Tiempo de autenticación agotado. Por favor, inténtalo de nuevo."
     },
     "identitySetup": {
-      "usernameInvalid": "Esta dirección no cumple los requisitos",
       "passwordWrong": "La contraseña es incorrecta. Por favor, inténtalo de nuevo.",
       "emailNotSelected": "Por favor, elige una dirección de correo primero",
       "passwordCheckFailed": "Algo ha ido mal al verificar tu contraseña",

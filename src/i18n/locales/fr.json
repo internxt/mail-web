@@ -160,7 +160,6 @@
       "authTimeout": "Délai d'authentification dépassé. Veuillez réessayer."
     },
     "identitySetup": {
-      "usernameInvalid": "Cette adresse ne respecte pas les critères requis",
       "passwordWrong": "Le mot de passe est incorrect. Veuillez réessayer.",
       "emailNotSelected": "Veuillez d'abord choisir une adresse e-mail",
       "passwordCheckFailed": "Une erreur s'est produite lors de la vérification de votre mot de passe",

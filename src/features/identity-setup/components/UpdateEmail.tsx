@@ -1,8 +1,7 @@
 import { useTranslationContext } from '@/i18n';
 import type { EmailDomainsResponse } from '@internxt/sdk/dist/mail/types';
 import { Avatar, Button } from '@internxt/ui';
-import { useState } from 'react';
-import { useEmailAddressValidation } from '../hooks/useEmailAddressValidation';
+import { useUpdateEmail } from '../hooks/useUpdateEmail';
 import { EmailAddressRulesPanel } from './EmailAddressRulesPanel';
 import SelectMailInput from './SelectMailInput';
 
@@ -15,34 +14,30 @@ interface UpdateEmailProps {
 
 export const UpdateEmail = ({ userFullName, activeDomains, currentEmail, onNext }: UpdateEmailProps) => {
   const { translate, translateArray } = useTranslationContext();
-  const { username, rules, isValid, validateAddress } = useEmailAddressValidation();
-  const [domain, setDomain] = useState<string>(activeDomains[0]?.domain ?? '');
-  const [isUsernameFocused, setIsUsernameFocused] = useState(false);
+  const {
+    username,
+    rules,
+    isValid,
+    validateAddress,
+    domain,
+    setDomain,
+    setIsUsernameFocused,
+    isPanelVisible,
+    handleSubmit,
+    submit,
+  } = useUpdateEmail({ activeDomains, onNext });
 
   const descriptions = translateArray('identitySetup.updateEmail.description', {
     name: userFullName,
     current_email: currentEmail,
   });
 
-  const handleConfirm = () => {
-    if (!isValid) return;
-    onNext({ address: username, domain });
-  };
-
-  const handleSubmit = (e: React.SubmitEvent) => {
-    e.preventDefault();
-    handleConfirm();
-  };
-
   const handleFormKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
     if (e.key !== 'Enter' || (e.target as HTMLElement).tagName === 'BUTTON') return;
 
     e.preventDefault();
-    handleConfirm();
+    submit();
   };
-
-  const hasStartedTyping = rules.some((rule) => rule.status !== 'idle');
-  const isPanelVisible = isUsernameFocused || hasStartedTyping;
 
   return (
     <form

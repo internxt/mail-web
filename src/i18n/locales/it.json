@@ -160,7 +160,6 @@
       "authTimeout": "Timeout di autenticazione. Riprova."
     },
     "identitySetup": {
-      "usernameInvalid": "Questo indirizzo non soddisfa i requisiti",
       "passwordWrong": "La password non è corretta. Riprova.",
       "emailNotSelected": "Per favore, scegli prima un indirizzo email",
       "passwordCheckFailed": "Si è verificato un errore durante la verifica della password",
