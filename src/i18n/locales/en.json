@@ -53,7 +53,7 @@
         "Your previous email {{current_email}} will be saved for account recovery."
       ],
       "mail": "Mail",
-      "mailType": "You can use lowercase letters, numbers, periods, hyphens and underscores",
+      "mailType": "Lowercase letters, numbers, ., - and _",
       "action": "Save new email",
       "rules": {
         "length": "3 to 30 characters",

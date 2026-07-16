@@ -55,7 +55,7 @@
         "Tu correo anterior {{current_email}} se guardará para la recuperación de cuenta."
       ],
       "mail": "Correo",
-      "mailType": "Puedes usar minúsculas, números, puntos, guiones y guiones bajos",
+      "mailType": "Minúsculas, números, ., - y _",
       "action": "Guardar nuevo correo",
       "rules": {
         "length": "Entre 3 y 30 caracteres",
