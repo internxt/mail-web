@@ -1,0 +1,9 @@
+<svg width="160" height="130" viewBox="0 0 160 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="envelope-front-body" x1="80" y1="48" x2="80" y2="124" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2E7BFF" />
+      <stop offset="1" stop-color="#0058DB" />
+    </linearGradient>
+  </defs>
+  <rect x="20" y="76" width="120" height="44" rx="16" fill="url(#envelope-front-body)" />
+</svg>
