@@ -8,6 +8,10 @@ import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import { FontFamily } from '@tiptap/extension-font-family';
 import { FontSize } from './extensions/font-size';
+import i18next from 'i18next';
+import notificationsService, { ToastType } from '@/services/notifications';
+import { bytesToString } from '@/utils/bytes-to-string';
+import { MAX_INLINE_IMAGE_BYTES } from '@/constants';
 
 export const FONTS = [
   { label: 'Arial', value: 'Arial, sans-serif' },
@@ -84,7 +88,40 @@ export const EDITOR_CONFIG = {
   ],
   editorProps: {
     attributes: {
-      class: 'focus:outline-none h-full',
+      class: 'mail-content focus:outline-none h-full',
+    },
+    handleDrop: (view: any, event: any, _slice: any, moved: boolean) => {
+      if (moved) return false;
+
+      const files = Array.from(event.dataTransfer?.files ?? []) as File[];
+      const allImages = files.filter((file) => file.type.startsWith('image/'));
+      if (allImages.length === 0) return false;
+
+      event.preventDefault();
+
+      const images = allImages.filter((file) => file.size <= MAX_INLINE_IMAGE_BYTES);
+      if (images.length < allImages.length) {
+        notificationsService.show({
+          text: i18next.t('modals.composeMessageDialog.errors.inlineImageTooLarge', {
+            maxSize: bytesToString({ size: MAX_INLINE_IMAGE_BYTES }),
+          }),
+          type: ToastType.Warning,
+        });
+      }
+
+      const coords = view.posAtCoords({ left: event.clientX, top: event.clientY });
+      const pos = coords?.pos ?? view.state.selection.from;
+
+      images.forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result !== 'string') return;
+          const node = view.state.schema.nodes.image.create({ src: reader.result });
+          view.dispatch(view.state.tr.insert(pos, node));
+        };
+        reader.readAsDataURL(file);
+      });
+      return true;
     },
     handlePaste: (view: any, event: any) => {
       const text = event.clipboardData?.getData('text/plain');

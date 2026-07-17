@@ -47,7 +47,7 @@ const Preview = ({ mailId, subject, body, attachments, envelope }: PreviewProps)
     <div className="flex flex-col w-full p-5">
       <div className="flex flex-col gap-2.5">
         <h2 className="text-2xl font-semibold text-gray-100">{subject}</h2>
-        <div className="prose text-gray-100" dangerouslySetInnerHTML={{ __html: sanitizedBody }} />
+        <div className="mail-content text-gray-100" dangerouslySetInnerHTML={{ __html: sanitizedBody }} />
       </div>
 
       {attachments && attachments.length > 0 && (

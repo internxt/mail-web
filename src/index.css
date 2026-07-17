@@ -47,6 +47,65 @@ button {
   cursor: pointer;
 }
 
+/* Rendered mail bodies are raw HTML, so Tailwind's preflight reset (which flattens
+   headings, removes list markers, and unstyles links) must be undone inside them. */
+@layer components {
+  .mail-content h1 {
+    font-size: 1.5em;
+    font-weight: 700;
+    margin: 0.6em 0 0.35em;
+  }
+
+  .mail-content h2 {
+    font-size: 1.3em;
+    font-weight: 600;
+    margin: 0.6em 0 0.35em;
+  }
+
+  .mail-content h3 {
+    font-size: 1.15em;
+    font-weight: 600;
+    margin: 0.6em 0 0.35em;
+  }
+
+  .mail-content h4,
+  .mail-content h5,
+  .mail-content h6 {
+    font-weight: 600;
+    margin: 0.6em 0 0.35em;
+  }
+
+  .mail-content p {
+    margin: 0 0 0.5em;
+  }
+
+  .mail-content ul {
+    list-style: disc;
+    padding-left: 1.5em;
+    margin: 0.5em 0;
+  }
+
+  .mail-content ul ul {
+    list-style: circle;
+  }
+
+  .mail-content ol {
+    list-style: decimal;
+    padding-left: 1.5em;
+    margin: 0.5em 0;
+  }
+
+  .mail-content a {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+
+  .mail-content img {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color-scheme: light;
