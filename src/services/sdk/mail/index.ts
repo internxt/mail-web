@@ -1,4 +1,5 @@
 import type {
+  AddressAvailabilityResponse,
   DownloadAttachmentResponse,
   DraftEmailRequest,
   EmailCreatedResponse,
@@ -65,6 +66,18 @@ export class MailService {
    */
   async getActiveDomains(): Promise<EmailDomainsResponse> {
     return this.client.getActiveDomains();
+  }
+
+  /**
+   * Checks whether an email address is free to claim.
+   *
+   * @param username - Local part of the address (before the @).
+   * @param domain - Email domain to check the username against.
+   * @returns Whether the address is available and, when taken, a suggested
+   * alternative full address (`null` when no alternative could be found).
+   */
+  async checkAddressAvailability(username: string, domain: string): Promise<AddressAvailabilityResponse> {
+    return this.client.checkAddressAvailability(username, domain);
   }
 
   /**

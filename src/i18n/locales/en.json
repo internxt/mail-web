@@ -59,7 +59,9 @@
         "length": "3 to 30 characters",
         "charset": "Lowercase letters, numbers, ., - and _",
         "edges": "Start and end with a letter or number",
-        "available": "Username must be available"
+        "available": "Username must be available",
+        "taken": "This mail is taken. Try: {{suggestion}}",
+        "takenNoSuggestion": "This mail is taken. Try a different username"
       }
     },
     "confirmPassword": {
@@ -160,6 +162,7 @@
     "identitySetup": {
       "passwordWrong": "The password is incorrect. Please try again.",
       "emailNotSelected": "Please choose an email address first",
+      "availabilityCheckFailed": "Something went wrong while checking the address availability. Please try again.",
       "passwordCheckFailed": "Something went wrong while verifying your password",
       "setupFailed": "Something went wrong while setting up your account"
     },

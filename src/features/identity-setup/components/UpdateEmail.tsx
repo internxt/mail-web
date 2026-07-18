@@ -17,7 +17,8 @@ export const UpdateEmail = ({ userFullName, activeDomains, currentEmail, onNext 
   const {
     username,
     rules,
-    isValid,
+    canSubmit,
+    isSubmitting,
     validateAddress,
     domain,
     setDomain,
@@ -36,7 +37,7 @@ export const UpdateEmail = ({ userFullName, activeDomains, currentEmail, onNext 
     if (e.key !== 'Enter' || (e.target as HTMLElement).tagName === 'BUTTON') return;
 
     e.preventDefault();
-    submit();
+    void submit();
   };
 
   return (
@@ -85,7 +86,7 @@ export const UpdateEmail = ({ userFullName, activeDomains, currentEmail, onNext 
       </div>
 
       <div className="flex flex-col w-full">
-        <Button type="submit" disabled={!isValid}>
+        <Button type="submit" disabled={!canSubmit || isSubmitting} loading={isSubmitting}>
           {translate('identitySetup.updateEmail.action')}
         </Button>
       </div>

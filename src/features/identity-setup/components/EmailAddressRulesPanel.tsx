@@ -29,7 +29,7 @@ export const EmailAddressRulesPanel = ({ rules }: EmailAddressRulesPanelProps) =
         return (
           <li key={rule.id} className={`flex items-center gap-2 text-sm ${STATUS_TEXT_CLASSNAME[rule.status]}`}>
             <StatusIcon size={16} weight="fill" className="shrink-0" />
-            {translate(rule.labelKey)}
+            {translate(rule.labelKey, rule.labelParams)}
           </li>
         );
       })}

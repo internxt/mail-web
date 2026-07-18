@@ -61,7 +61,9 @@
         "length": "Da 3 a 30 caratteri",
         "charset": "Minuscole, numeri, ., - e _",
         "edges": "Deve iniziare e finire con una lettera o un numero",
-        "available": "Il nome utente deve essere disponibile"
+        "available": "Il nome utente deve essere disponibile",
+        "taken": "Questa mail è già in uso. Prova: {{suggestion}}",
+        "takenNoSuggestion": "Questa mail è già in uso. Prova un altro nome utente"
       }
     },
     "confirmPassword": {
@@ -162,6 +164,7 @@
     "identitySetup": {
       "passwordWrong": "La password non è corretta. Riprova.",
       "emailNotSelected": "Per favore, scegli prima un indirizzo email",
+      "availabilityCheckFailed": "Qualcosa è andato storto durante il controllo della disponibilità dell'indirizzo. Riprova.",
       "passwordCheckFailed": "Si è verificato un errore durante la verifica della password",
       "setupFailed": "Si è verificato un errore durante la configurazione del tuo account"
     },
