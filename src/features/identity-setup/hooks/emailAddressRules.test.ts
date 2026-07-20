@@ -241,15 +241,27 @@ describe('emailAddressRules', () => {
 
   describe('isEmailAddressFormatValid', () => {
     test('When username satisfies every format rule, then it is valid', () => {
-      expect(isEmailAddressFormatValid('jane.doe-99_x')).toBe(true);
+      const username = 'jane.doe-99_x';
+
+      const result = isEmailAddressFormatValid(username);
+
+      expect(result).toBe(true);
     });
 
     test('When username is a reserved name, then it is invalid', () => {
-      expect(isEmailAddressFormatValid('admin')).toBe(false);
+      const username = 'admin';
+
+      const result = isEmailAddressFormatValid(username);
+
+      expect(result).toBe(false);
     });
 
     test('When username breaks a format rule, then it is invalid', () => {
-      expect(isEmailAddressFormatValid('.jane')).toBe(false);
+      const username = '.jane';
+
+      const result = isEmailAddressFormatValid(username);
+
+      expect(result).toBe(false);
     });
   });
 

@@ -53,14 +53,18 @@ export const useEmailAddressValidation = (
     setUsername(value.toLowerCase());
   }, []);
 
+  useEffect(() => {
+    latestRequestIdRef.current++;
+  }, [username, domain]);
+
   const checkAvailability = useCallback(async (): Promise<AddressAvailability> => {
     if (!isEmailAddressFormatValid(username)) return UNKNOWN_AVAILABILITY;
 
     const requestId = ++latestRequestIdRef.current;
     const result = await fetchAvailability(username, domain);
-    if (requestId === latestRequestIdRef.current) {
-      setLastCheck({ value: username, domain, result });
-    }
+    if (requestId !== latestRequestIdRef.current) return UNKNOWN_AVAILABILITY;
+
+    setLastCheck({ value: username, domain, result });
 
     return result;
   }, [username, domain]);
