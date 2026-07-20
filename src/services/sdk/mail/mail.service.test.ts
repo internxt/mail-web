@@ -222,6 +222,33 @@ describe('Mail Service', () => {
     });
   });
 
+  describe('Check address availability', () => {
+    test('When checking an address, then the client should be called with the username and domain', async () => {
+      const mockResponse = { available: false, suggestion: 'jane1@internxt.com' };
+      const mockMailClient = {
+        checkAddressAvailability: vi.fn().mockResolvedValue(mockResponse),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      const result = await MailService.instance.checkAddressAvailability('jane', 'internxt.com');
+
+      expect(result).toStrictEqual(mockResponse);
+      expect(mockMailClient.checkAddressAvailability).toHaveBeenCalledWith('jane', 'internxt.com');
+    });
+
+    test('When the availability check fails, then an error should be thrown', async () => {
+      const unexpectedError = new Error('Too Many Requests');
+      const mockMailClient = {
+        checkAddressAvailability: vi.fn().mockRejectedValue(unexpectedError),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      await expect(MailService.instance.checkAddressAvailability('jane', 'internxt.com')).rejects.toThrow(
+        unexpectedError,
+      );
+    });
+  });
+
   describe('Search emails', () => {
     test('When searching emails, then the client should be called with the correct params', async () => {
       const mockedEmails = getMockedMails(5);

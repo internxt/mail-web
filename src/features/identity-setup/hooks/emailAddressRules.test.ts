@@ -1,14 +1,19 @@
 import { describe, expect, test } from 'vitest';
 import {
+  isEmailAddressFormatValid,
   isEmailAddressValid,
   isRuleStatusValid,
   validateEmailAddress,
+  type AddressAvailability,
   type EmailAddressRuleId,
   type EmailAddressRuleStatus,
 } from './emailAddressRules';
 
-const ruleStatus = (username: string, id: EmailAddressRuleId): EmailAddressRuleStatus =>
-  validateEmailAddress(username).find((rule) => rule.id === id)!.status;
+const ruleStatus = (
+  username: string,
+  id: EmailAddressRuleId,
+  availability?: AddressAvailability,
+): EmailAddressRuleStatus => validateEmailAddress(username, availability).find((rule) => rule.id === id)!.status;
 
 describe('emailAddressRules', () => {
   describe('length rule', () => {
@@ -179,12 +184,44 @@ describe('emailAddressRules', () => {
       },
     );
 
-    test('When username is not a reserved name, then it is valid', () => {
+    test('When username is well formatted but availability has not been checked yet, then it is idle', () => {
       const username = 'jane.doe';
 
       const status = ruleStatus(username, 'available');
 
+      expect(status).toBe('idle');
+    });
+
+    test('When the availability check is in flight, then it is idle', () => {
+      const status = ruleStatus('jane.doe', 'available', { status: 'checking' });
+
+      expect(status).toBe('idle');
+    });
+
+    test('When the backend reports the address as available, then it is valid', () => {
+      const status = ruleStatus('jane.doe', 'available', { status: 'available' });
+
       expect(status).toBe('valid');
+    });
+
+    test('When the backend reports the address as taken with a suggestion, then it is invalid and carries the suggestion', () => {
+      const rule = validateEmailAddress('jane.doe', { status: 'taken', suggestion: 'jane.doe1@inxt.me' }).find(
+        (r) => r.id === 'available',
+      )!;
+
+      expect(rule.status).toBe('invalid');
+      expect(rule.labelKey).toBe('identitySetup.updateEmail.rules.taken');
+      expect(rule.labelParams).toEqual({ suggestion: 'jane.doe1@inxt.me' });
+    });
+
+    test('When the backend reports the address as taken without a suggestion, then it is invalid with the fallback label', () => {
+      const rule = validateEmailAddress('jane.doe', { status: 'taken', suggestion: null }).find(
+        (r) => r.id === 'available',
+      )!;
+
+      expect(rule.status).toBe('invalid');
+      expect(rule.labelKey).toBe('identitySetup.updateEmail.rules.takenNoSuggestion');
+      expect(rule.labelParams).toBeUndefined();
     });
 
     test('When username is empty, then it is idle', () => {
@@ -195,12 +232,36 @@ describe('emailAddressRules', () => {
       expect(status).toBe('idle');
     });
 
-    test('When a formatting rule fails, then it stays idle instead of being checked', () => {
-      const username = 'Jane';
-
-      const status = ruleStatus(username, 'available');
+    test('When a formatting rule fails, then it stays idle even if the backend reported availability', () => {
+      const status = ruleStatus('Jane', 'available', { status: 'available' });
 
       expect(status).toBe('idle');
+    });
+  });
+
+  describe('isEmailAddressFormatValid', () => {
+    test('When username satisfies every format rule, then it is valid', () => {
+      const username = 'jane.doe-99_x';
+
+      const result = isEmailAddressFormatValid(username);
+
+      expect(result).toBe(true);
+    });
+
+    test('When username is a reserved name, then it is invalid', () => {
+      const username = 'admin';
+
+      const result = isEmailAddressFormatValid(username);
+
+      expect(result).toBe(false);
+    });
+
+    test('When username breaks a format rule, then it is invalid', () => {
+      const username = '.jane';
+
+      const result = isEmailAddressFormatValid(username);
+
+      expect(result).toBe(false);
     });
   });
 
@@ -231,18 +292,26 @@ describe('emailAddressRules', () => {
   });
 
   describe('isEmailAddressValid', () => {
-    test('When username satisfies every rule, then it is valid', () => {
+    test('When username satisfies every rule and the backend confirmed availability, then it is valid', () => {
+      const username = 'jane.doe-99_x';
+
+      const result = isEmailAddressValid(username, { status: 'available' });
+
+      expect(result).toBe(true);
+    });
+
+    test('When availability has not been confirmed yet, then it is invalid', () => {
       const username = 'jane.doe-99_x';
 
       const result = isEmailAddressValid(username);
 
-      expect(result).toBe(true);
+      expect(result).toBe(false);
     });
 
     test('When username fails at least one rule, then it is invalid', () => {
       const username = 'admin';
 
-      const result = isEmailAddressValid(username);
+      const result = isEmailAddressValid(username, { status: 'available' });
 
       expect(result).toBe(false);
     });

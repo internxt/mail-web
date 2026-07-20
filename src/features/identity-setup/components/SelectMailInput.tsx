@@ -26,7 +26,10 @@ const SelectMailInput = ({
     <button
       key={domain}
       className={`flex w-full items-center gap-1 py-1 ${domain === selectedDomain ? 'font-bold' : 'font-normal'} text-sm text-gray-100`}
-      onClick={() => onChangeDomain(domain)}
+      onClick={(e) => {
+        e.preventDefault();
+        onChangeDomain(domain);
+      }}
     >
       <span className={'w-5 shrink-0 '}>{domain === selectedDomain && <CheckIcon size={16} weight="bold" />}</span>@
       {domain}
