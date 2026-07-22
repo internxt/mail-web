@@ -4,6 +4,7 @@ export class UserService {
   public static readonly instance: UserService = new UserService();
 
   /**
+   * DEPRECATED: Remove this function and use refreshUser
    * Obtains the current logged in user
    *
    * @returns The current user
@@ -20,7 +21,7 @@ export class UserService {
    * Refreshes user tokens and data
    * @returns The refreshed user data and tokens
    */
-  public refreshUserAndTokens = async () => {
+  public refreshUser = async () => {
     const usersClient = SdkManager.instance.getUsers();
     const refreshResponse = await usersClient.refreshUser();
     return refreshResponse;

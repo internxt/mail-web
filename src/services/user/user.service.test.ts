@@ -36,7 +36,7 @@ describe('User Service', () => {
       };
       vi.spyOn(SdkManager.instance, 'getUsers').mockReturnValue(mockedUserClient as any);
 
-      const result = await UserService.instance.refreshUserAndTokens();
+      const result = await UserService.instance.refreshUser();
 
       expect(result).toEqual(mockedUser);
     });

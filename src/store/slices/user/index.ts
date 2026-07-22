@@ -13,6 +13,7 @@ export interface UserState {
   isAuthenticated: boolean;
   isInitialized: boolean;
   user?: UserSettings;
+  userToken?: string;
   userTier?: Tier;
   userSubscription?: UserSubscription;
 }
@@ -21,6 +22,7 @@ export const initialUserState: UserState = {
   isInitializing: false,
   isAuthenticated: false,
   isInitialized: false,
+  userToken: undefined,
   user: undefined,
   userTier: undefined,
   userSubscription: undefined,
@@ -50,6 +52,10 @@ export const userSlice = createSlice({
       state.user = action.payload;
 
       LocalStorageService.instance.set(LocalStorageKeys.xUser, JSON.stringify(action.payload));
+    },
+    setUserToken: (state: UserState, action: PayloadAction<string>) => {
+      state.userToken = action.payload;
+      LocalStorageService.instance.set(LocalStorageKeys.xNewToken, action.payload);
     },
     resetState: (state: UserState) => {
       LocalStorageService.instance.clearCredentials();
@@ -82,7 +88,7 @@ export const userSlice = createSlice({
   },
 });
 
-export const { hydrate, resetState, setIsUserInitialized } = userSlice.actions;
+export const { hydrate, resetState, setUser, setUserToken, setIsUserInitialized } = userSlice.actions;
 export const userActions = userSlice.actions;
 
 export default userSlice.reducer;
