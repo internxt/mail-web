@@ -1,91 +1,6 @@
 export type FileExtensionMap = Record<string, string[]>;
-export interface VideoExtensions {
-  webm: 'webm';
-  mkv: 'mkv';
-  vob: 'vob';
-  ogg: 'ogg';
-  drc: 'drc';
-  avi: 'avi';
-  mts: 'mts';
-  m2ts: 'm2ts';
-  mov: 'mov';
-  qt: 'qt';
-  wmv: 'wmv';
-  yuv: 'yuv';
-  rm: 'rm';
-  rmvb: 'rmvb';
-  viv: 'viv';
-  asf: 'asf';
-  amv: 'amv';
-  mp4: 'mp4';
-  mpg: 'mpg';
-  mpg4: 'mpg4';
-  mpeg: 'mpeg';
-  mpe: 'mpe';
-  mpv: 'mpv';
-  m2v: 'm2v';
-  m4v: 'm4v';
-  svi: 'svi';
-  '3gp': '3gp';
-  '3g2': '3g2';
-  mxf: 'mxf';
-  roq: 'roq';
-  msv: 'msv';
-  flv: 'flv';
-  f4v: 'f4v';
-  f4p: 'f4p';
-  f4a: 'f4a';
-  f4b: 'f4b';
-}
 
-export interface AudioExtensions {
-  aa: 'aa';
-  aac: 'aac';
-  aax: 'aax';
-  ac3: 'ac3';
-  act: 'act';
-  aiff: 'aiff';
-  alac: 'alac';
-  amr: 'amr';
-  ape: 'ape';
-  au: 'au';
-  awd: 'awd';
-  dss: 'dss';
-  dts: 'dts';
-  dvf: 'dvf';
-  flac: 'flac';
-  gsm: 'gsm';
-  iklax: 'iklax';
-  ivs: 'ivs';
-  m4a: 'm4a';
-  m4b: 'm4b';
-  m4p: 'm4p';
-  mmf: 'mmf';
-  mogg: 'mogg';
-  mp2: 'mp2';
-  mp3: 'mp3';
-  mpc: 'mpc';
-  msv: 'msv';
-  nmf: 'nmf';
-  oga: 'oga';
-  ogg: 'ogg';
-  opus: 'opus';
-  ra: 'ra';
-  rm: 'rm';
-  rf64: 'rf64';
-  sln: 'sln';
-  tta: 'tta';
-  voc: 'voc';
-  vox: 'vox';
-  wav: 'wav';
-  wma: 'wma';
-  wv: 'wv';
-  weba: 'weba';
-  '8svx': '8svx';
-  cda: 'cda';
-}
-
-export const audioExtensions: FileExtensionMap = {
+const audioExtensions: FileExtensionMap = {
   aa: ['aa'],
   aac: ['aac'],
   aax: ['aax'],
@@ -188,7 +103,7 @@ const txtExtensions: FileExtensionMap = {
   txt: ['txt', 'text', 'conf', 'def', 'list', 'log', 'md', 'lock'],
 };
 
-export const videoExtensions: FileExtensionMap = {
+const videoExtensions: FileExtensionMap = {
   webm: ['webm'],
   mkv: ['mkv'],
   vob: ['vob'],

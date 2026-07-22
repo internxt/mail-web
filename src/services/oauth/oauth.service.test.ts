@@ -29,7 +29,7 @@ describe('OAuth Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    vi.spyOn(UserService.instance, 'getUser').mockResolvedValue(mockedUser as any);
+    vi.spyOn(UserService.instance, 'refreshUser').mockResolvedValue(mockedUser as any);
 
     vi.spyOn(LocalStorageService.instance, 'setToken').mockImplementation(() => {});
 
@@ -74,7 +74,7 @@ describe('OAuth Service', () => {
       const encodedNewToken = Buffer.from('test-new-token').toString('base64');
       const encodedMnemonic = Buffer.from('test mnemonic').toString('base64');
 
-      const getUserSpy = vi.spyOn(UserService.instance, 'getUser');
+      const refreshUserSpy = vi.spyOn(UserService.instance, 'refreshUser');
 
       const params: WebAuthParams = {
         mnemonic: encodedMnemonic,
@@ -83,7 +83,7 @@ describe('OAuth Service', () => {
 
       await (service as any).processWebAuthParams(params);
 
-      expect(getUserSpy).toHaveBeenCalledTimes(1);
+      expect(refreshUserSpy).toHaveBeenCalledTimes(1);
     });
 
     test('when credentials are fully processed, then complete authentication data is returned', async () => {
@@ -106,7 +106,8 @@ describe('OAuth Service', () => {
     });
 
     test('when user data cannot be retrieved, then an error indicating so is thrown', async () => {
-      vi.spyOn(UserService.instance, 'getUser').mockRejectedValue(new Error('API Error'));
+      const unexpectedError = new Error('Unexpected error');
+      vi.spyOn(UserService.instance, 'refreshUser').mockRejectedValue(unexpectedError);
 
       const params: WebAuthParams = {
         mnemonic: Buffer.from('test').toString('base64'),

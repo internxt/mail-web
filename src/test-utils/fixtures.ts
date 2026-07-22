@@ -136,6 +136,18 @@ export const getMockedLoginCredentials = () => {
   };
 };
 
+export const getMockedRefreshUser = (params?: {
+  user?: Partial<LoginCredentials['user']>;
+  oldToken?: string;
+  newToken?: string;
+}) => {
+  return {
+    user: getMockedUser(params?.user),
+    oldToken: params?.oldToken ?? 'old-token',
+    newToken: params?.newToken ?? 'new-token',
+  };
+};
+
 const createEmailAddress = () => ({
   name: faker.person.fullName(),
   email: faker.internet.email(),
