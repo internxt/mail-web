@@ -297,4 +297,25 @@ describe('Draft Message', () => {
     });
     expect(mocks.createDraft).toHaveBeenCalledTimes(1);
   });
+
+  describe('replying', () => {
+    beforeEach(() => {
+      vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
+    });
+
+    test('When composing a reply, then no draft is ever persisted', async () => {
+      const { result } = renderDraft({
+        subject: 'Re: hi',
+        toRecipients: [recipient('bob@inxt.me')],
+        isReply: true,
+      });
+
+      await act(async () => {
+        await result.current.saveDraft();
+      });
+
+      expect(mocks.createDraft).not.toHaveBeenCalled();
+      expect(mocks.updateDraft).not.toHaveBeenCalled();
+    });
+  });
 });

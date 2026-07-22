@@ -11,6 +11,7 @@ import type {
   MailAccountKeysResponse,
   MailAccountResponse,
   MailboxResponse,
+  ReplyEmailRequest,
   SearchFiltersQuery,
   SendEmailRequest,
   SetupMailAccountPayload,
@@ -146,10 +147,20 @@ export class MailService {
    * pass `encryption` for an end-to-end-encrypted send, omit it for cleartext.
    *
    * @param payload - The send request (recipients, subject, body, optional encryption block)
-   * @returns The id of the created email
+   * @returns The created email
    */
   async sendEmail(payload: SendEmailRequest): Promise<EmailCreatedResponse> {
     return this.client.sendEmail(payload);
+  }
+
+  /**
+   * Reply to an email. Same parameters as `sendEmail` but sending the `messageId` of the email to reply to
+   * @param messageId - The message ID we want to reply
+   * @param payload - The send request (recipients, subject, body, optional encryption block)
+   * @returns The created email
+   */
+  async replyEmail(messageId: string, payload: ReplyEmailRequest): Promise<EmailCreatedResponse> {
+    return this.client.replyEmail(messageId, payload);
   }
 
   /**

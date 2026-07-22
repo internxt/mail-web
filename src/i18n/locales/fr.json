@@ -176,6 +176,7 @@
       "move": "Une erreur s'est produite lors du déplacement de l'e-mail",
       "noRecipients": "Ajoutez au moins un destinataire avant d'envoyer",
       "sendFailed": "Impossible d'envoyer le courriel",
+      "replyFailed": "Impossible d'envoyer la réponse",
       "keyLookupFailed": "Impossible de récupérer les clés du destinataire",
       "forwardAttachmentFailed": "Impossible de préparer une pièce jointe pour le transfert. Veuillez réessayer.",
       "internxtKeyMissing": "Impossible de trouver les clés de chiffrement pour un destinataire Internxt. Veuillez réessayer plus tard.",

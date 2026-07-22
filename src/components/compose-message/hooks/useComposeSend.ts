@@ -1,10 +1,17 @@
 import { useCallback, useMemo } from 'react';
 import type { Editor } from '@tiptap/react';
-import type { DeliveryMode, EmailAddress, RecipientKey, SendEmailRequest } from '@internxt/sdk/dist/mail/types';
+import type {
+  DeliveryMode,
+  EmailAddress,
+  EncryptionBlock,
+  RecipientKey,
+  SendEmailRequest,
+} from '@internxt/sdk/dist/mail/types';
 import {
   useGetActiveDomainsQuery,
   useGetMailAccountKeysQuery,
   useLazyLookupRecipientKeysQuery,
+  useReplyEmailMutation,
   useSendEmailMutation,
 } from '@/store/api/mail';
 import { classifyRecipients, isInternxtDomain, uniqueEmailAddresses } from '@/utils/domain';
@@ -16,10 +23,21 @@ import notificationsService, { ToastType } from '@/services/notifications';
 import { useTranslationContext } from '@/i18n';
 import type { Recipient } from '../types';
 import type { AttachmentTask, InheritedAttachment } from './useAttachments';
+import type { TranslationKey } from '@/i18n/types';
 
 export type EncryptionState = 'none' | 'unknown' | 'internxt' | 'external';
 
 const toEmailAddress = (r: Recipient): EmailAddress => (r.name ? { name: r.name, email: r.email } : { email: r.email });
+
+// Pass the error or the translation key to the caller to show an error message
+class ComposeSendError extends Error {
+  constructor(public readonly translationKey: string) {
+    super(translationKey);
+    this.name = 'ComposeSendError';
+
+    Object.setPrototypeOf(this, ComposeSendError.prototype);
+  }
+}
 
 interface UseComposeSendParams {
   toRecipients: Recipient[];
@@ -29,6 +47,7 @@ interface UseComposeSendParams {
   editor: Editor | null;
   attachments: AttachmentTask[];
   attachmentsSessionKey: Uint8Array;
+  isReply?: boolean;
   inReplyTo?: string;
   resolveDraftId?: () => Promise<string | null>;
   onSent: () => void;
@@ -43,13 +62,6 @@ interface UseComposeSendResult {
   send: () => Promise<void>;
 }
 
-/**
- * Owns the compose dialog's send pipeline: recipient classification, recipient
- * key lookup, encryption and dispatch. The body and attachments are always
- * encrypted. For Internxt recipients the real public key is used; for external
- * recipients SERVER_PUBLIC_KEY is used so the backend can decrypt and forward
- * the content in cleartext.
- */
 export const useComposeSend = ({
   toRecipients,
   ccRecipients,
@@ -58,6 +70,7 @@ export const useComposeSend = ({
   editor,
   attachments,
   attachmentsSessionKey,
+  isReply = false,
   inReplyTo,
   resolveDraftId,
   onSent,
@@ -71,6 +84,7 @@ export const useComposeSend = ({
   const { data: senderKeys } = useGetMailAccountKeysQuery();
   const [triggerLookup] = useLazyLookupRecipientKeysQuery();
   const [sendEmail, { isLoading: isSending }] = useSendEmailMutation();
+  const [replyEmail, { isLoading: isReplying }] = useReplyEmailMutation();
 
   const allRecipients = useMemo(
     () => [...toRecipients, ...ccRecipients, ...bccRecipients],
@@ -98,11 +112,7 @@ export const useComposeSend = ({
       const senderKeysForAttachments = MailKeysService.instance.getCurrentKeys();
       const senderAddress = MailKeysService.instance.getCurrentAddress();
       if (!senderKeysForAttachments || !senderAddress) {
-        notificationsService.show({
-          text: translate('errors.mail.forwardAttachmentFailed'),
-          type: ToastType.Error,
-        });
-        return;
+        throw new ComposeSendError('errors.mail.forwardAttachmentFailed');
       }
 
       for (const item of pendingInherited) {
@@ -128,11 +138,7 @@ export const useComposeSend = ({
         } catch (error) {
           console.error('Failed to re-encrypt inherited attachment', error);
           markInheritedFailed(item.id);
-          notificationsService.show({
-            text: translate('errors.mail.forwardAttachmentFailed'),
-            type: ToastType.Error,
-          });
-          return;
+          throw new ComposeSendError('errors.mail.forwardAttachmentFailed');
         }
       }
     }
@@ -149,92 +155,98 @@ export const useComposeSend = ({
     });
 
     return attachmentsToSend;
-  }, [
-    attachments,
-    markInheritedFailed,
-    markInheritedResolved,
-    markResolvingInherited,
-    translate,
-    attachmentsSessionKey,
-  ]);
+  }, [attachments, markInheritedFailed, markInheritedResolved, markResolvingInherited, attachmentsSessionKey]);
 
-  const send = useCallback(async () => {
+  const validateSend = () => {
     if (allRecipients.length === 0) {
-      notificationsService.show({ text: translate('errors.mail.noRecipients'), type: ToastType.Warning });
-      return;
+      throw new ComposeSendError('errors.mail.noRecipients');
     }
 
     if (encryptionState === 'unknown') {
-      notificationsService.show({ text: translate('errors.mail.encryptionUnavailable'), type: ToastType.Error });
-      return;
+      throw new ComposeSendError('errors.mail.encryptionUnavailable');
     }
 
     // TODO: remove this once per-recipient delivery is implemented
     if (encryptionState === 'internxt' && bccRecipients.length > 0) {
-      notificationsService.show({ text: translate('errors.mail.bccNotSupportedEncrypted'), type: ToastType.Warning });
-      return;
+      throw new ComposeSendError('errors.mail.bccNotSupportedEncrypted');
     }
 
     if (!senderKeys?.address || !senderKeys.publicKey) {
-      notificationsService.show({ text: translate('errors.mail.keyLookupFailed'), type: ToastType.Error });
-      return;
+      throw new ComposeSendError('errors.mail.keyLookupFailed');
     }
+  };
 
-    const attachmentsToSend = await handleInheritAttachments();
-
+  const getEncryptionEnvelope = async (): Promise<EncryptionBlock> => {
     const htmlBody = editor?.getHTML() ?? '';
     const textBody = editor?.getText() ?? '';
 
+    const uniqueAddresses = uniqueEmailAddresses(allRecipients.map((r) => r.email));
+    let lookup: RecipientKey[];
     try {
-      const uniqueAddresses = uniqueEmailAddresses(allRecipients.map((r) => r.email));
-      let lookup: RecipientKey[];
+      lookup = await triggerLookup({ addresses: uniqueAddresses }).unwrap();
+    } catch {
+      throw new ComposeSendError('errors.mail.keyLookupFailed');
+    }
+
+    // If an Internxt recipient has no public key, the lookup is broken — never
+    // fall back to the server key for them, that would silently weaken encryption.
+    const missingInternxtKey = lookup.some((r) => !r.publicKey && isInternxtDomain(r.address, activeDomains ?? []));
+    if (missingInternxtKey) {
+      throw new ComposeSendError('errors.mail.internxtKeyMissing');
+    }
+
+    // For external recipients (no publicKey) substitute the server public key
+    // so the backend can decrypt and forward the content in cleartext.
+    let serverPublicKey: string | undefined;
+    const hasExternal = lookup.some((r) => !r.publicKey);
+    if (hasExternal) {
       try {
-        lookup = await triggerLookup({ addresses: uniqueAddresses }).unwrap();
+        serverPublicKey = ConfigService.instance.getVariable('SERVER_PUBLIC_KEY');
       } catch {
-        notificationsService.show({ text: translate('errors.mail.keyLookupFailed'), type: ToastType.Error });
-        return;
+        throw new ComposeSendError('errors.mail.encryptionUnavailable');
       }
+    }
 
-      // If an Internxt recipient has no public key, the lookup is broken — never
-      // fall back to the server key for them, that would silently weaken encryption.
-      const missingInternxtKey = lookup.some((r) => !r.publicKey && isInternxtDomain(r.address, activeDomains ?? []));
-      if (missingInternxtKey) {
-        notificationsService.show({ text: translate('errors.mail.internxtKeyMissing'), type: ToastType.Error });
-        return;
-      }
+    const recipientsWithKeys: RecipientPublicKey[] = [
+      ...lookup.map((r) => ({
+        address: r.address,
+        publicKey: r.publicKey ?? serverPublicKey!,
+      })),
+      { address: senderKeys!.address, publicKey: senderKeys!.publicKey },
+    ];
 
-      // For external recipients (no publicKey) substitute the server public key
-      // so the backend can decrypt and forward the content in cleartext.
-      let serverPublicKey: string | undefined;
-      const hasExternal = lookup.some((r) => !r.publicKey);
-      if (hasExternal) {
-        try {
-          serverPublicKey = ConfigService.instance.getVariable('SERVER_PUBLIC_KEY');
-        } catch {
-          notificationsService.show({ text: translate('errors.mail.encryptionUnavailable'), type: ToastType.Error });
-          return;
-        }
-      }
-
-      const recipientsWithKeys: RecipientPublicKey[] = [
-        ...lookup.map((r) => ({
-          address: r.address,
-          publicKey: r.publicKey ?? serverPublicKey!,
-        })),
-        { address: senderKeys.address, publicKey: senderKeys.publicKey },
-      ];
-
-      const encryption = await MailEncryptionService.instance.buildEncryptionBlock(
+    try {
+      return await MailEncryptionService.instance.buildEncryptionBlock(
         { body: htmlBody || textBody, previewText: textBody },
         recipientsWithKeys,
         attachmentsSessionKey,
       );
+    } catch (error) {
+      console.error('Failed to build encryption envelope', error);
+      throw new ComposeSendError('errors.mail.encryptionUnavailable');
+    }
+  };
 
+  const dispatchEmail = async (payload: SendEmailRequest) => {
+    if (isReply) {
+      if (!inReplyTo) throw new ComposeSendError('errors.mail.replyFailed');
+      await replyEmail({ messageId: inReplyTo, payload }).unwrap();
+      return;
+    }
+
+    await sendEmail(payload).unwrap();
+  };
+
+  const send = async () => {
+    try {
+      validateSend();
+
+      const attachmentsToSend = await handleInheritAttachments();
+      const encryption = await getEncryptionEnvelope();
       const deliveryMode = (encryptionState === 'internxt' ? 'INTERNXT' : 'EXTERNAL') as DeliveryMode;
-
       const draftId = (await resolveDraftId?.()) ?? undefined;
 
-      await sendEmail({
+      const payload: SendEmailRequest = {
         to: toRecipients.map(toEmailAddress),
         cc: ccRecipients.length ? ccRecipients.map(toEmailAddress) : undefined,
         bcc: bccRecipients.length ? bccRecipients.map(toEmailAddress) : undefined,
@@ -242,37 +254,21 @@ export const useComposeSend = ({
         attachments: attachmentsToSend,
         encryption,
         deliveryMode,
-        inReplyToEmailId: inReplyTo,
         draftId,
-      }).unwrap();
+      };
+
+      await dispatchEmail(payload);
 
       onSent();
     } catch (error) {
       console.error('Failed to send email', error);
-      notificationsService.show({ text: translate('errors.mail.sendFailed'), type: ToastType.Error });
+      const fallbackKey = isReply ? 'errors.mail.replyFailed' : 'errors.mail.sendFailed';
+      const messageKey = error instanceof ComposeSendError ? error.translationKey : fallbackKey;
+      notificationsService.show({ text: translate(messageKey as TranslationKey), type: ToastType.Error });
     }
-  }, [
-    allRecipients,
-    activeDomains,
-    editor,
-    toRecipients,
-    ccRecipients,
-    bccRecipients,
-    subject,
-    encryptionState,
-    senderKeys,
-    attachments,
-    attachmentsSessionKey,
-    inReplyTo,
-    resolveDraftId,
-    triggerLookup,
-    sendEmail,
-    onSent,
-    translate,
-    handleInheritAttachments,
-  ]);
+  };
 
-  return { encryptionState, isSending, send };
+  return { encryptionState, isSending: isSending || isReplying, send };
 };
 
 export default useComposeSend;
