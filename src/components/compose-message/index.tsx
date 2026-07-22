@@ -45,9 +45,11 @@ export const ComposeMessageDialog = () => {
   const composeDialogData = getComposeMessageDialogData(ActionDialog.ComposeMessage) as ComposePayload | undefined;
 
   const { data: item, mode } = useInitialComposeState(composeDialogData);
-  const inReplyItemId = mode === 'reply' ? item.replyToEmailId : undefined;
-  const initialDraftId = mode === 'draft' ? item.draftId : undefined;
-  const initialReceivedAtDraft = mode === 'draft' ? item.receivedAt : undefined;
+  const isReplyMode = mode === 'reply';
+  const isDraftMode = mode === 'draft';
+  const inReplyItemId = isReplyMode ? item.replyToEmailId : undefined;
+  const initialDraftId = isDraftMode ? item.draftId : undefined;
+  const initialReceivedAtDraft = isDraftMode ? item.receivedAt : undefined;
 
   const {
     showBcc,
@@ -78,7 +80,7 @@ export const ComposeMessageDialog = () => {
 
   useEffect(() => {
     if (!ALLOWED_MODES_TO_FILL_BODY.has(mode) || !editor || !item.htmlBody) return;
-    const content = mode === 'draft' ? item.htmlBody : `<p></p><p></p> ${item.htmlBody}`;
+    const content = isDraftMode ? item.htmlBody : `<p></p><p></p> ${item.htmlBody}`;
     editor.commands.setContent(content);
     editor.commands.focus('start');
   }, [editor, mode, item.htmlBody]);
@@ -147,6 +149,7 @@ export const ComposeMessageDialog = () => {
   const { saveDraft, resolveDraftId, handleDraftDiscard, isDiscarding, draftSavedAt, clearDraftRef } = useDraftMessage({
     existentDraftId: initialDraftId,
     draftReceivedAt: initialReceivedAtDraft,
+    isReply: isReplyMode,
     attachments,
     toRecipients,
     ccRecipients,
@@ -197,6 +200,7 @@ export const ComposeMessageDialog = () => {
     editor,
     subject: subjectValue,
     toRecipients,
+    isReply: isReplyMode,
     inReplyTo: inReplyItemId,
     resolveDraftId,
     onSent,

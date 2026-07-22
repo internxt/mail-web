@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   senderKeys: undefined as { address: string; publicKey: string } | undefined,
   triggerLookup: vi.fn(),
   sendEmail: vi.fn(),
+  replyEmail: vi.fn(),
   deleteEmails: vi.fn(),
 }));
 
@@ -20,6 +21,7 @@ vi.mock('@/store/api/mail', () => ({
   useGetMailAccountKeysQuery: () => ({ data: mocks.senderKeys }),
   useLazyLookupRecipientKeysQuery: () => [mocks.triggerLookup],
   useSendEmailMutation: () => [mocks.sendEmail, { isLoading: false }],
+  useReplyEmailMutation: () => [mocks.replyEmail, { isLoading: false }],
   useDeleteMailsMutation: () => [mocks.deleteEmails],
 }));
 
@@ -71,6 +73,7 @@ describe('useComposeSend', () => {
     vi.restoreAllMocks();
     mocks.triggerLookup.mockReset();
     mocks.sendEmail.mockReset();
+    mocks.replyEmail.mockReset();
     mocks.deleteEmails.mockReset();
     show.mockReset();
 
@@ -78,6 +81,7 @@ describe('useComposeSend', () => {
     mocks.senderKeys = { address: 'me@inxt.me', publicKey: 'sender-pk' };
     mocks.triggerLookup.mockReturnValue({ unwrap: () => Promise.resolve([]) });
     mocks.sendEmail.mockReturnValue({ unwrap: () => Promise.resolve({ id: 'mail-1' }) });
+    mocks.replyEmail.mockReturnValue({ unwrap: () => Promise.resolve({ id: 'reply-1' }) });
     mocks.deleteEmails.mockReturnValue({ unwrap: () => Promise.resolve(null) });
   });
 
@@ -357,6 +361,68 @@ describe('useComposeSend', () => {
 
       expect(mocks.sendEmail).toHaveBeenCalledWith(expect.objectContaining({ draftId: undefined }));
       expect(onSent).toHaveBeenCalled();
+    });
+  });
+
+  describe('Replying a message', () => {
+    beforeEach(() => {
+      mocks.triggerLookup.mockReturnValue({
+        unwrap: () => Promise.resolve([{ address: 'bob@inxt.me', publicKey: 'bob-pk' }]),
+      });
+      vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
+    });
+
+    test('When composing a reply, then it dispatches to the reply endpoint with the replied-to message id and not the send endpoint', async () => {
+      const { result, onSent } = renderSend({
+        toRecipients: [recipient('bob@inxt.me')],
+        isReply: true,
+        inReplyTo: 'msg-99',
+      });
+
+      await act(async () => {
+        await result.current.send();
+      });
+
+      expect(mocks.replyEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          messageId: 'msg-99',
+          payload: expect.objectContaining({ encryption: expect.objectContaining({ version: 'v3' }) }),
+        }),
+      );
+      expect(mocks.sendEmail).not.toHaveBeenCalled();
+      expect(onSent).toHaveBeenCalled();
+    });
+
+    test('When it is a reply but the replied-to message cannot be resolved, then it fails instead of falling back to a standalone send', async () => {
+      const { result, onSent } = renderSend({
+        toRecipients: [recipient('bob@inxt.me')],
+        isReply: true,
+        inReplyTo: undefined,
+      });
+
+      await act(async () => {
+        await result.current.send();
+      });
+
+      expect(mocks.replyEmail).not.toHaveBeenCalled();
+      expect(mocks.sendEmail).not.toHaveBeenCalled();
+      expect(onSent).not.toHaveBeenCalled();
+    });
+
+    test('When the reply mutation fails, then it reports a reply failure and does not close the dialog', async () => {
+      mocks.replyEmail.mockReturnValue({ unwrap: () => Promise.reject(new Error('boom')) });
+      const { result, onSent } = renderSend({
+        toRecipients: [recipient('bob@inxt.me')],
+        isReply: true,
+        inReplyTo: 'msg-99',
+      });
+
+      await act(async () => {
+        await result.current.send();
+      });
+
+      expect(show).toHaveBeenCalled();
+      expect(onSent).not.toHaveBeenCalled();
     });
   });
 });
