@@ -20,7 +20,7 @@
     "format": "prettier --write **/*.{js,jsx,tsx,ts}",
     "preinstall": "node scripts/check-package-manager.js",
     "check:i18n": "node scripts/check-i18n.cjs",
-    "find-deadcode": "ts-prune -e"
+    "find-deadcode": "ts-prune -p tsconfig.app.json -i \"\\.(test|spec)\\.tsx?$\""
   },
   "dependencies": {
     "@internxt/css-config": "^1.1.0",
