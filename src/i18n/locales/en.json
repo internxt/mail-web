@@ -44,6 +44,10 @@
     },
     "description": "Encrypted email built for real privacy. Zero tracking. Full control."
   },
+  "appLoader": {
+    "title": "Preparing your mail",
+    "subtitle": "This may take a few seconds..."
+  },
   "identitySetup": {
     "updateEmail": {
       "title": "Set up Internxt email",

@@ -46,6 +46,10 @@
     },
     "description": "Email cifrata per una vera privacy. Zero tracciamento. Controllo totale."
   },
+  "appLoader": {
+    "title": "Preparazione della tua email",
+    "subtitle": "Potrebbe richiedere qualche secondo..."
+  },
   "identitySetup": {
     "updateEmail": {
       "title": "Configura la tua email Internxt",

@@ -1,0 +1,40 @@
+<svg width="208" height="118" viewBox="0 0 208 118" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="body_shadow" x="0" y="0" width="208" height="176" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="32"/>
+      <feGaussianBlur stdDeviation="20"/>
+      <feComposite in2="hardAlpha" operator="out"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.04 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
+    </filter>
+    <filter id="body_inner" x="40" y="8" width="128" height="96" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset/>
+      <feGaussianBlur stdDeviation="8"/>
+      <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0"/>
+      <feBlend mode="normal" in2="shape" result="effect1_innerShadow"/>
+    </filter>
+    <linearGradient id="body_fill" x1="104" y1="8" x2="104" y2="104" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white"/>
+      <stop offset="1" stop-color="#F6F6F8"/>
+    </linearGradient>
+    <linearGradient id="body_v" x1="104" y1="8" x2="104" y2="69" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white"/>
+      <stop offset="1" stop-color="#F6F6F8"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#body_shadow)">
+    <rect x="40.7504" y="8.75" width="126.5" height="94.5" rx="11.25" stroke="#E5E5EB" stroke-width="1.5"/>
+    <rect x="40.0004" y="8" width="128" height="96" rx="12" fill="url(#body_fill)"/>
+    <g filter="url(#body_inner)">
+      <path d="M97.3188 64.5211C101.361 67.2308 106.64 67.2308 110.682 64.5211L162.229 29.9677C172.078 23.3656 167.404 8 155.547 8L52.4536 8C40.5964 8 35.9229 23.3656 45.772 29.9677L97.3188 64.5211Z" fill="url(#body_v)"/>
+    </g>
+    <path d="M97.5971 64.1055C101.471 66.7023 106.53 66.7023 110.404 64.1055L161.951 29.5527C171.389 23.2257 166.91 8.50004 155.547 8.5L52.4536 8.5C41.0905 8.50004 36.6115 23.2257 46.0502 29.5527L97.5971 64.1055Z" stroke="#E5E5EB"/>
+  </g>
+</svg>

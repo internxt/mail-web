@@ -46,6 +46,10 @@
     },
     "description": "Correo cifrado creado para una privacidad real. Sin rastreo. Control total."
   },
+  "appLoader": {
+    "title": "Preparando tu correo",
+    "subtitle": "Esto puede tardar unos segundos..."
+  },
   "identitySetup": {
     "updateEmail": {
       "title": "Configura tu correo Internxt",
