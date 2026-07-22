@@ -1,6 +1,5 @@
 import { type RouteObject, Navigate } from 'react-router-dom';
-import { Suspense, createElement } from 'react';
-import { AppLoader } from '@/components/AppLoader';
+import { createElement } from 'react';
 import { getPublicRoutes, AppLayout, type RouteConfig, layoutComponents, getProtectedRoutesByLayout } from './paths';
 import { PublicRoute } from './guards/PublicRoute';
 import { ProtectedRoute } from './guards/ProtectedRoute';
@@ -8,12 +7,7 @@ import { ProtectedRoute } from './guards/ProtectedRoute';
 const toRouteObject = (route: RouteConfig): RouteObject => {
   return {
     path: route.path,
-    // !TODO: Add a loader here
-    element: (
-      <Suspense fallback={<AppLoader className="h-screen w-screen" />}>
-        {createElement(route.element, route.props ?? {})}
-      </Suspense>
-    ),
+    element: createElement(route.element, route.props ?? {}),
   };
 };
 
