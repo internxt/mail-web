@@ -227,7 +227,7 @@ export class OauthService {
 
       LocalStorageService.instance.setToken(newToken);
 
-      const user = await UserService.instance.getUser();
+      const { user } = await UserService.instance.refreshUser();
 
       return this.buildLoginCredentials(user as unknown as LoginCredentials['user'], mnemonic, newToken);
     } catch (error) {
