@@ -32,6 +32,13 @@ interface MailViewProps {
 const MailView = ({ folder }: MailViewProps) => {
   const { translate } = useTranslationContext();
   const [activeMailId, setActiveMailId] = useState<string | undefined>(undefined);
+
+  const [renderedFolder, setRenderedFolder] = useState(folder);
+  if (renderedFolder !== folder) {
+    setRenderedFolder(folder);
+    setActiveMailId(undefined);
+  }
+
   const [updateReadStatus] = useUpdateReadStatusMutation();
   const [moveToFolder] = useMoveToFolderMutation();
   const [deleteEmails] = useDeleteMailsMutation();

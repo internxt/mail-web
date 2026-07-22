@@ -5,6 +5,7 @@ import type { LoginCredentials } from '@/types/oauth';
 import { OauthService } from '@/services/oauth/oauth.service';
 import { useAppDispatch } from '@/store/hooks';
 import { userActions } from '@/store/slices/user';
+import { initializeUserThunk } from '@/store/slices/user/thunks';
 import { ErrorService } from '@/services/error';
 import type { Translate } from '@/i18n';
 
@@ -21,6 +22,7 @@ export function useAuth({ onSuccess, translate }: UseWebAuthProps) {
       LocalStorageService.instance.saveCredentials(credentials.user, credentials.mnemonic, credentials.newToken);
 
       dispatch(userActions.setUser(credentials.user));
+      await dispatch(initializeUserThunk());
       try {
         const [userTier, userSubscription] = await Promise.all([
           PaymentsService.instance.getUserTier(),
