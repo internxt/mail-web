@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import isValidEmail from '@internxt/lib/dist/src/auth/isValidEmail';
+import isValidEmail from '@internxt/lib/dist/auth/isValidEmail';
 import { XIcon } from '@phosphor-icons/react';
 
 interface ContactInputProps {

@@ -176,6 +176,7 @@
       "move": "Algo ha ido mal al mover el correo",
       "noRecipients": "Agrega al menos un destinatario antes de enviar",
       "sendFailed": "No se pudo enviar el correo",
+      "replyFailed": "No se pudo enviar la respuesta",
       "keyLookupFailed": "No se pudieron obtener las claves del destinatario",
       "forwardAttachmentFailed": "No se pudo preparar un adjunto para reenviar. Inténtalo de nuevo.",
       "internxtKeyMissing": "No se encontraron claves de cifrado para un destinatario de Internxt. Inténtalo de nuevo más tarde.",

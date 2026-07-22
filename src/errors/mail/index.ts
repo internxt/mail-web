@@ -145,3 +145,13 @@ export class DraftMessageError extends Error {
     Object.setPrototypeOf(this, DraftMessageError.prototype);
   }
 }
+
+// Pass the error or the translation key to the caller to show an error message
+export class ComposeSendError extends Error {
+  constructor(public readonly translationKey: string) {
+    super(translationKey);
+    this.name = 'ComposeSendError';
+
+    Object.setPrototypeOf(this, ComposeSendError.prototype);
+  }
+}

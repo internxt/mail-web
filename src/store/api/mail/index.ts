@@ -30,6 +30,7 @@ import type {
   MailAccountKeysResponse,
   MailboxResponse,
   RecipientKey,
+  ReplyEmailRequest,
   SendEmailRequest,
 } from '@internxt/sdk/dist/mail/types';
 import type { AppDispatch } from '@/store';
@@ -328,6 +329,29 @@ export const mailApi = api.injectEndpoints({
         { type: 'ListFolder', id: 'drafts' },
       ],
     }),
+    replyEmail: builder.mutation<
+      EmailCreatedResponse,
+      {
+        messageId: string;
+        payload: ReplyEmailRequest;
+      }
+    >({
+      async queryFn({ messageId, payload }): Promise<{ data: EmailCreatedResponse } | { error: SendEmailError }> {
+        try {
+          const result = await MailService.instance.replyEmail(messageId, payload);
+          return { data: result };
+        } catch (error) {
+          const err = ErrorService.instance.castError(error);
+          return { error: new SendEmailError(err.message, err.requestId) };
+        }
+      },
+      invalidatesTags: () => [
+        { type: 'ThreadMessage' },
+        { type: 'ListFolder', id: 'inbox' },
+        { type: 'ListFolder', id: 'sent' },
+        { type: 'ListFolder', id: 'drafts' },
+      ],
+    }),
     draftEmail: builder.mutation<EmailResponse, DraftEmailRequest>({
       async queryFn(payload): Promise<{ data: EmailResponse } | { error: DraftMessageError }> {
         try {
@@ -390,6 +414,7 @@ export const {
   useLookupRecipientKeysQuery,
   useLazyLookupRecipientKeysQuery,
   useSendEmailMutation,
+  useReplyEmailMutation,
   useDraftEmailMutation,
   useUpdateDraftMutation,
   useDiscardDraftMutation,

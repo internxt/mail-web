@@ -23,8 +23,8 @@
   },
   "dependencies": {
     "@internxt/css-config": "^1.1.0",
-    "@internxt/lib": "^1.4.1",
-    "@internxt/sdk": "^1.17.18",
+    "@internxt/lib": "^1.5.1",
+    "@internxt/sdk": "^1.17.20",
     "@internxt/ui": "^0.1.26",
     "@phosphor-icons/react": "^2.1.10",
     "@reduxjs/toolkit": "^2.11.2",

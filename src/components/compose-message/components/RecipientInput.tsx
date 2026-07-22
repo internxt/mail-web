@@ -2,7 +2,7 @@ import { useState, type KeyboardEvent } from 'react';
 import type { Recipient } from '../types';
 import UserChip from '@/components/user-chip';
 import { DEFAULT_USER_NAME } from '@/constants';
-import isValidEmail from '@internxt/lib/dist/src/auth/isValidEmail';
+import isValidEmail from '@internxt/lib/dist/auth/isValidEmail';
 
 interface RecipientInputProps {
   label: string;

@@ -28,6 +28,7 @@ const isPayloadEmpty = (payload: DraftEmailRequest, editor: Editor | null): bool
 interface UseDraftMessageParams {
   existentDraftId?: string;
   draftReceivedAt?: string;
+  isReply?: boolean;
   subject: string;
   toRecipients: Recipient[];
   ccRecipients: Recipient[];
@@ -51,6 +52,7 @@ interface UseDraftMessageResult {
 export const useDraftMessage = ({
   existentDraftId,
   draftReceivedAt,
+  isReply = false,
   toRecipients,
   ccRecipients,
   bccRecipients,
@@ -118,6 +120,8 @@ export const useDraftMessage = ({
   }, []);
 
   const performSave = useCallback(async () => {
+    if (isReply) return;
+
     const payload = await buildPayload();
     if (!payload) return;
 
@@ -127,12 +131,13 @@ export const useDraftMessage = ({
       const { id: newDraftId, receivedAt } = await updateDraft({ draftId: draftIdRef.current, payload }).unwrap();
       draftIdRef.current = newDraftId;
       draftReceivedAtRef.current = receivedAt;
-    } else {
-      const { id, receivedAt } = await createDraft(payload).unwrap();
-      draftIdRef.current = id;
-      draftReceivedAtRef.current = receivedAt;
+      return;
     }
-  }, [buildPayload, createDraft, updateDraft, editor]);
+
+    const { id, receivedAt } = await createDraft(payload).unwrap();
+    draftIdRef.current = id;
+    draftReceivedAtRef.current = receivedAt;
+  }, [buildPayload, createDraft, updateDraft, isReply, editor]);
 
   const saveDraft = useCallback(async () => {
     clearAutosaveTimer();

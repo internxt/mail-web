@@ -730,4 +730,59 @@ describe('Mail API', () => {
       expect('error' in result && result.error).toBeInstanceOf(SendEmailError);
     });
   });
+
+  describe('Reply email', () => {
+    test('When replying succeeds, then it forwards the message id and payload and returns the created id', async () => {
+      const replySpy = vi.spyOn(MailService.instance, 'replyEmail').mockResolvedValue({ id: 'reply-1' });
+      const store = createTestStore();
+
+      const result = await store.dispatch(
+        mailApi.endpoints.replyEmail.initiate({
+          messageId: 'msg-99',
+          payload: { to: [{ email: 'bob@inxt.me' }], subject: 'Re: hi' },
+        }),
+      );
+
+      expect('data' in result && result.data).toStrictEqual({ id: 'reply-1' });
+      expect(replySpy).toHaveBeenCalledWith('msg-99', { to: [{ email: 'bob@inxt.me' }], subject: 'Re: hi' });
+    });
+
+    test('When replying fails, then a SendEmailError should be returned', async () => {
+      vi.spyOn(MailService.instance, 'replyEmail').mockRejectedValue(new Error('boom'));
+      const store = createTestStore();
+
+      const result = await store.dispatch(
+        mailApi.endpoints.replyEmail.initiate({
+          messageId: 'msg-99',
+          payload: { to: [{ email: 'bob@inxt.me' }], subject: 'Re: hi' },
+        }),
+      );
+
+      expect('error' in result && result.error).toBeInstanceOf(SendEmailError);
+    });
+
+    test('When replying succeeds, then it invalidates the open thread so it refetches', async () => {
+      const threadEmailId = 'thread-root-1';
+      vi.spyOn(MailService.instance, 'getThreads').mockResolvedValue([getMockedMail({ id: threadEmailId })]);
+      vi.spyOn(MailService.instance, 'replyEmail').mockResolvedValue({ id: 'reply-1' });
+      const store = createTestStore();
+
+      // Prime the thread cache so there is a ThreadMessage tag to invalidate.
+      await store.dispatch(mailApi.endpoints.getThread.initiate({ emailId: threadEmailId }));
+
+      await store.dispatch(
+        mailApi.endpoints.replyEmail.initiate({
+          messageId: threadEmailId,
+          payload: { to: [{ email: 'bob@inxt.me' }], subject: 'Re: hi' },
+        }),
+      );
+
+      const rootState = store.getState() as unknown as RootState;
+      const invalidatedEndpoints = mailApi.util
+        .selectInvalidatedBy(rootState, [{ type: 'ThreadMessage' }])
+        .map((entry) => entry.endpointName);
+
+      expect(invalidatedEndpoints).toContain('getThread');
+    });
+  });
 });

@@ -381,6 +381,37 @@ describe('Mail Service', () => {
     });
   });
 
+  describe('Reply email', () => {
+    test('When replying, then the client should be called with the message id and payload', async () => {
+      const payload = {
+        to: [{ email: 'bob@inxt.me' }],
+        subject: 'Re: hi',
+        textBody: 'sure',
+      };
+      const mockMailClient = {
+        replyEmail: vi.fn().mockResolvedValue({ id: 'reply-1' }),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      const result = await MailService.instance.replyEmail('msg-99', payload);
+
+      expect(result).toStrictEqual({ id: 'reply-1' });
+      expect(mockMailClient.replyEmail).toHaveBeenCalledWith('msg-99', payload);
+    });
+
+    test('When replying fails, then an error should be thrown', async () => {
+      const unexpectedError = new Error('Unexpected error');
+      const mockMailClient = {
+        replyEmail: vi.fn().mockRejectedValue(unexpectedError),
+      } as any;
+      vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
+
+      await expect(
+        MailService.instance.replyEmail('msg-99', { to: [{ email: 'x@inxt.me' }], subject: 's' }),
+      ).rejects.toThrow(unexpectedError);
+    });
+  });
+
   describe('Lookup recipient keys', () => {
     test('When looking up keys, then the addresses should be forwarded and recipients returned', async () => {
       const recipients = [
