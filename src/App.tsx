@@ -1,7 +1,7 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { routes } from './routes';
 import { NavigationService } from './services/navigation';
-import { Activity, useEffect } from 'react';
+import { Activity, Suspense, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from './store/hooks';
 import { initializeUserThunk } from './store/slices/user/thunks';
 import { Toaster } from 'react-hot-toast';
@@ -40,7 +40,9 @@ function App() {
           filter: 'drop-shadow(0 32px 40px rgba(18, 22, 25, 0.08))',
         }}
       />
-      <RouterProvider router={router} />
+      <Suspense fallback={<AppLoader className="h-screen w-screen" />}>
+        <RouterProvider router={router} />
+      </Suspense>
       <Activity mode={isComposeMessageDialogOpen ? 'visible' : 'hidden'}>
         <ComposeMessageDialog />
       </Activity>

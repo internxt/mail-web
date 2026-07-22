@@ -5,27 +5,15 @@ import envelopeBody from '@/assets/images/mail-loading/envelope-body.svg';
 import envelopePocket from '@/assets/images/mail-loading/envelope-pocket.svg';
 import envelopeFlap from '@/assets/images/mail-loading/envelope-flap.svg';
 import { useTranslationContext } from '@/i18n';
-import { useEffect, useState } from 'react';
+import { useAppLoaderAnimation } from './useAppLoaderAnimation';
 
 interface AppLoaderProps {
   className?: string;
 }
 
-const TOTAL_STEPS = 20;
-
 export const AppLoader = ({ className = 'h-full w-full' }: AppLoaderProps) => {
   const { translate } = useTranslationContext();
-  const [step, setStep] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setStep((steps) => (steps >= TOTAL_STEPS ? 0 : steps + 1));
-    }, 100);
-    return () => clearInterval(interval);
-  }, []);
-
-  const isFlapOpen = step >= 2 && step <= 17;
-  const filesOut = step >= 5 && step <= 15;
+  const { isFlapOpen, filesOut } = useAppLoaderAnimation();
 
   return (
     <div className={`flex ${className} cursor-default flex-col items-center justify-center bg-gray-1`}>
