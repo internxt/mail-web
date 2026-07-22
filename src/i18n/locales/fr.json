@@ -46,6 +46,10 @@
     },
     "description": "E-mail chiffré conçu pour une vraie confidentialité. Zéro traçage. Contrôle total."
   },
+  "appLoader": {
+    "title": "Préparation de votre messagerie",
+    "subtitle": "Cela peut prendre quelques secondes..."
+  },
   "identitySetup": {
     "updateEmail": {
       "title": "Configurer votre e-mail Internxt",
