@@ -24,20 +24,11 @@ import { useTranslationContext } from '@/i18n';
 import type { Recipient } from '../types';
 import type { AttachmentTask, InheritedAttachment } from './useAttachments';
 import type { TranslationKey } from '@/i18n/types';
+import { ComposeSendError } from '@/errors';
 
 export type EncryptionState = 'none' | 'unknown' | 'internxt' | 'external';
 
 const toEmailAddress = (r: Recipient): EmailAddress => (r.name ? { name: r.name, email: r.email } : { email: r.email });
-
-// Pass the error or the translation key to the caller to show an error message
-class ComposeSendError extends Error {
-  constructor(public readonly translationKey: string) {
-    super(translationKey);
-    this.name = 'ComposeSendError';
-
-    Object.setPrototypeOf(this, ComposeSendError.prototype);
-  }
-}
 
 interface UseComposeSendParams {
   toRecipients: Recipient[];
