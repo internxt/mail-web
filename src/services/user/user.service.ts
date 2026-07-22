@@ -4,7 +4,7 @@ export class UserService {
   public static readonly instance: UserService = new UserService();
 
   /**
-   * DEPRECATED: Remove this function and use refreshUser
+   * @deprecated - Use refreshUser instead
    * Obtains the current logged in user
    *
    * @returns The current user
