@@ -10,7 +10,7 @@ const advanceSteps = async (steps: number) => {
   });
 };
 
-describe('useAppLoaderAnimation', () => {
+describe('App Loader Animation - Custom Hook', () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
