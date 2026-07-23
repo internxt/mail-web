@@ -384,7 +384,7 @@ describe('Mail Service', () => {
   describe('Reply email', () => {
     test('When replying, then the client should be called with the message id and payload', async () => {
       const payload = {
-        to: [{ email: 'bob@inxt.me' }],
+        replyAll: false,
         subject: 'Re: hi',
         textBody: 'sure',
       };
@@ -406,9 +406,7 @@ describe('Mail Service', () => {
       } as any;
       vi.spyOn(SdkManager.instance, 'getMail').mockReturnValue(mockMailClient);
 
-      await expect(
-        MailService.instance.replyEmail('msg-99', { to: [{ email: 'x@inxt.me' }], subject: 's' }),
-      ).rejects.toThrow(unexpectedError);
+      await expect(MailService.instance.replyEmail('msg-99', { subject: 's' })).rejects.toThrow(unexpectedError);
     });
   });
 

@@ -2,13 +2,19 @@ import { renderHook } from '@testing-library/react';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { useInitialComposeState } from './useInitialComposeState';
 import { getMockedMail } from '@/test-utils/fixtures';
+import { MailKeysService } from '@/services/mail-keys';
 import type { ComposePayload } from '@/types/mail';
 
 const translations: Record<string, string> = { 'mail.forward.prefix': 'Fwd:' };
 vi.mock('@/i18n', () => ({ useTranslationContext: () => ({ translate: (key: string) => translations[key] ?? key }) }));
 
+const SELF = 'me@inxt.me';
+
 describe('Preparing the initial state of the compose dialog', () => {
-  beforeEach(() => vi.restoreAllMocks());
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    vi.spyOn(MailKeysService.instance, 'getCurrentAddress').mockReturnValue(SELF);
+  });
 
   test('When the dialog opens without any payload, then the compose starts as a blank new message', () => {
     const { result } = renderHook(() => useInitialComposeState(undefined));
@@ -29,6 +35,7 @@ describe('Preparing the initial state of the compose dialog', () => {
   test('When the user replies to a message, then the sender of the original mail is pre-filled as the only recipient', () => {
     const sourceMail = getMockedMail({
       from: [{ name: 'Alice', email: 'alice@inxt.me' }],
+      replyTo: [],
       to: [{ email: 'bob@inxt.me' }],
       subject: 'Project status',
     });
@@ -62,9 +69,11 @@ describe('Preparing the initial state of the compose dialog', () => {
   test('When the user replies to a message, then every recipient in the draft has a unique local identifier', () => {
     const sourceMail = getMockedMail({
       from: [{ email: 'alice@inxt.me' }],
+      replyTo: [],
+      to: [{ email: SELF }],
       cc: [{ email: 'cc1@inxt.me' }, { email: 'cc2@inxt.me' }],
     });
-    const payload: ComposePayload = { mode: 'reply', sourceMail };
+    const payload: ComposePayload = { mode: 'replyAll', sourceMail };
 
     const { result } = renderHook(() => useInitialComposeState(payload));
 
@@ -196,12 +205,21 @@ describe('Preparing the initial state of the compose dialog', () => {
     ]);
   });
 
-  test('When the dialog is opened in replyAll mode, then it falls back to an empty draft', () => {
-    const sourceMail = getMockedMail();
+  test('When the dialog is opened in replyAll mode, then the recipients are derived and the reply-all flag is set', () => {
+    const sourceMail = getMockedMail({
+      from: [{ email: 'alice@inxt.me' }],
+      replyTo: [],
+      to: [{ email: SELF }, { email: 'bob@inxt.me' }],
+      cc: [{ email: 'carol@inxt.me' }],
+      subject: 'Project status',
+    });
     const payload: ComposePayload = { mode: 'replyAll', sourceMail };
 
     const { result } = renderHook(() => useInitialComposeState(payload));
 
     expect(result.current.mode).toBe('replyAll');
+    expect(result.current.data.replyAll).toBe(true);
+    expect(result.current.data.to.map((r) => r.email)).toEqual(['alice@inxt.me']);
+    expect(result.current.data.cc.map((r) => r.email)).toEqual(['bob@inxt.me', 'carol@inxt.me']);
   });
 });

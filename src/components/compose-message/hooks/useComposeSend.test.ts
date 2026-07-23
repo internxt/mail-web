@@ -386,11 +386,33 @@ describe('useComposeSend', () => {
       expect(mocks.replyEmail).toHaveBeenCalledWith(
         expect.objectContaining({
           messageId: 'msg-99',
-          payload: expect.objectContaining({ encryption: expect.objectContaining({ version: 'v3' }) }),
+          payload: expect.objectContaining({
+            replyAll: false,
+            encryption: expect.objectContaining({ version: 'v3' }),
+          }),
         }),
       );
+      const replyPayload = mocks.replyEmail.mock.calls[0][0].payload;
+      expect(replyPayload).not.toHaveProperty('to');
       expect(mocks.sendEmail).not.toHaveBeenCalled();
       expect(onSent).toHaveBeenCalled();
+    });
+
+    test('When composing a reply-all, then the reply endpoint receives replyAll: true', async () => {
+      const { result } = renderSend({
+        toRecipients: [recipient('bob@inxt.me')],
+        isReply: true,
+        isReplyAll: true,
+        inReplyTo: 'msg-99',
+      });
+
+      await act(async () => {
+        await result.current.send();
+      });
+
+      expect(mocks.replyEmail).toHaveBeenCalledWith(
+        expect.objectContaining({ payload: expect.objectContaining({ replyAll: true }) }),
+      );
     });
 
     test('When it is a reply but the replied-to message cannot be resolved, then it fails instead of falling back to a standalone send', async () => {

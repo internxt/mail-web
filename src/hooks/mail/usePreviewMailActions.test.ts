@@ -221,6 +221,30 @@ describe('Preview Mail Actions - custom hook', () => {
     });
   });
 
+  describe('Reply all', () => {
+    test('When replying to all on the open mail, then the compose dialog is launched in replyAll mode using that mail as the source', () => {
+      const sourceMail = getMockedMail({ id: 'mail-1' });
+      const params = makeParams({ decryptedMail: sourceMail });
+      const { result } = renderHook(() => usePreviewMailActions(params));
+
+      act(() => result.current.onReplyAll());
+
+      expect(params.openDialog).toHaveBeenCalledWith(ActionDialog.ComposeMessage, {
+        data: { mode: 'replyAll', sourceMail },
+        closeAllDialogsFirst: true,
+      });
+    });
+
+    test('When no decrypted mail is available, then replying to all does nothing', () => {
+      const params = makeParams({ decryptedMail: undefined });
+      const { result } = renderHook(() => usePreviewMailActions(params));
+
+      act(() => result.current.onReplyAll());
+
+      expect(params.openDialog).not.toHaveBeenCalled();
+    });
+  });
+
   describe('Forward', () => {
     test('When forwarding the open mail, then the compose dialog is launched in forward mode using that mail as the source', () => {
       const sourceMail = getMockedMail({ id: 'mail-1' });

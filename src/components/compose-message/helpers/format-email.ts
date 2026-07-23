@@ -1,5 +1,7 @@
 import type { EmailAddress, EmailResponse } from '@internxt/sdk/dist/mail/types';
 import type { Translate } from '@/i18n';
+import { MailKeysService } from '@/services/mail-keys';
+import { deriveReplyRecipients } from './reply-recipients';
 import dayjs from 'dayjs';
 
 export type ReplyDraft = Partial<EmailResponse> & {
@@ -8,12 +10,14 @@ export type ReplyDraft = Partial<EmailResponse> & {
 
 export type ForwardDraft = Partial<EmailResponse>;
 
-export const formatEmailToReply = (mail: EmailResponse): ReplyDraft => {
+export const formatEmailToReply = (mail: EmailResponse, replyAll = false): ReplyDraft => {
   const hasReplyPrefix = /^\s*re:/i.test(mail.subject);
+  const self = MailKeysService.instance.getCurrentAddress() ?? '';
+  const { to, cc } = deriveReplyRecipients(mail, self, replyAll);
   return {
     replyToEmailId: mail.id,
-    to: mail.from,
-    cc: mail.cc ?? [],
+    to,
+    cc,
     bcc: mail.bcc ?? [],
     subject: hasReplyPrefix ? mail.subject : `Re: ${mail.subject}`,
     htmlBody: mail.htmlBody,

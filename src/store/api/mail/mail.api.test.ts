@@ -739,12 +739,12 @@ describe('Mail API', () => {
       const result = await store.dispatch(
         mailApi.endpoints.replyEmail.initiate({
           messageId: 'msg-99',
-          payload: { to: [{ email: 'bob@inxt.me' }], subject: 'Re: hi' },
+          payload: { replyAll: false, subject: 'Re: hi' },
         }),
       );
 
       expect('data' in result && result.data).toStrictEqual({ id: 'reply-1' });
-      expect(replySpy).toHaveBeenCalledWith('msg-99', { to: [{ email: 'bob@inxt.me' }], subject: 'Re: hi' });
+      expect(replySpy).toHaveBeenCalledWith('msg-99', { replyAll: false, subject: 'Re: hi' });
     });
 
     test('When replying fails, then a SendEmailError should be returned', async () => {
@@ -754,7 +754,7 @@ describe('Mail API', () => {
       const result = await store.dispatch(
         mailApi.endpoints.replyEmail.initiate({
           messageId: 'msg-99',
-          payload: { to: [{ email: 'bob@inxt.me' }], subject: 'Re: hi' },
+          payload: { replyAll: false, subject: 'Re: hi' },
         }),
       );
 
@@ -773,7 +773,7 @@ describe('Mail API', () => {
       await store.dispatch(
         mailApi.endpoints.replyEmail.initiate({
           messageId: threadEmailId,
-          payload: { to: [{ email: 'bob@inxt.me' }], subject: 'Re: hi' },
+          payload: { replyAll: false, subject: 'Re: hi' },
         }),
       );
 

@@ -46,8 +46,9 @@ export const ComposeMessageDialog = () => {
 
   const { data: item, mode } = useInitialComposeState(composeDialogData);
   const isReplyMode = mode === 'reply';
+  const isReplyAllMode = mode === 'replyAll';
   const isDraftMode = mode === 'draft';
-  const inReplyItemId = isReplyMode ? item.replyToEmailId : undefined;
+  const inReplyItemId = isReplyMode || isReplyAllMode ? item.replyToEmailId : undefined;
   const initialDraftId = isDraftMode ? item.draftId : undefined;
   const initialReceivedAtDraft = isDraftMode ? item.receivedAt : undefined;
 
@@ -201,6 +202,7 @@ export const ComposeMessageDialog = () => {
     subject: subjectValue,
     toRecipients,
     isReply: isReplyMode,
+    isReplyAll: isReplyAllMode,
     inReplyTo: inReplyItemId,
     resolveDraftId,
     onSent,
@@ -260,6 +262,7 @@ export const ComposeMessageDialog = () => {
             ccButtonText={translate('modals.composeMessageDialog.cc')}
             bccButtonText={translate('modals.composeMessageDialog.bcc')}
             disabled={isSending}
+            readOnly={isReplyMode}
           />
           {showCc && (
             <RecipientInput
