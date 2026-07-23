@@ -60,7 +60,7 @@ describe('List actions - custom hook', () => {
     test('When the folder is inbox, then it offers move to archive, spam and trash', () => {
       const { result } = renderFor('inbox');
       const names = getItems(result.current.bulkActionContext).map((a) => a.name);
-      expect(names).toEqual(['actions.moveAllToArchive', 'actions.moveAllToSpam', 'actions.moveAllToTrash']);
+      expect(names).toEqual(['actions.moveAllToSpam', 'actions.moveAllToTrash']);
     });
 
     test('When move-to-trash is triggered from inbox, then deleteEmails is called with all selected ids', async () => {
@@ -72,20 +72,6 @@ describe('List actions - custom hook', () => {
 
       expect(params.deleteEmails).toHaveBeenCalledOnce();
       expect(params.deleteEmails).toHaveBeenCalledWith(ids);
-    });
-
-    test('When move-to-archive is triggered from inbox, then moveToFolder is called with target archive', async () => {
-      const ids = ['mail-1', 'mail-2'];
-      const { result, params } = renderFor('inbox', ids);
-      const bulk = getItems(result.current.bulkActionContext);
-
-      await findByName(bulk, 'actions.moveAllToArchive').action?.(undefined);
-
-      expect(params.moveToFolder).toHaveBeenCalledWith({
-        emailIds: ids,
-        sourceMailbox: 'inbox',
-        targetMailbox: 'archive',
-      });
     });
 
     test('When the "All" action is triggered, then it only selects all emails without filtering', () => {
@@ -243,15 +229,7 @@ describe('List actions - custom hook', () => {
     test('When the folder is spam, then it offers move to inbox, archive and trash', () => {
       const { result } = renderFor('spam');
       const names = getItems(result.current.bulkActionContext).map((a) => a.name);
-      expect(names).toEqual(['actions.moveAllToInbox', 'actions.moveAllToArchive', 'actions.moveAllToTrash']);
-    });
-  });
-
-  describe('archive', () => {
-    test('When the folder is archive, then it offers move to inbox, spam and trash', () => {
-      const { result } = renderFor('archive');
-      const names = getItems(result.current.bulkActionContext).map((a) => a.name);
-      expect(names).toEqual(['actions.moveAllToInbox', 'actions.moveAllToSpam', 'actions.moveAllToTrash']);
+      expect(names).toEqual(['actions.moveAllToInbox', 'actions.moveAllToTrash']);
     });
   });
 });

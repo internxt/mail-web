@@ -3,7 +3,7 @@ import type { TranslationKey } from '@/i18n/types';
 import notificationsService, { ToastType } from '@/services/notifications';
 import type { FolderType } from '@/types/mail';
 import { type MenuItemType } from '@internxt/ui';
-import { ArchiveIcon, TrashIcon, TrayIcon, WarningOctagonIcon } from '@phosphor-icons/react';
+import { TrashIcon, TrayIcon, WarningOctagonIcon } from '@phosphor-icons/react';
 import { useCallback, useMemo } from 'react';
 
 type SourceGroup = { emailIds: string[]; sourceMailbox: FolderType };
@@ -29,17 +29,15 @@ interface UseListActionContextResult {
 }
 
 const MOVE_TARGETS_BY_SOURCE: Record<FolderType, MoveTarget[]> = {
-  inbox: ['archive', 'spam', 'trash'],
-  spam: ['inbox', 'archive', 'trash'],
+  inbox: ['spam', 'trash'],
+  spam: ['inbox', 'trash'],
   drafts: ['trash'],
-  archive: ['inbox', 'spam', 'trash'],
   sent: [],
   trash: [],
 };
 
 const TARGET_META: Record<MoveTarget, { label: TranslationKey; folderName: TranslationKey; icon: typeof TrayIcon }> = {
   inbox: { label: 'actions.moveAllToInbox', folderName: 'mail.inbox', icon: TrayIcon },
-  archive: { label: 'actions.moveAllToArchive', folderName: 'mail.archive', icon: ArchiveIcon },
   spam: { label: 'actions.moveAllToSpam', folderName: 'mail.spam', icon: WarningOctagonIcon },
   trash: { label: 'actions.moveAllToTrash', folderName: 'mail.trash', icon: TrashIcon },
 };
@@ -158,7 +156,6 @@ export const useListActionContext = (
   switch (folder) {
     case 'inbox':
     case 'spam':
-    case 'archive':
       return { listActionContext: inboxSelectionActions, bulkActionContext: moveBulkActions };
     case 'sent':
       return { listActionContext: baseSelectionActions, bulkActionContext: NO_BULK_ACTIONS };
