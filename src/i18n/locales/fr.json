@@ -265,6 +265,9 @@
             "description": "Consultez des articles d'aide ou obtenez l'assistance de notre équipe.",
             "cta": "Ouvrir le Centre d'assistance"
           }
+        },
+        "account": {
+          "title": "Compte"
         }
       }
     }

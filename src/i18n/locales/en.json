@@ -263,6 +263,9 @@
             "description": "Navigate helpful articles or get assistance from our team.",
             "cta": "Open Support Centre"
           }
+        },
+        "account": {
+          "title": "Account"
         }
       }
     }

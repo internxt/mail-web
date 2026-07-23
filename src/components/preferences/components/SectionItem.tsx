@@ -1,12 +1,15 @@
+import type { Icon } from '@phosphor-icons/react';
+
 export interface SectionItemProps {
   text: string;
+  icon?: Icon;
   isActive?: boolean;
   isSection?: boolean;
   isDisabled?: boolean;
   onClick?: () => void;
 }
 
-const SectionItem = ({ text, isActive, isDisabled, isSection, onClick }: SectionItemProps) => {
+const SectionItem = ({ text, icon: Icon, isActive, isDisabled, isSection, onClick }: SectionItemProps) => {
   const isClickable = !!onClick && !isDisabled;
   const clickableContainerClass = isClickable ? 'hover:bg-gray-5' : '';
   const activeContainerClass = isActive ? 'bg-primary' : clickableContainerClass;
@@ -20,7 +23,7 @@ const SectionItem = ({ text, isActive, isDisabled, isSection, onClick }: Section
 
   return (
     <Element
-      className={`flex h-10 w-full items-center justify-between rounded-lg px-3 py-2
+      className={`flex flex-row h-10 w-full items-center justify-between rounded-lg px-3 py-2
        ${clickableClass} ${containerClass}`}
       onClick={isDisabled ? undefined : onClick}
       {...(isClickable ? { type: 'button' as const } : {})}
@@ -28,6 +31,7 @@ const SectionItem = ({ text, isActive, isDisabled, isSection, onClick }: Section
       <div className="flex items-center">
         <span className={`text-base font-normal ${disabledTextClass} ${sectionTextClass}`}>{text}</span>
       </div>
+      {Icon && <Icon size={20} />}
     </Element>
   );
 };
