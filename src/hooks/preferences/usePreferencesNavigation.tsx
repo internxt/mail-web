@@ -1,6 +1,7 @@
 import { useSearchParams } from 'react-router-dom';
 import { useCallback, useMemo } from 'react';
 import { PREFERENCES_SECTIONS, type PreferencesSection } from '@/types/preferences';
+import { ACCOUNT_PREFERENCES_DIALOG_URL } from '@/constants';
 
 const DEFAULT_SECTION: PreferencesSection = 'general';
 
@@ -25,6 +26,11 @@ export const usePreferencesNavigation = () => {
 
   const openSection = useCallback(
     (section: PreferencesSection) => {
+      if (section === 'account') {
+        window.open(ACCOUNT_PREFERENCES_DIALOG_URL, '_blank', 'noopener noreferrer');
+        return;
+      }
+
       setSearchParams({ preferences: 'open', section }, { replace: true });
     },
     [setSearchParams],

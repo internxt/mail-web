@@ -9,6 +9,7 @@ import GeneralSection from './sections/general';
 
 const SECTION_COMPONENTS: Record<PreferencesSection, FC<{ onClose: () => void }>> = {
   general: GeneralSection,
+  account: () => null,
 };
 
 export const PreferencesDialog = () => {

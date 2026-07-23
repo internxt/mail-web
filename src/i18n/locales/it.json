@@ -265,6 +265,9 @@
             "description": "Consulta articoli di aiuto o ricevi assistenza dal nostro team.",
             "cta": "Apri il Centro assistenza"
           }
+        },
+        "account": {
+          "title": "Profilo"
         }
       }
     }

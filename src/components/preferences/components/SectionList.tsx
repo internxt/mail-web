@@ -14,6 +14,7 @@ const SectionList = ({ sectionItems, activeSection, onSelectSection }: SectionLi
         <SectionItem
           key={item.id}
           text={item.text}
+          icon={item.icon}
           isActive={item.id === activeSection}
           onClick={() => onSelectSection(item.id)}
         />
