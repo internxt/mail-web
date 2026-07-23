@@ -48,7 +48,7 @@ export const ComposeMessageDialog = () => {
   const isReplyMode = mode === 'reply';
   const isReplyAllMode = mode === 'replyAll';
   const isDraftMode = mode === 'draft';
-  const inReplyItemId = isReplyMode ? item.replyToEmailId : undefined;
+  const inReplyItemId = isReplyMode || isReplyAllMode ? item.replyToEmailId : undefined;
   const initialDraftId = isDraftMode ? item.draftId : undefined;
   const initialReceivedAtDraft = isDraftMode ? item.receivedAt : undefined;
 

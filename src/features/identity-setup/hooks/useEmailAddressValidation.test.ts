@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { MailService } from '@/services/sdk/mail';
-import { useEmailAddressValidation } from './useEmailAddressValidation';
+import { DEFAULT_DEBOUNCE_MS, useEmailAddressValidation } from './useEmailAddressValidation';
 
 vi.mock('@/services/sdk/mail', () => ({
   MailService: {
@@ -15,7 +15,7 @@ const checkAddressAvailability = vi.mocked(MailService.instance.checkAddressAvai
 
 const DOMAIN = 'inxt.me';
 
-const renderValidationHook = () => renderHook(() => useEmailAddressValidation(DOMAIN, 300));
+const renderValidationHook = () => renderHook(() => useEmailAddressValidation(DOMAIN, DEFAULT_DEBOUNCE_MS));
 
 const typeAndSettle = async (
   result: ReturnType<typeof renderValidationHook>['result'],
@@ -23,7 +23,7 @@ const typeAndSettle = async (
 ): Promise<void> => {
   act(() => result.current.validateAddress(value));
   await act(async () => {
-    vi.advanceTimersByTime(300);
+    vi.advanceTimersByTime(DEFAULT_DEBOUNCE_MS);
   });
 };
 
@@ -150,7 +150,7 @@ describe('useEmailAddressValidation', () => {
     act(() => vi.advanceTimersByTime(100));
     act(() => result.current.validateAddress('jane.doe'));
     await act(async () => {
-      vi.advanceTimersByTime(300);
+      vi.advanceTimersByTime(DEFAULT_DEBOUNCE_MS);
     });
 
     expect(checkAddressAvailability).toHaveBeenCalledTimes(1);
