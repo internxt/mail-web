@@ -101,6 +101,20 @@ export const usePreviewMailActions = ({
     });
   }, [decryptedMail, openDialog]);
 
+  const onReplyAll = useCallback(() => {
+    if (!decryptedMail) return;
+
+    const openComposeDialogData = {
+      mode: 'replyAll',
+      sourceMail: decryptedMail,
+    } satisfies ComposePayload;
+
+    openDialog(ActionDialog.ComposeMessage, {
+      data: openComposeDialogData,
+      closeAllDialogsFirst: true,
+    });
+  }, [decryptedMail, openDialog]);
+
   const onForward = useCallback(() => {
     if (!decryptedMail) return;
     const openComposeDialogData = {
@@ -114,15 +128,13 @@ export const usePreviewMailActions = ({
     });
   }, [decryptedMail, openDialog]);
 
-  const noop = useCallback(() => {}, []);
-
   return {
     onMarkAsRead,
     onMarkAsUnread,
     onTrash,
     onMove,
     onReply,
-    onReplyAll: noop,
+    onReplyAll,
     onForward,
   };
 };

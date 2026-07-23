@@ -16,6 +16,7 @@ export type PersistedAttachmentInput = {
 type InitialComposeData = {
   draftId?: string;
   replyToEmailId?: string;
+  replyAll?: boolean;
   receivedAt?: string;
   subject: string;
   to: Recipient[];
@@ -55,12 +56,15 @@ export const useInitialComposeState = (compose: ComposePayload | undefined): Ini
   return useMemo(() => {
     if (!compose) return { mode: 'new', data: EMPTY_DATA };
     switch (compose.mode) {
-      case 'reply': {
-        const reply = formatEmailToReply(compose.sourceMail);
+      case 'reply':
+      case 'replyAll': {
+        const replyAll = compose.mode === 'replyAll';
+        const reply = formatEmailToReply(compose.sourceMail, replyAll);
         return {
           mode: compose.mode,
           data: {
             replyToEmailId: reply.replyToEmailId,
+            replyAll,
             subject: reply.subject ?? '',
             to: withIds(reply.to),
             cc: withIds(reply.cc),
@@ -69,11 +73,9 @@ export const useInitialComposeState = (compose: ComposePayload | undefined): Ini
           },
         };
       }
-      case 'replyAll':
       case 'forward': {
         const forward = formatEmailToForward(compose.sourceMail, translate);
-        const inheritedAttachments =
-          compose.mode === 'forward' ? extractInheritedAttachments(compose.sourceMail) : undefined;
+        const inheritedAttachments = extractInheritedAttachments(compose.sourceMail);
 
         return {
           mode: compose.mode,

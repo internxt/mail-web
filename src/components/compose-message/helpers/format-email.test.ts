@@ -1,24 +1,54 @@
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { formatEmailToForward, formatEmailToReply } from './format-email';
 import { getMockedMail } from '@/test-utils/fixtures';
+import { MailKeysService } from '@/services/mail-keys';
 
 const translations: Record<string, string> = { 'mail.forward.prefix': 'Fwd:' };
 const translate = ((key: string) => translations[key] ?? key) as unknown as Parameters<typeof formatEmailToForward>[1];
 
+const SELF = 'me@inxt.me';
+
 describe('Formatting an email as a reply draft', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.spyOn(MailKeysService.instance, 'getCurrentAddress').mockReturnValue(SELF);
   });
 
   test('When replying to a message, then the original sender becomes the only recipient of the draft', async () => {
     const original = getMockedMail({
       from: [{ name: 'Alice', email: 'alice@inxt.me' }],
+      replyTo: [],
       to: [{ name: 'Bob', email: 'bob@inxt.me' }],
     });
 
     const reply = formatEmailToReply(original);
 
     expect(reply.to).toEqual([{ name: 'Alice', email: 'alice@inxt.me' }]);
+  });
+
+  test('When the original has a Reply-To, then it wins over From as the recipient', async () => {
+    const original = getMockedMail({
+      from: [{ email: 'alice@inxt.me' }],
+      replyTo: [{ email: 'reply-here@inxt.me' }],
+    });
+
+    const reply = formatEmailToReply(original);
+
+    expect(reply.to).toEqual([{ email: 'reply-here@inxt.me' }]);
+  });
+
+  test('When replying to all, then the other participants are cc’d, excluding self', async () => {
+    const original = getMockedMail({
+      from: [{ email: 'alice@inxt.me' }],
+      replyTo: [],
+      to: [{ email: SELF }, { email: 'bob@inxt.me' }],
+      cc: [{ email: 'carol@inxt.me' }],
+    });
+
+    const reply = formatEmailToReply(original, true);
+
+    expect(reply.to).toEqual([{ email: 'alice@inxt.me' }]);
+    expect(reply.cc).toEqual([{ email: 'bob@inxt.me' }, { email: 'carol@inxt.me' }]);
   });
 
   test('When replying to a message, then the subject is prefixed with "Re:" to mark the conversation', async () => {
@@ -53,20 +83,21 @@ describe('Formatting an email as a reply draft', () => {
     expect(reply.replyToEmailId).toBe('mail-99');
   });
 
-  test('When replying, then the original cc and bcc fields are kept in the draft', async () => {
+  test('When replying (not to all), then no participants are cc’d and the original bcc is kept', async () => {
     const original = getMockedMail({
+      replyTo: [],
       cc: [{ email: 'cc@inxt.me' }],
       bcc: [{ email: 'bcc@inxt.me' }],
     });
 
     const reply = formatEmailToReply(original);
 
-    expect(reply.cc).toEqual([{ email: 'cc@inxt.me' }]);
+    expect(reply.cc).toEqual([]);
     expect(reply.bcc).toEqual([{ email: 'bcc@inxt.me' }]);
   });
 
   test('When the original message had no cc or bcc, then the draft has empty lists for those fields', async () => {
-    const original = getMockedMail({ cc: undefined, bcc: undefined });
+    const original = getMockedMail({ replyTo: [], cc: undefined, bcc: undefined });
 
     const reply = formatEmailToReply(original);
 

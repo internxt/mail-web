@@ -10,7 +10,7 @@ import {
   type EmailAddressRule,
 } from './emailAddressRules';
 
-const DEFAULT_DEBOUNCE_MS = 300;
+const DEFAULT_DEBOUNCE_MS = 500;
 
 interface AvailabilityCheck {
   value: string;

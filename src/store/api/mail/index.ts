@@ -280,6 +280,7 @@ export const mailApi = api.injectEndpoints({
           dispatch,
         });
       },
+      invalidatesTags: () => [{ type: 'ListFolder', id: 'trash' }],
     }),
     getActiveDomains: builder.query<EmailDomainsResponse, void>({
       async queryFn(): Promise<{ data: EmailDomainsResponse } | { error: FetchActiveDomainsError }> {

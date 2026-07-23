@@ -20,40 +20,61 @@ describe('Crypto Service', () => {
   });
 
   describe('Convert to hash', () => {
-    test('When a salt is provided, then it should produce a deterministic hash', () => {
-      const salt = 'abcdef1234567890abcdef1234567890';
+    // PBKDF2 runs 10000 iterations (matching production login hashing), which is
+    // slow in jsdom under parallel workers. The extra timeout covers that cost;
+    // the iteration count must not be lowered, the backend expects this hash.
+    const PASS_TO_HASH_TIMEOUT_MS = 20000;
 
-      const result = CryptoService.instance.passToHash({ password: 'myPassword', salt });
+    test(
+      'When a salt is provided, then it should produce a deterministic hash',
+      () => {
+        const salt = 'abcdef1234567890abcdef1234567890';
 
-      expect(result.salt).toStrictEqual(salt);
-      expect(result.hash).toBeTruthy();
-      expect(result.hash.length).toBeGreaterThan(0);
-    });
+        const result = CryptoService.instance.passToHash({ password: 'myPassword', salt });
 
-    test('When the same password and salt are used, then the hash should be identical', () => {
-      const salt = 'abcdef1234567890abcdef1234567890';
+        expect(result.salt).toStrictEqual(salt);
+        expect(result.hash).toBeTruthy();
+        expect(result.hash.length).toBeGreaterThan(0);
+      },
+      PASS_TO_HASH_TIMEOUT_MS,
+    );
 
-      const first = CryptoService.instance.passToHash({ password: 'myPassword', salt });
-      const second = CryptoService.instance.passToHash({ password: 'myPassword', salt });
+    test(
+      'When the same password and salt are used, then the hash should be identical',
+      () => {
+        const salt = 'abcdef1234567890abcdef1234567890';
 
-      expect(first.hash).toStrictEqual(second.hash);
-    });
+        const first = CryptoService.instance.passToHash({ password: 'myPassword', salt });
+        const second = CryptoService.instance.passToHash({ password: 'myPassword', salt });
 
-    test('When no salt is provided, then a random salt should be generated', () => {
-      const result = CryptoService.instance.passToHash({ password: 'myPassword' });
+        expect(first.hash).toStrictEqual(second.hash);
+      },
+      PASS_TO_HASH_TIMEOUT_MS,
+    );
 
-      expect(result.salt).toBeTruthy();
-      expect(result.hash).toBeTruthy();
-    });
+    test(
+      'When no salt is provided, then a random salt should be generated',
+      () => {
+        const result = CryptoService.instance.passToHash({ password: 'myPassword' });
 
-    test('When different passwords are used with the same salt, then the hashes should differ', () => {
-      const salt = 'abcdef1234567890abcdef1234567890';
+        expect(result.salt).toBeTruthy();
+        expect(result.hash).toBeTruthy();
+      },
+      PASS_TO_HASH_TIMEOUT_MS,
+    );
 
-      const first = CryptoService.instance.passToHash({ password: 'password1', salt });
-      const second = CryptoService.instance.passToHash({ password: 'password2', salt });
+    test(
+      'When different passwords are used with the same salt, then the hashes should differ',
+      () => {
+        const salt = 'abcdef1234567890abcdef1234567890';
 
-      expect(first.hash).not.toBe(second.hash);
-    });
+        const first = CryptoService.instance.passToHash({ password: 'password1', salt });
+        const second = CryptoService.instance.passToHash({ password: 'password2', salt });
+
+        expect(first.hash).not.toBe(second.hash);
+      },
+      PASS_TO_HASH_TIMEOUT_MS,
+    );
   });
 
   describe('Get Salt', () => {

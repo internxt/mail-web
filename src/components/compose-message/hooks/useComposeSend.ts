@@ -5,6 +5,7 @@ import type {
   EmailAddress,
   EncryptionBlock,
   RecipientKey,
+  ReplyEmailRequest,
   SendEmailRequest,
 } from '@internxt/sdk/dist/mail/types';
 import {
@@ -39,6 +40,7 @@ interface UseComposeSendParams {
   attachments: AttachmentTask[];
   attachmentsSessionKey: Uint8Array;
   isReply?: boolean;
+  isReplyAll?: boolean;
   inReplyTo?: string;
   resolveDraftId?: () => Promise<string | null>;
   onSent: () => void;
@@ -62,6 +64,7 @@ export const useComposeSend = ({
   attachments,
   attachmentsSessionKey,
   isReply = false,
+  isReplyAll = false,
   inReplyTo,
   resolveDraftId,
   onSent,
@@ -218,14 +221,9 @@ export const useComposeSend = ({
     }
   };
 
-  const dispatchEmail = async (payload: SendEmailRequest) => {
-    if (isReply) {
-      if (!inReplyTo) throw new ComposeSendError('errors.mail.replyFailed');
-      await replyEmail({ messageId: inReplyTo, payload }).unwrap();
-      return;
-    }
-
-    await sendEmail(payload).unwrap();
+  const dispatchReply = async (payload: ReplyEmailRequest) => {
+    if (!inReplyTo) throw new ComposeSendError('errors.mail.replyFailed');
+    await replyEmail({ messageId: inReplyTo, payload }).unwrap();
   };
 
   const send = async () => {
@@ -237,18 +235,33 @@ export const useComposeSend = ({
       const deliveryMode = (encryptionState === 'internxt' ? 'INTERNXT' : 'EXTERNAL') as DeliveryMode;
       const draftId = (await resolveDraftId?.()) ?? undefined;
 
-      const payload: SendEmailRequest = {
-        to: toRecipients.map(toEmailAddress),
-        cc: ccRecipients.length ? ccRecipients.map(toEmailAddress) : undefined,
-        bcc: bccRecipients.length ? bccRecipients.map(toEmailAddress) : undefined,
-        subject,
-        attachments: attachmentsToSend,
-        encryption,
-        deliveryMode,
-        draftId,
-      };
+      const cc = ccRecipients.length ? ccRecipients.map(toEmailAddress) : undefined;
+      const bcc = bccRecipients.length ? bccRecipients.map(toEmailAddress) : undefined;
+      const shouldReply = isReply || isReplyAll;
 
-      await dispatchEmail(payload);
+      if (shouldReply) {
+        await dispatchReply({
+          replyAll: isReplyAll,
+          cc,
+          bcc,
+          subject,
+          attachments: attachmentsToSend,
+          encryption,
+          deliveryMode,
+          draftId,
+        });
+      } else {
+        await sendEmail({
+          to: toRecipients.map(toEmailAddress),
+          cc,
+          bcc,
+          subject,
+          attachments: attachmentsToSend,
+          encryption,
+          deliveryMode,
+          draftId,
+        }).unwrap();
+      }
 
       onSent();
     } catch (error) {
