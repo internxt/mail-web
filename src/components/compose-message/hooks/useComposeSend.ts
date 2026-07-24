@@ -41,7 +41,6 @@ interface UseComposeSendParams {
   attachmentsSessionKey: Uint8Array;
   isReply?: boolean;
   isReplyAll?: boolean;
-  /** The `to` the reply was pre-filled with, to detect whether the user edited it. */
   initialTo?: Recipient[];
   inReplyTo?: string;
   resolveDraftId?: () => Promise<string | null>;
@@ -249,8 +248,6 @@ export const useComposeSend = ({
       const shouldReply = isReply || isReplyAll;
 
       if (shouldReply) {
-        // The backend derives `to` from the original message; only send it when
-        // the user edited the pre-filled recipient, so it overrides that derivation.
         const to = sameRecipients(toRecipients, initialTo) ? undefined : toRecipients.map(toEmailAddress);
 
         await dispatchReply({
