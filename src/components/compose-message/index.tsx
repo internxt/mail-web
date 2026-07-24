@@ -203,6 +203,7 @@ export const ComposeMessageDialog = () => {
     toRecipients,
     isReply: isReplyMode,
     isReplyAll: isReplyAllMode,
+    initialTo: item.to,
     inReplyTo: inReplyItemId,
     resolveDraftId,
     onSent,

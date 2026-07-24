@@ -41,6 +41,7 @@ interface UseComposeSendParams {
   attachmentsSessionKey: Uint8Array;
   isReply?: boolean;
   isReplyAll?: boolean;
+  initialTo?: Recipient[];
   inReplyTo?: string;
   resolveDraftId?: () => Promise<string | null>;
   onSent: () => void;
@@ -48,6 +49,23 @@ interface UseComposeSendParams {
   markInheritedResolved: (id: string, blobId: string) => void;
   markInheritedFailed: (id: string) => void;
 }
+
+const countByEmail = (recipients: Recipient[]): Map<string, number> => {
+  const counts = new Map<string, number>();
+  for (const r of recipients) {
+    const key = r.email.toLowerCase();
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return counts;
+};
+
+const sameRecipients = (current: Recipient[], initial: Recipient[]): boolean => {
+  if (current.length !== initial.length) return false;
+  const currentCounts = countByEmail(current);
+  const initialCounts = countByEmail(initial);
+  if (currentCounts.size !== initialCounts.size) return false;
+  return [...currentCounts].every(([email, count]) => initialCounts.get(email) === count);
+};
 
 interface UseComposeSendResult {
   encryptionState: EncryptionState;
@@ -65,6 +83,7 @@ export const useComposeSend = ({
   attachmentsSessionKey,
   isReply = false,
   isReplyAll = false,
+  initialTo = [],
   inReplyTo,
   resolveDraftId,
   onSent,
@@ -240,8 +259,11 @@ export const useComposeSend = ({
       const shouldReply = isReply || isReplyAll;
 
       if (shouldReply) {
+        const to = sameRecipients(toRecipients, initialTo) ? undefined : toRecipients.map(toEmailAddress);
+
         await dispatchReply({
           replyAll: isReplyAll,
+          to,
           cc,
           bcc,
           subject,

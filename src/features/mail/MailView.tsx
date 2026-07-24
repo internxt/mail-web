@@ -67,6 +67,7 @@ const MailView = ({ folder }: MailViewProps) => {
     selectUnread,
     deleteEmails: (emailIds) => deleteEmails({ emailIds, sourceMailbox: folder }).unwrap(),
     moveToFolder: (args) => moveToFolder(args).unwrap(),
+    openDialog,
   });
   const previewActions = usePreviewMailActions({
     activeMailId,

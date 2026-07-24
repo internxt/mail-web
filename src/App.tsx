@@ -1,13 +1,12 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { routes } from './routes';
 import { NavigationService } from './services/navigation';
-import { Activity, Suspense, useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from './store/hooks';
 import { initializeUserThunk } from './store/slices/user/thunks';
 import { Toaster } from 'react-hot-toast';
-import { ActionDialog, useActionDialog } from './context/dialog-manager';
-import { ComposeMessageDialog } from './components/compose-message';
 import { AppLoader } from './components/AppLoader';
+import { DialogsRoot } from './context/dialog-manager/DialogsRoot';
 
 const router = createBrowserRouter(routes);
 const navigation = router.navigate;
@@ -16,8 +15,6 @@ NavigationService.instance.init(navigation);
 
 function App() {
   const dispatch = useAppDispatch();
-  const { isDialogOpen } = useActionDialog();
-  const isComposeMessageDialogOpen = isDialogOpen(ActionDialog.ComposeMessage);
   const { isAuthenticated, isInitialized } = useAppSelector((state) => state.user);
 
   const initializeUser = async () => {
@@ -43,9 +40,7 @@ function App() {
       <Suspense fallback={<AppLoader className="h-screen w-screen" />}>
         <RouterProvider router={router} />
       </Suspense>
-      <Activity mode={isComposeMessageDialogOpen ? 'visible' : 'hidden'}>
-        <ComposeMessageDialog />
-      </Activity>
+      <DialogsRoot />
     </>
   );
 }

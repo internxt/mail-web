@@ -1,9 +1,11 @@
+import { ActionDialog } from '@/context/dialog-manager';
+import type { OpenDialog } from '@/context/dialog-manager/types';
 import { useTranslationContext } from '@/i18n';
 import type { TranslationKey } from '@/i18n/types';
 import notificationsService, { ToastType } from '@/services/notifications';
 import type { FolderType } from '@/types/mail';
 import { type MenuItemType } from '@internxt/ui';
-import { ArchiveIcon, TrashIcon, TrayIcon, WarningOctagonIcon } from '@phosphor-icons/react';
+import { TrashIcon, TrayIcon, WarningOctagonIcon } from '@phosphor-icons/react';
 import { useCallback, useMemo } from 'react';
 
 type SourceGroup = { emailIds: string[]; sourceMailbox: FolderType };
@@ -21,6 +23,7 @@ interface UseListActionContextParams {
     sourceMailbox: FolderType;
     targetMailbox: FolderType;
   }) => Promise<void | null>;
+  openDialog: OpenDialog;
 }
 
 interface UseListActionContextResult {
@@ -29,17 +32,15 @@ interface UseListActionContextResult {
 }
 
 const MOVE_TARGETS_BY_SOURCE: Record<FolderType, MoveTarget[]> = {
-  inbox: ['archive', 'spam', 'trash'],
-  spam: ['inbox', 'archive', 'trash'],
+  inbox: ['spam', 'trash'],
+  spam: ['inbox', 'trash'],
   drafts: ['trash'],
-  archive: ['inbox', 'spam', 'trash'],
   sent: [],
   trash: [],
 };
 
 const TARGET_META: Record<MoveTarget, { label: TranslationKey; folderName: TranslationKey; icon: typeof TrayIcon }> = {
   inbox: { label: 'actions.moveAllToInbox', folderName: 'mail.inbox', icon: TrayIcon },
-  archive: { label: 'actions.moveAllToArchive', folderName: 'mail.archive', icon: ArchiveIcon },
   spam: { label: 'actions.moveAllToSpam', folderName: 'mail.spam', icon: WarningOctagonIcon },
   trash: { label: 'actions.moveAllToTrash', folderName: 'mail.trash', icon: TrashIcon },
 };
@@ -49,7 +50,15 @@ const NO_BULK_ACTIONS: MenuItemType<unknown>[] = [];
 export const useListActionContext = (
   folder: FolderType,
   selectedMails: string[],
-  { selectAll, selectNone, selectRead, selectUnread, deleteEmails, moveToFolder }: UseListActionContextParams,
+  {
+    selectAll,
+    selectNone,
+    selectRead,
+    selectUnread,
+    deleteEmails,
+    moveToFolder,
+    openDialog,
+  }: UseListActionContextParams,
 ): UseListActionContextResult => {
   const { translate } = useTranslationContext();
   const selectedCount = selectedMails.length;
@@ -102,26 +111,49 @@ export const useListActionContext = (
     [translate, moveToFolder],
   );
 
+  const confirmAndDeletePermanently = useCallback(
+    (ids: string[]) => {
+      openDialog(ActionDialog.ConfirmDeletePermanently, {
+        data: {
+          count: ids.length,
+          onConfirm: async () => {
+            try {
+              await deleteEmails(ids);
+            } catch {
+              notificationsService.show({ text: translate('errors.mail.trash'), type: ToastType.Error });
+            } finally {
+              selectNone();
+            }
+          },
+        },
+      });
+    },
+    [openDialog, deleteEmails, translate, selectNone],
+  );
+
   const performBulkMove = useCallback(
     async (target: MoveTarget) => {
+      const isTrashTarget = target === 'trash';
       const ids = [...selectedMails];
       if (ids.length === 0) return;
+
       const groups: SourceGroup[] = [{ emailIds: ids, sourceMailbox: folder }];
+
       try {
-        if (target === 'trash') {
+        if (isTrashTarget) {
           await deleteEmails(ids);
         } else {
           await moveToFolder({ emailIds: ids, sourceMailbox: folder, targetMailbox: target });
         }
         showMovedToast(groups, target);
       } catch {
-        const key = target === 'trash' ? 'errors.mail.trash' : 'errors.mail.move';
+        const key = isTrashTarget ? 'errors.mail.trash' : 'errors.mail.move';
         notificationsService.show({ text: translate(key), type: ToastType.Error });
       } finally {
         selectNone();
       }
     },
-    [selectedMails, folder, deleteEmails, moveToFolder, selectNone, showMovedToast],
+    [selectedMails, folder, deleteEmails, moveToFolder, selectNone, showMovedToast, translate],
   );
 
   const moveBulkActions = useMemo<MenuItemType<unknown>[]>(
@@ -138,19 +170,11 @@ export const useListActionContext = (
   const emptyTrashBulkAction = useMemo<MenuItemType<unknown>>(
     () => ({
       name: translate('actions.emptyTrash'),
-      action: async () => {
-        try {
-          await deleteEmails(selectedMails);
-        } catch {
-          notificationsService.show({ text: translate('errors.mail.trash'), type: ToastType.Error });
-        } finally {
-          selectNone();
-        }
-      },
+      action: () => confirmAndDeletePermanently([...selectedMails]),
       icon: TrashIcon,
       disabled: isSelectionEmpty,
     }),
-    [translate, deleteEmails, selectedMails, selectNone, isSelectionEmpty],
+    [translate, confirmAndDeletePermanently, selectedMails, isSelectionEmpty],
   );
 
   const emptyTrashBulkActions = useMemo(() => [emptyTrashBulkAction], [emptyTrashBulkAction]);
@@ -158,7 +182,6 @@ export const useListActionContext = (
   switch (folder) {
     case 'inbox':
     case 'spam':
-    case 'archive':
       return { listActionContext: inboxSelectionActions, bulkActionContext: moveBulkActions };
     case 'sent':
       return { listActionContext: baseSelectionActions, bulkActionContext: NO_BULK_ACTIONS };

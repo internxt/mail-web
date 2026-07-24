@@ -219,6 +219,15 @@
         "description": "Upgrade now to keep your files optimized and free up space."
       }
     },
+    "confirmDeletePermanently": {
+      "titleOne": "Delete email permanently?",
+      "titleMany": "Delete {{count}} emails permanently?",
+      "descriptionOne": "This email will be permanently deleted and cannot be recovered.",
+      "descriptionMany": "These {{count}} emails will be permanently deleted and cannot be recovered.",
+      "cancel": "Cancel",
+      "confirm": "Delete permanently",
+      "close": "Close dialog"
+    },
     "composeMessageDialog": {
       "title": "New Message",
       "to": "To",

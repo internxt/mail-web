@@ -1,6 +1,6 @@
 import type { EmailResponse } from '@internxt/sdk/dist/mail/types';
 
-export type FolderType = 'inbox' | 'sent' | 'drafts' | 'spam' | 'trash' | 'archive';
+export type FolderType = 'inbox' | 'sent' | 'drafts' | 'spam' | 'trash';
 
 export type DecryptedMail = EmailResponse & {
   isEncrypted?: boolean;

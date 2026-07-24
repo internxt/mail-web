@@ -221,6 +221,15 @@
         "description": "Mejora ahora para mantener tus archivos optimizados y liberar espacio."
       }
     },
+    "confirmDeletePermanently": {
+      "titleOne": "¿Eliminar correo permanentemente?",
+      "titleMany": "¿Eliminar {{count}} correos permanentemente?",
+      "descriptionOne": "Este correo se eliminará permanentemente y no se podrá recuperar.",
+      "descriptionMany": "Estos {{count}} correos se eliminarán permanentemente y no se podrán recuperar.",
+      "cancel": "Cancelar",
+      "confirm": "Eliminar permanentemente",
+      "close": "Cerrar diálogo"
+    },
     "composeMessageDialog": {
       "title": "Nuevo mensaje",
       "to": "Para",

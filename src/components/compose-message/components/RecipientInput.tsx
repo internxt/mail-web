@@ -1,7 +1,6 @@
 import { useState, type KeyboardEvent } from 'react';
 import type { Recipient } from '../types';
 import UserChip from '@/components/user-chip';
-import { DEFAULT_USER_NAME } from '@/constants';
 import isValidEmail from '@internxt/lib/dist/auth/isValidEmail';
 
 interface RecipientInputProps {
@@ -67,27 +66,34 @@ export const RecipientInput = ({
   return (
     <div className="flex flex-row gap-2 items-start">
       <p className="font-medium max-w-16 w-full text-gray-100 py-2">{label}</p>
-      <div className="flex-1 flex items-center gap-1 flex-wrap rounded-lg border border-gray-10 bg-surface px-3 py-1.5 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
-        {recipients.map((recipient) => (
-          <UserChip
-            key={recipient.id}
-            email={recipient.email}
-            name={recipient?.name ?? DEFAULT_USER_NAME}
-            avatar={recipient.avatar}
-            onRemove={() => onRemoveUser(recipient.id)}
-          />
-        ))}
-        {!readOnly && (
-          <input
-            type="email"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onBlur={handleBlur}
-            disabled={disabled}
-            className={`flex-1 min-w-30 bg-transparent text-sm text-gray-100 placeholder:text-gray-40 focus:outline-none py-0.5 ${disabled ? 'cursor-not-allowed' : ''}`}
-          />
-        )}
+      <div className="flex-1 min-w-0 flex items-center gap-3 rounded-lg border border-gray-10 bg-surface px-3 py-1.5 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
+        <div
+          className="flex items-center gap-1 overflow-x-auto flex-1 min-w-0 py-0.5 [&::-webkit-scrollbar]:hidden"
+          style={{ scrollbarWidth: 'none' }}
+        >
+          {recipients.map((recipient) => (
+            <div key={recipient.id} className="shrink-0">
+              <UserChip
+                email={recipient.email}
+                name={(recipient.name ?? '').trim() || recipient.email}
+                avatar={recipient.avatar}
+                onRemove={() => onRemoveUser(recipient.id)}
+              />
+            </div>
+          ))}
+          {!readOnly && (
+            <input
+              type="email"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onBlur={handleBlur}
+              disabled={disabled}
+              aria-label={label}
+              className={`flex-1 min-w-30 bg-transparent text-sm text-gray-100 placeholder:text-gray-40 focus:outline-none py-0.5 ${disabled ? 'cursor-not-allowed' : ''}`}
+            />
+          )}
+        </div>
         {showCcBcc && (showCcButton || showBccButton) && (
           <div className="flex items-center gap-1 ml-auto shrink-0">
             {showCcButton && (

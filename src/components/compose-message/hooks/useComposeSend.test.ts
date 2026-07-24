@@ -375,6 +375,7 @@ describe('useComposeSend', () => {
     test('When composing a reply, then it dispatches to the reply endpoint with the replied-to message id and not the send endpoint', async () => {
       const { result, onSent } = renderSend({
         toRecipients: [recipient('bob@inxt.me')],
+        initialTo: [recipient('bob@inxt.me')],
         isReply: true,
         inReplyTo: 'msg-99',
       });
@@ -392,10 +393,56 @@ describe('useComposeSend', () => {
           }),
         }),
       );
-      const replyPayload = mocks.replyEmail.mock.calls[0][0].payload;
-      expect(replyPayload).not.toHaveProperty('to');
       expect(mocks.sendEmail).not.toHaveBeenCalled();
       expect(onSent).toHaveBeenCalled();
+    });
+
+    test('When the pre-filled recipient is left unchanged, then the reply payload omits "to" so the backend derives it', async () => {
+      const { result } = renderSend({
+        toRecipients: [recipient('bob@inxt.me')],
+        initialTo: [recipient('bob@inxt.me')],
+        isReply: true,
+        inReplyTo: 'msg-99',
+      });
+
+      await act(async () => {
+        await result.current.send();
+      });
+
+      const replyPayload = mocks.replyEmail.mock.calls[0][0].payload;
+      expect(replyPayload.to).toBeUndefined();
+    });
+
+    test('When the user edits the pre-filled recipient, then the reply payload includes the edited "to"', async () => {
+      const { result } = renderSend({
+        toRecipients: [recipient('carol@inxt.me')],
+        initialTo: [recipient('bob@inxt.me')],
+        isReply: true,
+        inReplyTo: 'msg-99',
+      });
+
+      await act(async () => {
+        await result.current.send();
+      });
+
+      const replyPayload = mocks.replyEmail.mock.calls[0][0].payload;
+      expect(replyPayload.to).toEqual([{ email: 'carol@inxt.me' }]);
+    });
+
+    test('When the user adds an extra recipient on top of the pre-filled one, then the reply payload includes all of them', async () => {
+      const { result } = renderSend({
+        toRecipients: [recipient('bob@inxt.me'), recipient('carol@inxt.me')],
+        initialTo: [recipient('bob@inxt.me')],
+        isReply: true,
+        inReplyTo: 'msg-99',
+      });
+
+      await act(async () => {
+        await result.current.send();
+      });
+
+      const replyPayload = mocks.replyEmail.mock.calls[0][0].payload;
+      expect(replyPayload.to).toEqual([{ email: 'bob@inxt.me' }, { email: 'carol@inxt.me' }]);
     });
 
     test('When composing a reply-all, then the reply endpoint receives replyAll: true', async () => {
