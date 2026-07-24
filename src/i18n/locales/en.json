@@ -225,7 +225,8 @@
       "descriptionOne": "This email will be permanently deleted and cannot be recovered.",
       "descriptionMany": "These {{count}} emails will be permanently deleted and cannot be recovered.",
       "cancel": "Cancel",
-      "confirm": "Delete permanently"
+      "confirm": "Delete permanently",
+      "close": "Close dialog"
     },
     "composeMessageDialog": {
       "title": "New Message",

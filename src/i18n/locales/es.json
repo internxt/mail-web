@@ -227,7 +227,8 @@
       "descriptionOne": "Este correo se eliminará permanentemente y no se podrá recuperar.",
       "descriptionMany": "Estos {{count}} correos se eliminarán permanentemente y no se podrán recuperar.",
       "cancel": "Cancelar",
-      "confirm": "Eliminar permanentemente"
+      "confirm": "Eliminar permanentemente",
+      "close": "Cerrar diálogo"
     },
     "composeMessageDialog": {
       "title": "Nuevo mensaje",

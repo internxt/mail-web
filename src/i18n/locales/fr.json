@@ -227,7 +227,8 @@
       "descriptionOne": "Cet e-mail sera définitivement supprimé et ne pourra pas être récupéré.",
       "descriptionMany": "Ces {{count}} e-mails seront définitivement supprimés et ne pourront pas être récupérés.",
       "cancel": "Annuler",
-      "confirm": "Supprimer définitivement"
+      "confirm": "Supprimer définitivement",
+      "close": "Fermer la boîte de dialogue"
     },
     "composeMessageDialog": {
       "title": "Nouveau message",

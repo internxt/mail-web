@@ -75,7 +75,7 @@ export const RecipientInput = ({
             <div key={recipient.id} className="shrink-0">
               <UserChip
                 email={recipient.email}
-                name={recipient?.name ?? recipient.email}
+                name={(recipient.name ?? '').trim() || recipient.email}
                 avatar={recipient.avatar}
                 onRemove={() => onRemoveUser(recipient.id)}
               />
@@ -89,6 +89,7 @@ export const RecipientInput = ({
               onKeyDown={handleKeyDown}
               onBlur={handleBlur}
               disabled={disabled}
+              aria-label={label}
               className={`flex-1 min-w-30 bg-transparent text-sm text-gray-100 placeholder:text-gray-40 focus:outline-none py-0.5 ${disabled ? 'cursor-not-allowed' : ''}`}
             />
           )}

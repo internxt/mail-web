@@ -47,7 +47,7 @@ export const ConfirmDeleteDialog = () => {
         className="absolute inset-0 bg-gray-100/50 transition-opacity duration-150 dark:bg-black/75"
         onClick={onClose}
         data-testid="confirm-delete-dialog-overlay"
-        aria-label="Close dialog"
+        aria-label={translate('modals.confirmDeletePermanently.close')}
       ></button>
 
       <div

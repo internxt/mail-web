@@ -227,7 +227,8 @@
       "descriptionOne": "Questa email verrà eliminata definitivamente e non potrà essere recuperata.",
       "descriptionMany": "Queste {{count}} email verranno eliminate definitivamente e non potranno essere recuperate.",
       "cancel": "Annulla",
-      "confirm": "Elimina definitivamente"
+      "confirm": "Elimina definitivamente",
+      "close": "Chiudi finestra"
     },
     "composeMessageDialog": {
       "title": "Nuovo messaggio",

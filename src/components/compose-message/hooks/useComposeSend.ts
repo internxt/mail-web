@@ -50,10 +50,21 @@ interface UseComposeSendParams {
   markInheritedFailed: (id: string) => void;
 }
 
-const sameRecipients = (a: Recipient[], b: Recipient[]): boolean => {
-  if (a.length !== b.length) return false;
-  const bEmails = new Set(b.map((r) => r.email.toLowerCase()));
-  return a.every((r) => bEmails.has(r.email.toLowerCase()));
+const countByEmail = (recipients: Recipient[]): Map<string, number> => {
+  const counts = new Map<string, number>();
+  for (const r of recipients) {
+    const key = r.email.toLowerCase();
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return counts;
+};
+
+const sameRecipients = (current: Recipient[], initial: Recipient[]): boolean => {
+  if (current.length !== initial.length) return false;
+  const currentCounts = countByEmail(current);
+  const initialCounts = countByEmail(initial);
+  if (currentCounts.size !== initialCounts.size) return false;
+  return [...currentCounts].every(([email, count]) => initialCounts.get(email) === count);
 };
 
 interface UseComposeSendResult {
