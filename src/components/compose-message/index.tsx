@@ -263,6 +263,7 @@ export const ComposeMessageDialog = () => {
             ccButtonText={translate('modals.composeMessageDialog.cc')}
             bccButtonText={translate('modals.composeMessageDialog.bcc')}
             disabled={isSending}
+            readOnly={isReplyMode}
           />
           {showCc && (
             <RecipientInput

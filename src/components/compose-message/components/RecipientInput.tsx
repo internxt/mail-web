@@ -16,6 +16,7 @@ interface RecipientInputProps {
   ccButtonText?: string;
   bccButtonText?: string;
   disabled?: boolean;
+  readOnly?: boolean;
 }
 
 export const RecipientInput = ({
@@ -31,6 +32,7 @@ export const RecipientInput = ({
   ccButtonText,
   bccButtonText,
   disabled,
+  readOnly = false,
 }: RecipientInputProps) => {
   const [inputValue, setInputValue] = useState('');
 
@@ -56,6 +58,8 @@ export const RecipientInput = ({
   };
 
   const onRemoveUser = (recipientId: string) => {
+    if (readOnly) return;
+
     onRemoveRecipient(recipientId);
   };
 
@@ -77,15 +81,17 @@ export const RecipientInput = ({
               />
             </div>
           ))}
-          <input
-            type="email"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onBlur={handleBlur}
-            disabled={disabled}
-            className={`flex-1 min-w-30 bg-transparent text-sm text-gray-100 placeholder:text-gray-40 focus:outline-none py-0.5 ${disabled ? 'cursor-not-allowed' : ''}`}
-          />
+          {!readOnly && (
+            <input
+              type="email"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onBlur={handleBlur}
+              disabled={disabled}
+              className={`flex-1 min-w-30 bg-transparent text-sm text-gray-100 placeholder:text-gray-40 focus:outline-none py-0.5 ${disabled ? 'cursor-not-allowed' : ''}`}
+            />
+          )}
         </div>
         {showCcBcc && (showCcButton || showBccButton) && (
           <div className="flex items-center gap-1 ml-auto shrink-0">
