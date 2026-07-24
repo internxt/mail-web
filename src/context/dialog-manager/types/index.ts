@@ -1,5 +1,6 @@
 export enum ActionDialog {
   ComposeMessage = 'compose-message',
+  ConfirmDeletePermanently = 'confirm-delete-permanently',
 }
 
 export interface ActionDialogState {

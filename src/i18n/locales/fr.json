@@ -221,6 +221,14 @@
         "description": "Mettez à niveau pour optimiser vos fichiers et libérer de l'espace."
       }
     },
+    "confirmDeletePermanently": {
+      "titleOne": "Supprimer l'e-mail définitivement ?",
+      "titleMany": "Supprimer {{count}} e-mails définitivement ?",
+      "descriptionOne": "Cet e-mail sera définitivement supprimé et ne pourra pas être récupéré.",
+      "descriptionMany": "Ces {{count}} e-mails seront définitivement supprimés et ne pourront pas être récupérés.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer définitivement"
+    },
     "composeMessageDialog": {
       "title": "Nouveau message",
       "to": "À",

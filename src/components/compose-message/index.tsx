@@ -203,6 +203,7 @@ export const ComposeMessageDialog = () => {
     toRecipients,
     isReply: isReplyMode,
     isReplyAll: isReplyAllMode,
+    initialTo: item.to,
     inReplyTo: inReplyItemId,
     resolveDraftId,
     onSent,
@@ -262,7 +263,6 @@ export const ComposeMessageDialog = () => {
             ccButtonText={translate('modals.composeMessageDialog.cc')}
             bccButtonText={translate('modals.composeMessageDialog.bcc')}
             disabled={isSending}
-            readOnly={isReplyMode}
           />
           {showCc && (
             <RecipientInput

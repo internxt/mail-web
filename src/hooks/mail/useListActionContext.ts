@@ -1,3 +1,5 @@
+import { ActionDialog } from '@/context/dialog-manager';
+import type { OpenDialog } from '@/context/dialog-manager/types';
 import { useTranslationContext } from '@/i18n';
 import type { TranslationKey } from '@/i18n/types';
 import notificationsService, { ToastType } from '@/services/notifications';
@@ -21,6 +23,7 @@ interface UseListActionContextParams {
     sourceMailbox: FolderType;
     targetMailbox: FolderType;
   }) => Promise<void | null>;
+  openDialog: OpenDialog;
 }
 
 interface UseListActionContextResult {
@@ -47,7 +50,15 @@ const NO_BULK_ACTIONS: MenuItemType<unknown>[] = [];
 export const useListActionContext = (
   folder: FolderType,
   selectedMails: string[],
-  { selectAll, selectNone, selectRead, selectUnread, deleteEmails, moveToFolder }: UseListActionContextParams,
+  {
+    selectAll,
+    selectNone,
+    selectRead,
+    selectUnread,
+    deleteEmails,
+    moveToFolder,
+    openDialog,
+  }: UseListActionContextParams,
 ): UseListActionContextResult => {
   const { translate } = useTranslationContext();
   const selectedCount = selectedMails.length;
@@ -100,26 +111,49 @@ export const useListActionContext = (
     [translate, moveToFolder],
   );
 
+  const confirmAndDeletePermanently = useCallback(
+    (ids: string[]) => {
+      openDialog(ActionDialog.ConfirmDeletePermanently, {
+        data: {
+          count: ids.length,
+          onConfirm: async () => {
+            try {
+              await deleteEmails(ids);
+            } catch {
+              notificationsService.show({ text: translate('errors.mail.trash'), type: ToastType.Error });
+            } finally {
+              selectNone();
+            }
+          },
+        },
+      });
+    },
+    [openDialog, deleteEmails, translate, selectNone],
+  );
+
   const performBulkMove = useCallback(
     async (target: MoveTarget) => {
+      const isTrashTarget = target === 'trash';
       const ids = [...selectedMails];
       if (ids.length === 0) return;
+
       const groups: SourceGroup[] = [{ emailIds: ids, sourceMailbox: folder }];
+
       try {
-        if (target === 'trash') {
+        if (isTrashTarget) {
           await deleteEmails(ids);
         } else {
           await moveToFolder({ emailIds: ids, sourceMailbox: folder, targetMailbox: target });
         }
         showMovedToast(groups, target);
       } catch {
-        const key = target === 'trash' ? 'errors.mail.trash' : 'errors.mail.move';
+        const key = isTrashTarget ? 'errors.mail.trash' : 'errors.mail.move';
         notificationsService.show({ text: translate(key), type: ToastType.Error });
       } finally {
         selectNone();
       }
     },
-    [selectedMails, folder, deleteEmails, moveToFolder, selectNone, showMovedToast],
+    [selectedMails, folder, deleteEmails, moveToFolder, selectNone, showMovedToast, translate],
   );
 
   const moveBulkActions = useMemo<MenuItemType<unknown>[]>(
@@ -136,19 +170,11 @@ export const useListActionContext = (
   const emptyTrashBulkAction = useMemo<MenuItemType<unknown>>(
     () => ({
       name: translate('actions.emptyTrash'),
-      action: async () => {
-        try {
-          await deleteEmails(selectedMails);
-        } catch {
-          notificationsService.show({ text: translate('errors.mail.trash'), type: ToastType.Error });
-        } finally {
-          selectNone();
-        }
-      },
+      action: () => confirmAndDeletePermanently([...selectedMails]),
       icon: TrashIcon,
       disabled: isSelectionEmpty,
     }),
-    [translate, deleteEmails, selectedMails, selectNone, isSelectionEmpty],
+    [translate, confirmAndDeletePermanently, selectedMails, isSelectionEmpty],
   );
 
   const emptyTrashBulkActions = useMemo(() => [emptyTrashBulkAction], [emptyTrashBulkAction]);

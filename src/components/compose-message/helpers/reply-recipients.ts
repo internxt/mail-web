@@ -5,8 +5,6 @@ export interface ReplyRecipients {
   cc: EmailAddress[];
 }
 
-const sameAddress = (a: string, b: string): boolean => a.toLowerCase() === b.toLowerCase();
-
 const dedupeAddresses = (addresses: EmailAddress[]): EmailAddress[] => {
   const seen = new Set<string>();
   const result: EmailAddress[] = [];
@@ -35,17 +33,13 @@ export const deriveReplyRecipients = (
   const replyTo = sourceMail.replyTo ?? [];
   const from = sourceMail.from ?? [];
 
-  const to = dedupeAddresses(replyTo.length ? replyTo : from).filter((a) => !sameAddress(a.email, self));
+  const to = dedupeAddresses(replyTo.length ? replyTo : from);
 
-  const toEmails = new Set(to.map((a) => a.email.toLowerCase()));
+  const excludeFromCc = new Set([self.toLowerCase(), ...to.map((a) => a.email.toLowerCase())]);
 
-  const replyAllCc = replyAll
-    ? [...(sourceMail.to ?? []), ...(sourceMail.cc ?? [])].filter(
-        (a) => !sameAddress(a.email, self) && !toEmails.has(a.email.toLowerCase()),
-      )
-    : [];
+  const replyAllCc = replyAll ? [...(sourceMail.to ?? []), ...(sourceMail.cc ?? [])] : [];
 
-  const cc = dedupeAddresses([...replyAllCc, ...extraCc]).filter((a) => !toEmails.has(a.email.toLowerCase()));
+  const cc = dedupeAddresses([...replyAllCc, ...extraCc]).filter((a) => !excludeFromCc.has(a.email.toLowerCase()));
 
   return { to, cc };
 };

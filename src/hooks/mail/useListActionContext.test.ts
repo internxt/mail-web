@@ -31,6 +31,7 @@ const makeParams = () => ({
   selectUnread: vi.fn(),
   deleteEmails: vi.fn().mockResolvedValue(null),
   moveToFolder: vi.fn().mockResolvedValue(null),
+  openDialog: vi.fn(),
 });
 
 const renderFor = (folder: FolderType, selectedMails: string[] = []) => {
@@ -216,6 +217,49 @@ describe('List actions - custom hook', () => {
       const bulk = getItems(result.current.bulkActionContext);
       expect(bulk).toHaveLength(1);
       expect(bulk[0].name).toBe('actions.emptyTrash');
+    });
+
+    test('When emptying trash, then the confirm dialog is opened', () => {
+      const ids = ['mail-1', 'mail-2'];
+      const { result, params } = renderFor('trash', ids);
+      const bulk = getItems(result.current.bulkActionContext);
+
+      findByName(bulk, 'actions.emptyTrash').action?.(undefined);
+
+      expect(params.openDialog).toHaveBeenCalledOnce();
+      expect(params.deleteEmails).not.toHaveBeenCalled();
+      const [key, config] = params.openDialog.mock.calls[0];
+      expect(key).toBe('confirm-delete-permanently');
+      expect(config.data.count).toBe(2);
+    });
+
+    test('When the confirmation dialog is confirmed, then it deletes the selected emails and clears the selection', async () => {
+      const ids = ['mail-1', 'mail-2'];
+      const { result, params } = renderFor('trash', ids);
+      const bulk = getItems(result.current.bulkActionContext);
+
+      findByName(bulk, 'actions.emptyTrash').action?.(undefined);
+      const { onConfirm } = params.openDialog.mock.calls[0][1].data;
+      await onConfirm();
+
+      expect(params.deleteEmails).toHaveBeenCalledWith(ids);
+      expect(params.selectNone).toHaveBeenCalledOnce();
+    });
+
+    test('When the permanent delete fails, then an error toast is shown and selection is cleared', async () => {
+      const ids = ['mail-1'];
+      const params = makeParams();
+      params.deleteEmails = vi.fn().mockRejectedValue(new Error('boom'));
+      const { result } = renderHook(() => useListActionContext('trash', ids, params));
+      const bulk = getItems(result.current.bulkActionContext);
+
+      findByName(bulk, 'actions.emptyTrash').action?.(undefined);
+      const { onConfirm } = params.openDialog.mock.calls[0][1].data;
+      await onConfirm();
+
+      expect(showMock).toHaveBeenCalledOnce();
+      expect(showMock.mock.calls[0][0]).toMatchObject({ text: 'errors.mail.trash', type: 'error' });
+      expect(params.selectNone).toHaveBeenCalledOnce();
     });
   });
 

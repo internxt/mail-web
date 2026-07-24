@@ -41,6 +41,8 @@ interface UseComposeSendParams {
   attachmentsSessionKey: Uint8Array;
   isReply?: boolean;
   isReplyAll?: boolean;
+  /** The `to` the reply was pre-filled with, to detect whether the user edited it. */
+  initialTo?: Recipient[];
   inReplyTo?: string;
   resolveDraftId?: () => Promise<string | null>;
   onSent: () => void;
@@ -48,6 +50,12 @@ interface UseComposeSendParams {
   markInheritedResolved: (id: string, blobId: string) => void;
   markInheritedFailed: (id: string) => void;
 }
+
+const sameRecipients = (a: Recipient[], b: Recipient[]): boolean => {
+  if (a.length !== b.length) return false;
+  const bEmails = new Set(b.map((r) => r.email.toLowerCase()));
+  return a.every((r) => bEmails.has(r.email.toLowerCase()));
+};
 
 interface UseComposeSendResult {
   encryptionState: EncryptionState;
@@ -65,6 +73,7 @@ export const useComposeSend = ({
   attachmentsSessionKey,
   isReply = false,
   isReplyAll = false,
+  initialTo = [],
   inReplyTo,
   resolveDraftId,
   onSent,
@@ -240,8 +249,13 @@ export const useComposeSend = ({
       const shouldReply = isReply || isReplyAll;
 
       if (shouldReply) {
+        // The backend derives `to` from the original message; only send it when
+        // the user edited the pre-filled recipient, so it overrides that derivation.
+        const to = sameRecipients(toRecipients, initialTo) ? undefined : toRecipients.map(toEmailAddress);
+
         await dispatchReply({
           replyAll: isReplyAll,
+          to,
           cc,
           bcc,
           subject,

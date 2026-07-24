@@ -64,15 +64,30 @@ export const usePreviewMailActions = ({
   const onMarkAsRead = useCallback(() => setReadStatus(true), [setReadStatus]);
   const onMarkAsUnread = useCallback(() => setReadStatus(false), [setReadStatus]);
 
-  const onTrash = useCallback(async () => {
+  const performTrash = useCallback(
+    async (emailId: string) => {
+      try {
+        await deleteEmails({ emailIds: [emailId], sourceMailbox: folder });
+        clearActiveMail();
+      } catch (error) {
+        notifyError('trash', error);
+      }
+    },
+    [folder, deleteEmails, clearActiveMail, notifyError],
+  );
+
+  const onTrash = useCallback(() => {
     if (!activeMailId) return;
-    try {
-      await deleteEmails({ emailIds: [activeMailId], sourceMailbox: folder });
-      clearActiveMail();
-    } catch (error) {
-      notifyError('trash', error);
+
+    if (folder === 'trash') {
+      openDialog(ActionDialog.ConfirmDeletePermanently, {
+        data: { count: 1, onConfirm: () => performTrash(activeMailId) },
+      });
+      return;
     }
-  }, [activeMailId, folder, deleteEmails, clearActiveMail, notifyError]);
+
+    void performTrash(activeMailId);
+  }, [activeMailId, folder, openDialog, performTrash]);
 
   const onMove = useCallback(
     async (targetMailbox: FolderType) => {
