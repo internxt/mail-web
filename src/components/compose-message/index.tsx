@@ -45,6 +45,7 @@ export const ComposeMessageDialog = () => {
   const composeDialogData = getComposeMessageDialogData(ActionDialog.ComposeMessage) as ComposePayload | undefined;
 
   const { data: item, mode } = useInitialComposeState(composeDialogData);
+  const isNewMode = mode === 'new';
   const isReplyMode = mode === 'reply';
   const isReplyAllMode = mode === 'replyAll';
   const isDraftMode = mode === 'draft';
@@ -81,7 +82,7 @@ export const ComposeMessageDialog = () => {
 
   useEffect(() => {
     if (!ALLOWED_MODES_TO_FILL_BODY.has(mode) || !editor || !item.htmlBody) return;
-    const content = isDraftMode ? item.htmlBody : `<p></p><p></p> ${item.htmlBody}`;
+    const content = isDraftMode ? item.htmlBody : '<p></p><p></p>' + item.htmlBody;
     editor.commands.setContent(content);
     editor.commands.focus('start');
   }, [editor, mode, item.htmlBody]);
@@ -97,9 +98,6 @@ export const ComposeMessageDialog = () => {
     addFiles: addAttachmentFiles,
     addInheritedAttachments,
     addPersistedAttachments,
-    markResolvingInherited,
-    markInheritedResolved,
-    markInheritedFailed,
     retry: retryAttachment,
     remove: removeAttachment,
     clear: clearAttachments,
@@ -150,7 +148,7 @@ export const ComposeMessageDialog = () => {
   const { saveDraft, resolveDraftId, handleDraftDiscard, isDiscarding, draftSavedAt, clearDraftRef } = useDraftMessage({
     existentDraftId: initialDraftId,
     draftReceivedAt: initialReceivedAtDraft,
-    isReply: isReplyMode,
+    isDraftActive: isNewMode || isDraftMode,
     attachments,
     toRecipients,
     ccRecipients,
@@ -207,9 +205,6 @@ export const ComposeMessageDialog = () => {
     inReplyTo: inReplyItemId,
     resolveDraftId,
     onSent,
-    markResolvingInherited,
-    markInheritedResolved,
-    markInheritedFailed,
   });
 
   const onFilesPicked = (e: ChangeEvent<HTMLInputElement>) => {

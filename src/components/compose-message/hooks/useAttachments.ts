@@ -6,6 +6,9 @@ import { bytesToString } from '@/utils/bytes-to-string';
 import { MAX_TOTAL_ATTACHMENT_BYTES_PER_MAIL } from '@/constants';
 import { ErrorService } from '@/services/error';
 import { UploadManager } from '@/services/upload-manager';
+import { MailEncryptionService } from '@/services/mail-encryption';
+import { NetworkService } from '@/services/network';
+import { MailKeysService } from '@/services/mail-keys';
 import type { PersistedAttachmentInput } from './useInitialComposeState';
 
 export type AttachmentStatus = 'pending' | 'uploading' | 'done' | 'error';
@@ -91,6 +94,38 @@ const useAttachments = (sessionKey: Uint8Array) => {
     [totalSize, translate, manager],
   );
 
+  const resolveInherited = useCallback(
+    async (item: InheritedAttachment) => {
+      setAttachments((prev) => prev.map((a) => (a.id === item.id ? { ...a, status: 'uploading' } : a)));
+      try {
+        const senderKeys = MailKeysService.instance.getCurrentKeys();
+        const senderAddress = MailKeysService.instance.getCurrentAddress();
+        if (!senderKeys || !senderAddress) throw new Error('Missing sender keys');
+
+        const originalSessionKey = await MailEncryptionService.instance.decryptAttachmentsSessionKey(
+          item.originalEnvelope,
+          senderKeys,
+          senderAddress,
+        );
+
+        const { blob } = await NetworkService.instance.download({
+          mailId: item.originalMailId,
+          blobId: item.originalBlobId,
+          name: item.name,
+          type: item.type,
+          attachmentsSessionKey: originalSessionKey,
+        });
+        const file = new File([blob], item.name, { type: item.type });
+        const { blobId } = await NetworkService.instance.upload(sessionKey, file);
+        setAttachments((prev) => prev.map((a) => (a.id === item.id ? { ...a, status: 'done', blobId } : a)));
+      } catch (error) {
+        console.error('Failed to re-encrypt inherited attachment', ErrorService.instance.castError(error));
+        setAttachments((prev) => prev.map((a) => (a.id === item.id ? { ...a, status: 'error' } : a)));
+      }
+    },
+    [sessionKey],
+  );
+
   const addInheritedAttachments = useCallback(
     (items: InheritedAttachmentInput[]) => {
       if (items.length === 0) return;
@@ -117,8 +152,9 @@ const useAttachments = (sessionKey: Uint8Array) => {
         originalEnvelope: item.originalEnvelope,
       }));
       setAttachments((prev) => [...prev, ...inherited]);
+      inherited.forEach((item) => void resolveInherited(item));
     },
-    [totalSize, translate],
+    [totalSize, translate, resolveInherited],
   );
 
   const addPersistedAttachments = useCallback(
@@ -149,18 +185,6 @@ const useAttachments = (sessionKey: Uint8Array) => {
     [totalSize, translate],
   );
 
-  const markResolvingInherited = useCallback((id: string) => {
-    setAttachments((prev) => prev.map((a) => (a.id === id ? { ...a, status: 'uploading' } : a)));
-  }, []);
-
-  const markInheritedResolved = useCallback((id: string, blobId: string) => {
-    setAttachments((prev) => prev.map((a) => (a.id === id ? { ...a, status: 'done', blobId } : a)));
-  }, []);
-
-  const markInheritedFailed = useCallback((id: string) => {
-    setAttachments((prev) => prev.map((a) => (a.id === id ? { ...a, status: 'error' } : a)));
-  }, []);
-
   const retry = useCallback(
     (id: string) => {
       setAttachments((prev) => prev.map((a) => (a.id === id ? { ...a, status: 'uploading' } : a)));
@@ -190,9 +214,6 @@ const useAttachments = (sessionKey: Uint8Array) => {
     addFiles,
     addInheritedAttachments,
     addPersistedAttachments,
-    markResolvingInherited,
-    markInheritedResolved,
-    markInheritedFailed,
     retry,
     remove,
     clear,

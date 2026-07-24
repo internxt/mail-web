@@ -28,7 +28,7 @@ const isPayloadEmpty = (payload: DraftEmailRequest, editor: Editor | null): bool
 interface UseDraftMessageParams {
   existentDraftId?: string;
   draftReceivedAt?: string;
-  isReply?: boolean;
+  isDraftActive?: boolean;
   subject: string;
   toRecipients: Recipient[];
   ccRecipients: Recipient[];
@@ -52,7 +52,7 @@ interface UseDraftMessageResult {
 export const useDraftMessage = ({
   existentDraftId,
   draftReceivedAt,
-  isReply = false,
+  isDraftActive,
   toRecipients,
   ccRecipients,
   bccRecipients,
@@ -120,7 +120,7 @@ export const useDraftMessage = ({
   }, []);
 
   const performSave = useCallback(async () => {
-    if (isReply) return;
+    if (!isDraftActive) return;
 
     const payload = await buildPayload();
     if (!payload) return;
@@ -137,7 +137,7 @@ export const useDraftMessage = ({
     const { id, receivedAt } = await createDraft(payload).unwrap();
     draftIdRef.current = id;
     draftReceivedAtRef.current = receivedAt;
-  }, [buildPayload, createDraft, updateDraft, isReply, editor]);
+  }, [buildPayload, createDraft, updateDraft, isDraftActive, editor]);
 
   const saveDraft = useCallback(async () => {
     clearAutosaveTimer();

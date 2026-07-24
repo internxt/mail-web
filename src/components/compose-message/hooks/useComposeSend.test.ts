@@ -46,9 +46,7 @@ const mockEncryptionBlock = {
 
 const renderSend = (overrides: Partial<Parameters<typeof useComposeSend>[0]> = {}) => {
   const onSent = vi.fn();
-  const markResolvingInherited = vi.fn();
-  const markInheritedResolved = vi.fn();
-  const markInheritedFailed = vi.fn();
+
   const { result } = renderHook(() =>
     useComposeSend({
       toRecipients: [],
@@ -59,13 +57,11 @@ const renderSend = (overrides: Partial<Parameters<typeof useComposeSend>[0]> = {
       attachments: [],
       attachmentsSessionKey: new Uint8Array(32),
       onSent,
-      markResolvingInherited,
-      markInheritedResolved,
-      markInheritedFailed,
+
       ...overrides,
     }),
   );
-  return { result, onSent, markResolvingInherited, markInheritedResolved, markInheritedFailed };
+  return { result, onSent };
 };
 
 describe('useComposeSend', () => {

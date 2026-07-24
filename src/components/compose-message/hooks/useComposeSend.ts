@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import type { Editor } from '@tiptap/react';
 import type {
   DeliveryMode,
@@ -17,13 +17,11 @@ import {
 } from '@/store/api/mail';
 import { classifyRecipients, isInternxtDomain, uniqueEmailAddresses } from '@/utils/domain';
 import { MailEncryptionService, type RecipientPublicKey } from '@/services/mail-encryption';
-import { NetworkService } from '@/services/network';
-import { MailKeysService } from '@/services/mail-keys';
 import { ConfigService } from '@/services/config';
 import notificationsService, { ToastType } from '@/services/notifications';
 import { useTranslationContext } from '@/i18n';
 import type { Recipient } from '../types';
-import type { AttachmentTask, InheritedAttachment } from './useAttachments';
+import type { AttachmentTask } from './useAttachments';
 import type { TranslationKey } from '@/i18n/types';
 import { ComposeSendError } from '@/errors';
 
@@ -45,9 +43,6 @@ interface UseComposeSendParams {
   inReplyTo?: string;
   resolveDraftId?: () => Promise<string | null>;
   onSent: () => void;
-  markResolvingInherited: (id: string) => void;
-  markInheritedResolved: (id: string, blobId: string) => void;
-  markInheritedFailed: (id: string) => void;
 }
 
 const countByEmail = (recipients: Recipient[]): Map<string, number> => {
@@ -87,9 +82,6 @@ export const useComposeSend = ({
   inReplyTo,
   resolveDraftId,
   onSent,
-  markResolvingInherited,
-  markInheritedResolved,
-  markInheritedFailed,
 }: UseComposeSendParams): UseComposeSendResult => {
   const { translate } = useTranslationContext();
 
@@ -115,60 +107,10 @@ export const useComposeSend = ({
       : 'external';
   }, [allRecipients, activeDomains]);
 
-  const handleInheritAttachments = useCallback(async () => {
-    const pendingInherited = attachments.filter(
-      (a): a is InheritedAttachment => a.kind === 'inherited' && a.status === 'pending',
+  const getAttachmentsToSend = (): SendEmailRequest['attachments'] =>
+    attachments.flatMap((a) =>
+      a.status === 'done' && a.blobId ? [{ blobId: a.blobId, name: a.name, size: a.size, type: a.type }] : [],
     );
-    const resolvedBlobIds = new Map<string, string>();
-
-    if (pendingInherited.length > 0) {
-      const senderKeysForAttachments = MailKeysService.instance.getCurrentKeys();
-      const senderAddress = MailKeysService.instance.getCurrentAddress();
-      if (!senderKeysForAttachments || !senderAddress) {
-        throw new ComposeSendError('errors.mail.forwardAttachmentFailed');
-      }
-
-      for (const item of pendingInherited) {
-        markResolvingInherited(item.id);
-        try {
-          const originalSessionKey = await MailEncryptionService.instance.decryptAttachmentsSessionKey(
-            item.originalEnvelope,
-            senderKeysForAttachments,
-            senderAddress,
-          );
-
-          const { blob } = await NetworkService.instance.download({
-            mailId: item.originalMailId,
-            blobId: item.originalBlobId,
-            name: item.name,
-            type: item.type,
-            attachmentsSessionKey: originalSessionKey,
-          });
-          const file = new File([blob], item.name, { type: item.type });
-          const { blobId } = await NetworkService.instance.upload(attachmentsSessionKey, file);
-          markInheritedResolved(item.id, blobId);
-          resolvedBlobIds.set(item.id, blobId);
-        } catch (error) {
-          console.error('Failed to re-encrypt inherited attachment', error);
-          markInheritedFailed(item.id);
-          throw new ComposeSendError('errors.mail.forwardAttachmentFailed');
-        }
-      }
-    }
-
-    const attachmentsToSend: SendEmailRequest['attachments'] = attachments.flatMap((a) => {
-      if (a.status === 'done' && a.blobId) {
-        return [{ blobId: a.blobId, name: a.name, size: a.size, type: a.type }];
-      }
-      const justResolved = resolvedBlobIds.get(a.id);
-      if (justResolved) {
-        return [{ blobId: justResolved, name: a.name, size: a.size, type: a.type }];
-      }
-      return [];
-    });
-
-    return attachmentsToSend;
-  }, [attachments, markInheritedFailed, markInheritedResolved, markResolvingInherited, attachmentsSessionKey]);
 
   const validateSend = () => {
     if (allRecipients.length === 0) {
@@ -186,6 +128,10 @@ export const useComposeSend = ({
 
     if (!senderKeys?.address || !senderKeys.publicKey) {
       throw new ComposeSendError('errors.mail.keyLookupFailed');
+    }
+
+    if (attachments.some((a) => a.status !== 'done')) {
+      throw new ComposeSendError('errors.mail.forwardAttachmentFailed');
     }
   };
 
@@ -249,7 +195,7 @@ export const useComposeSend = ({
     try {
       validateSend();
 
-      const attachmentsToSend = await handleInheritAttachments();
+      const attachmentsToSend = getAttachmentsToSend();
       const encryption = await getEncryptionEnvelope();
       const deliveryMode = (encryptionState === 'internxt' ? 'INTERNXT' : 'EXTERNAL') as DeliveryMode;
       const draftId = (await resolveDraftId?.()) ?? undefined;
