@@ -42,6 +42,7 @@ const renderDraft = (overrides: Partial<Parameters<typeof useDraftMessage>[0]> =
       subject: '',
       editor,
       attachmentsSessionKey: new Uint8Array(32),
+      isDraftActive: true,
       ...overrides,
     }),
   );
@@ -166,6 +167,7 @@ describe('Draft Message', () => {
         subject: 'First',
         editor,
         attachmentsSessionKey: new Uint8Array(32),
+        isDraftActive: true,
       },
     });
 
@@ -181,6 +183,7 @@ describe('Draft Message', () => {
       subject: 'Second',
       editor,
       attachmentsSessionKey: new Uint8Array(32),
+      isDraftActive: true,
     });
 
     await act(async () => {
@@ -307,7 +310,7 @@ describe('Draft Message', () => {
       const { result } = renderDraft({
         subject: 'Re: hi',
         toRecipients: [recipient('bob@inxt.me')],
-        isReply: true,
+        isDraftActive: false,
       });
 
       await act(async () => {
