@@ -59,9 +59,24 @@ describe('Deriving reply recipients', () => {
     expect(result.cc).toEqual([{ email: 'BOB@example.com' }]);
   });
 
-  test('When the original was sent by self, then self is never a recipient and to comes back empty', () => {
-    const result = deriveReplyRecipients(sourceMail({ from: [{ email: SELF }], replyTo: [] }), SELF, false);
+  test('When the original was sent by self (a note to self), then the reply goes back to self', () => {
+    const result = deriveReplyRecipients(
+      sourceMail({ from: [{ email: SELF }], replyTo: [], to: [{ email: SELF }] }),
+      SELF,
+      false,
+    );
 
-    expect(result.to).toEqual([]);
+    expect(result).toEqual({ to: [{ email: SELF }], cc: [] });
+  });
+
+  test('When replying to all and self is among the participants, then self is still excluded from cc', () => {
+    const result = deriveReplyRecipients(
+      sourceMail({ from: [A], replyTo: [], to: [{ email: SELF }, B], cc: [{ email: SELF }] }),
+      SELF,
+      true,
+    );
+
+    expect(result.to).toEqual([A]);
+    expect(result.cc).toEqual([B]);
   });
 });
