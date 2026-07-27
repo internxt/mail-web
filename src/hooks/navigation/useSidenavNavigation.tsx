@@ -50,7 +50,7 @@ export const useSidenavNavigation = () => {
         isVisible: true,
         notifications: unreadByMailbox['drafts'],
         onClick: () => onSidenavItemClick(AppView.Drafts),
-        onRefresh: () => refreshMailbox('inbox'),
+        onRefresh: () => refreshMailbox('drafts'),
       },
       {
         isActive: isActiveButton('/sent'),
@@ -60,7 +60,7 @@ export const useSidenavNavigation = () => {
         isVisible: true,
         notifications: unreadByMailbox['sent'],
         onClick: () => onSidenavItemClick(AppView.Sent),
-        onRefresh: () => refreshMailbox('inbox'),
+        onRefresh: () => refreshMailbox('sent'),
       },
       {
         isActive: isActiveButton('/spam'),
@@ -70,7 +70,7 @@ export const useSidenavNavigation = () => {
         isVisible: true,
         notifications: unreadByMailbox['spam'],
         onClick: () => onSidenavItemClick(AppView.Spam),
-        onRefresh: () => refreshMailbox('inbox'),
+        onRefresh: () => refreshMailbox('spam'),
       },
       {
         isActive: isActiveButton('/trash'),
@@ -80,7 +80,7 @@ export const useSidenavNavigation = () => {
         isVisible: true,
         notifications: unreadByMailbox['trash'],
         onClick: () => onSidenavItemClick(AppView.Trash),
-        onRefresh: () => refreshMailbox('inbox'),
+        onRefresh: () => refreshMailbox('trash'),
       },
     ],
     [unreadByMailbox, refreshMailbox, translate, onSidenavItemClick, isActiveButton],
