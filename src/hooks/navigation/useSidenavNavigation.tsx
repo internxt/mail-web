@@ -6,17 +6,29 @@ import { useTranslationContext } from '@/i18n';
 import { AppView } from '@/routes/paths';
 import { NavigationService } from '@/services/navigation';
 import { useUnreadByMailbox } from '@/hooks/mail/useUnreadByMailbox';
+import { mailApi } from '@/store/api/mail';
+import { useAppDispatch } from '@/store/hooks';
+import type { FolderType } from '@/types/mail';
 
 export const useSidenavNavigation = () => {
   const { translate } = useTranslationContext();
   const { pathname } = useLocation();
-  const { unreadByMailbox } = useUnreadByMailbox({ pollingInterval: 30000, skipPollingIfUnfocused: true });
+  const dispatch = useAppDispatch();
+  const { unreadByMailbox, refetch } = useUnreadByMailbox({ pollingInterval: 30000, skipPollingIfUnfocused: true });
 
   const isActiveButton = useCallback((path: string) => !!matchPath(path, pathname), [pathname]);
 
   const onSidenavItemClick = useCallback((path: AppView) => {
     NavigationService.instance.navigate({ id: path });
   }, []);
+
+  const refreshMailbox = useCallback(
+    (mailbox: FolderType) => {
+      dispatch(mailApi.util.invalidateTags([{ type: 'ListFolder', id: mailbox }]));
+      void refetch();
+    },
+    [dispatch, refetch],
+  );
 
   const itemsNavigation: SidenavOption[] = useMemo(
     () => [
@@ -28,6 +40,7 @@ export const useSidenavNavigation = () => {
         isVisible: true,
         notifications: unreadByMailbox['inbox'],
         onClick: () => onSidenavItemClick(AppView.Inbox),
+        onRefresh: () => refreshMailbox('inbox'),
       },
       {
         isActive: isActiveButton('/drafts'),
@@ -37,6 +50,7 @@ export const useSidenavNavigation = () => {
         isVisible: true,
         notifications: unreadByMailbox['drafts'],
         onClick: () => onSidenavItemClick(AppView.Drafts),
+        onRefresh: () => refreshMailbox('drafts'),
       },
       {
         isActive: isActiveButton('/sent'),
@@ -46,6 +60,7 @@ export const useSidenavNavigation = () => {
         isVisible: true,
         notifications: unreadByMailbox['sent'],
         onClick: () => onSidenavItemClick(AppView.Sent),
+        onRefresh: () => refreshMailbox('sent'),
       },
       {
         isActive: isActiveButton('/spam'),
@@ -55,6 +70,7 @@ export const useSidenavNavigation = () => {
         isVisible: true,
         notifications: unreadByMailbox['spam'],
         onClick: () => onSidenavItemClick(AppView.Spam),
+        onRefresh: () => refreshMailbox('spam'),
       },
       {
         isActive: isActiveButton('/trash'),
@@ -64,9 +80,10 @@ export const useSidenavNavigation = () => {
         isVisible: true,
         notifications: unreadByMailbox['trash'],
         onClick: () => onSidenavItemClick(AppView.Trash),
+        onRefresh: () => refreshMailbox('trash'),
       },
     ],
-    [unreadByMailbox, translate, onSidenavItemClick, isActiveButton],
+    [unreadByMailbox, refreshMailbox, translate, onSidenavItemClick, isActiveButton],
   );
 
   return { itemsNavigation };
