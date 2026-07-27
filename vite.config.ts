@@ -26,7 +26,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // @internxt/ui is yarn-linked from a sibling repo, which otherwise resolves
+      // its own node_modules/react and creates a second React instance (invalid hook call).
+      react: path.resolve(__dirname, './node_modules/react'),
+      'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
     },
+    dedupe: ['react', 'react-dom'],
     preserveSymlinks: true,
   },
   optimizeDeps: {

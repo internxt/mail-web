@@ -34,7 +34,7 @@ const ContactInput = ({ emails, onAdd, onRemove, placeholder, offsetLeft }: Cont
 
   return (
     <div
-      className="absolute top-full z-30 mt-1 w-full max-w-65 rounded-xl border border-gray-10 bg-surface shadow-subtle-hard"
+      className="absolute top-full z-50 mt-1 w-full max-w-65 rounded-xl border border-gray-10 bg-surface shadow-subtle-hard"
       style={{ left: offsetLeft }}
     >
       <div className="flex w-full flex-wrap items-center gap-1.5 px-3 py-2.5">
