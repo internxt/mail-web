@@ -25,7 +25,7 @@ export const useSidenavNavigation = () => {
   const refreshMailbox = useCallback(
     (mailbox: FolderType) => {
       dispatch(mailApi.util.invalidateTags([{ type: 'ListFolder', id: mailbox }]));
-      return refetch();
+      void refetch();
     },
     [dispatch, refetch],
   );
