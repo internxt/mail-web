@@ -158,7 +158,7 @@ describe('useEmailAddressValidation', () => {
     expect(result.current.isValid).toBe(true);
   });
 
-  test('When checkAvailability runs after the debounce already resolved the address, then it serves the cache without re-querying', async () => {
+  test('When an address has already been resolved, then checking it again serves the cached result without re-querying', async () => {
     const { result } = renderValidationHook();
     await typeAndSettle(result, 'jane.doe');
     checkAddressAvailability.mockClear();
@@ -173,7 +173,7 @@ describe('useEmailAddressValidation', () => {
     expect(result.current.canSubmit).toBe(true);
   });
 
-  test('When checkAvailability runs before any check has been cached, then it queries the backend once', async () => {
+  test('When an address has not been resolved yet, then checking it queries the backend once', async () => {
     checkAddressAvailability.mockResolvedValue({ available: false, suggestion: 'jane.doe1@inxt.me' });
     const { result } = renderValidationHook();
     act(() => result.current.validateAddress('jane.doe'));
@@ -212,6 +212,30 @@ describe('useEmailAddressValidation', () => {
 
     expect(checkAddressAvailability).not.toHaveBeenCalled();
     expect(result.current.rules.find((rule) => rule.id === 'available')!.status).toBe('valid');
+  });
+
+  test('When a check for the same address is already in flight, then it is reused instead of sending a second request', async () => {
+    let resolvePendingCheck!: (response: { available: boolean; suggestion: string | null }) => void;
+    checkAddressAvailability.mockReturnValue(
+      new Promise((resolve) => {
+        resolvePendingCheck = resolve;
+      }),
+    );
+    const { result } = renderValidationHook();
+
+    act(() => result.current.validateAddress('jane.doe'));
+    act(() => vi.advanceTimersByTime(DEFAULT_DEBOUNCE_MS));
+
+    let outcome;
+    await act(async () => {
+      const pendingOutcome = result.current.checkAvailability();
+      resolvePendingCheck({ available: true, suggestion: null });
+      outcome = await pendingOutcome;
+    });
+
+    expect(checkAddressAvailability).toHaveBeenCalledTimes(1);
+    expect(outcome).toEqual({ status: 'available' });
+    expect(result.current.canSubmit).toBe(true);
   });
 
   test('When the check is rate limited, then availability reports rateLimited without the hook retrying (the SDK owns backoff)', async () => {

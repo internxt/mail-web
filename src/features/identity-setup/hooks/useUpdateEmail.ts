@@ -23,13 +23,14 @@ export const useUpdateEmail = ({ activeDomains, onNext }: UseUpdateEmailParams) 
     try {
       const availability = await checkAvailability();
       switch (availability.status) {
-        case 'taken':
+        case 'available':
+          onNext({ address: username, domain });
           return;
-        case 'unknown':
-          ErrorService.instance.notifyUser(translate('errors.identitySetup.availabilityCheckFailed'));
+        case 'taken':
+        case 'rateLimited':
           return;
         default:
-          onNext({ address: username, domain });
+          ErrorService.instance.notifyUser(translate('errors.identitySetup.availabilityCheckFailed'));
       }
     } finally {
       setIsSubmitting(false);

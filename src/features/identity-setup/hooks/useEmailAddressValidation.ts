@@ -57,6 +57,7 @@ export const useEmailAddressValidation = (
   const debouncedUsername = useDebounce(username, debounceMs);
 
   const cacheRef = useRef<Map<string, AddressAvailability>>(new Map());
+  const inFlightRef = useRef<Map<string, Promise<AddressAvailability>>>(new Map());
   const latestRequestIdRef = useRef(0);
 
   const validateAddress = useCallback((value: string) => {
@@ -78,8 +79,14 @@ export const useEmailAddressValidation = (
         return cached;
       }
 
+      let request = inFlightRef.current.get(key);
+      if (!request) {
+        request = fetchAvailability(value, domain).finally(() => inFlightRef.current.delete(key));
+        inFlightRef.current.set(key, request);
+      }
+
       const requestId = ++latestRequestIdRef.current;
-      const result = await fetchAvailability(value, domain);
+      const result = await request;
       if (isDefinitiveAvailability(result)) cacheRef.current.set(key, result);
       if (requestId === latestRequestIdRef.current) setResolved({ key, result });
 
