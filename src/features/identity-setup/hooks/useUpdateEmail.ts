@@ -22,10 +22,14 @@ export const useUpdateEmail = ({ activeDomains, onNext }: UseUpdateEmailParams) 
     setIsSubmitting(true);
     try {
       const availability = await checkAvailability();
-      if (availability.status === 'available') {
-        onNext({ address: username, domain });
-      } else if (availability.status === 'unknown') {
-        ErrorService.instance.notifyUser(translate('errors.identitySetup.availabilityCheckFailed'));
+      switch (availability.status) {
+        case 'taken':
+          return;
+        case 'unknown':
+          ErrorService.instance.notifyUser(translate('errors.identitySetup.availabilityCheckFailed'));
+          return;
+        default:
+          onNext({ address: username, domain });
       }
     } finally {
       setIsSubmitting(false);

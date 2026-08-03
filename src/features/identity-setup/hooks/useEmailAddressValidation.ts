@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
+import { ErrorService } from '@/services/error';
 import { MailService } from '@/services/sdk/mail';
 import {
   isEmailAddressFormatValid,
@@ -10,19 +11,27 @@ import {
   type EmailAddressRule,
 } from './emailAddressRules';
 
-export const DEFAULT_DEBOUNCE_MS = 500;
+export const DEFAULT_DEBOUNCE_MS = 600;
+const RATE_LIMIT_STATUS = 429;
 
-interface AvailabilityCheck {
-  value: string;
-  domain: string;
+interface ResolvedAvailability {
+  key: string;
   result: AddressAvailability;
 }
+
+const cacheKey = (username: string, domain: string): string => `${username}@${domain}`;
+
+const isDefinitiveAvailability = (availability: AddressAvailability): boolean =>
+  availability.status === 'available' || availability.status === 'taken';
 
 const fetchAvailability = async (username: string, domain: string): Promise<AddressAvailability> => {
   try {
     const { available, suggestion } = await MailService.instance.checkAddressAvailability(username, domain);
     return available ? { status: 'available' } : { status: 'taken', suggestion };
-  } catch {
+  } catch (error) {
+    if (ErrorService.instance.castError(error).status === RATE_LIMIT_STATUS) {
+      return { status: 'rateLimited' };
+    }
     return UNKNOWN_AVAILABILITY;
   }
 };
@@ -44,8 +53,10 @@ export const useEmailAddressValidation = (
 ): UseEmailAddressValidationResult => {
   const [username, setUsername] = useState('');
   const [hasInteracted, setHasInteracted] = useState(false);
-  const [lastCheck, setLastCheck] = useState<AvailabilityCheck | null>(null);
+  const [resolved, setResolved] = useState<ResolvedAvailability | null>(null);
   const debouncedUsername = useDebounce(username, debounceMs);
+
+  const cacheRef = useRef<Map<string, AddressAvailability>>(new Map());
   const latestRequestIdRef = useRef(0);
 
   const validateAddress = useCallback((value: string) => {
@@ -57,38 +68,45 @@ export const useEmailAddressValidation = (
     latestRequestIdRef.current++;
   }, [username, domain]);
 
-  const checkAvailability = useCallback(async (): Promise<AddressAvailability> => {
-    if (!isEmailAddressFormatValid(username)) return UNKNOWN_AVAILABILITY;
+  const resolveAvailability = useCallback(
+    async (value: string): Promise<AddressAvailability> => {
+      const key = cacheKey(value, domain);
 
-    const requestId = ++latestRequestIdRef.current;
-    const result = await fetchAvailability(username, domain);
-    if (requestId !== latestRequestIdRef.current) return UNKNOWN_AVAILABILITY;
+      const cached = cacheRef.current.get(key);
+      if (cached) {
+        setResolved({ key, result: cached });
+        return cached;
+      }
 
-    setLastCheck({ value: username, domain, result });
+      const requestId = ++latestRequestIdRef.current;
+      const result = await fetchAvailability(value, domain);
+      if (isDefinitiveAvailability(result)) cacheRef.current.set(key, result);
+      if (requestId === latestRequestIdRef.current) setResolved({ key, result });
 
-    return result;
-  }, [username, domain]);
+      return result;
+    },
+    [domain],
+  );
 
   useEffect(() => {
     if (!isEmailAddressFormatValid(debouncedUsername)) return;
-    if (lastCheck && lastCheck.value === debouncedUsername && lastCheck.domain === domain) return;
-
-    const requestId = ++latestRequestIdRef.current;
-    void fetchAvailability(debouncedUsername, domain).then((result) => {
-      if (requestId === latestRequestIdRef.current) {
-        setLastCheck({ value: debouncedUsername, domain, result });
-      }
-    });
-  }, [debouncedUsername, domain, lastCheck]);
+    void resolveAvailability(debouncedUsername);
+  }, [debouncedUsername, resolveAvailability]);
 
   const availability: AddressAvailability = useMemo(() => {
-    if (lastCheck && lastCheck.value === username && lastCheck.domain === domain) return lastCheck.result;
-    return isEmailAddressFormatValid(username) ? { status: 'checking' } : UNKNOWN_AVAILABILITY;
-  }, [lastCheck, username, domain]);
+    if (!isEmailAddressFormatValid(username)) return UNKNOWN_AVAILABILITY;
+    if (resolved?.key === cacheKey(username, domain)) return resolved.result;
+    return { status: 'checking' };
+  }, [username, domain, resolved]);
 
   const rules = useMemo(() => validateEmailAddress(debouncedUsername, availability), [debouncedUsername, availability]);
   const isValid = useMemo(() => rules.every((rule) => isRuleStatusValid(rule.status)), [rules]);
   const canSubmit = isEmailAddressFormatValid(username) && availability.status !== 'taken';
+
+  const checkAvailability = useCallback(async (): Promise<AddressAvailability> => {
+    if (!isEmailAddressFormatValid(username)) return UNKNOWN_AVAILABILITY;
+    return resolveAvailability(username);
+  }, [username, resolveAvailability]);
 
   return { username, rules, isValid, canSubmit, availability, hasInteracted, validateAddress, checkAvailability };
 };
