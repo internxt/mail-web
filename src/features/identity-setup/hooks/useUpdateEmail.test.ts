@@ -53,6 +53,7 @@ const submitWith = async (availability: AddressAvailability) => {
 
 describe('useUpdateEmail', () => {
   beforeEach(() => {
+    vi.restoreAllMocks();
     vi.clearAllMocks();
     mocks.username = 'jane.doe';
     mocks.canSubmit = true;
@@ -72,11 +73,11 @@ describe('useUpdateEmail', () => {
     expect(notifyUser).not.toHaveBeenCalled();
   });
 
-  test('When the availability check is rate limited, then the flow does not advance and stays silent', async () => {
+  test('When too many availability checks are made, then the flow does not advance and the user is asked to wait', async () => {
     const { onNext } = await submitWith({ status: 'rateLimited' });
 
     expect(onNext).not.toHaveBeenCalled();
-    expect(notifyUser).not.toHaveBeenCalled();
+    expect(notifyUser).toHaveBeenCalledWith('errors.identitySetup.availabilityCheckRateLimited');
   });
 
   test('When the availability cannot be determined, then the flow does not advance and the user is notified', async () => {
@@ -96,6 +97,26 @@ describe('useUpdateEmail', () => {
 
     expect(mocks.checkAvailability).not.toHaveBeenCalled();
     expect(onNext).not.toHaveBeenCalled();
+  });
+
+  test('When the address is submitted again while the previous check is still running, then it is checked once and the flow advances once', async () => {
+    let resolveCheck!: (availability: AddressAvailability) => void;
+    mocks.checkAvailability.mockReturnValue(
+      new Promise<AddressAvailability>((resolve) => {
+        resolveCheck = resolve;
+      }),
+    );
+    const { result, onNext } = renderUpdateEmailHook();
+
+    await act(async () => {
+      const firstSubmission = result.current.submit();
+      const secondSubmission = result.current.submit();
+      resolveCheck({ status: 'available' });
+      await Promise.all([firstSubmission, secondSubmission]);
+    });
+
+    expect(mocks.checkAvailability).toHaveBeenCalledTimes(1);
+    expect(onNext).toHaveBeenCalledTimes(1);
   });
 
   test('When a submission finishes, then the form stops reporting that it is submitting', async () => {
