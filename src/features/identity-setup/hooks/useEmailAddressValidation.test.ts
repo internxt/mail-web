@@ -158,17 +158,32 @@ describe('useEmailAddressValidation', () => {
     expect(result.current.isValid).toBe(true);
   });
 
-  test('When checkAvailability is called on submit, then it re-queries the backend with the current username', async () => {
+  test('When an address has already been resolved, then checking it again serves the cached result without re-querying', async () => {
     const { result } = renderValidationHook();
     await typeAndSettle(result, 'jane.doe');
     checkAddressAvailability.mockClear();
-    checkAddressAvailability.mockResolvedValue({ available: false, suggestion: 'jane.doe1@inxt.me' });
 
     let outcome;
     await act(async () => {
       outcome = await result.current.checkAvailability();
     });
 
+    expect(checkAddressAvailability).not.toHaveBeenCalled();
+    expect(outcome).toEqual({ status: 'available' });
+    expect(result.current.canSubmit).toBe(true);
+  });
+
+  test('When an address has not been resolved yet, then checking it queries the backend once', async () => {
+    checkAddressAvailability.mockResolvedValue({ available: false, suggestion: 'jane.doe1@inxt.me' });
+    const { result } = renderValidationHook();
+    act(() => result.current.validateAddress('jane.doe'));
+
+    let outcome;
+    await act(async () => {
+      outcome = await result.current.checkAvailability();
+    });
+
+    expect(checkAddressAvailability).toHaveBeenCalledTimes(1);
     expect(checkAddressAvailability).toHaveBeenCalledWith('jane.doe', DOMAIN);
     expect(outcome).toEqual({ status: 'taken', suggestion: 'jane.doe1@inxt.me' });
     expect(result.current.canSubmit).toBe(false);
@@ -185,5 +200,54 @@ describe('useEmailAddressValidation', () => {
 
     expect(checkAddressAvailability).not.toHaveBeenCalled();
     expect(outcome).toEqual({ status: 'unknown' });
+  });
+
+  test('When the user returns to a previously checked address, then it is served from cache without a new request', async () => {
+    const { result } = renderValidationHook();
+    await typeAndSettle(result, 'jane.doe');
+    await typeAndSettle(result, 'jane.do');
+    checkAddressAvailability.mockClear();
+
+    await typeAndSettle(result, 'jane.doe');
+
+    expect(checkAddressAvailability).not.toHaveBeenCalled();
+    expect(result.current.rules.find((rule) => rule.id === 'available')!.status).toBe('valid');
+  });
+
+  test('When a check for the same address is already in flight, then it is reused instead of sending a second request', async () => {
+    let resolvePendingCheck!: (response: { available: boolean; suggestion: string | null }) => void;
+    checkAddressAvailability.mockReturnValue(
+      new Promise((resolve) => {
+        resolvePendingCheck = resolve;
+      }),
+    );
+    const { result } = renderValidationHook();
+
+    act(() => result.current.validateAddress('jane.doe'));
+    act(() => vi.advanceTimersByTime(DEFAULT_DEBOUNCE_MS));
+
+    let outcome;
+    await act(async () => {
+      const pendingOutcome = result.current.checkAvailability();
+      resolvePendingCheck({ available: true, suggestion: null });
+      outcome = await pendingOutcome;
+    });
+
+    expect(checkAddressAvailability).toHaveBeenCalledTimes(1);
+    expect(outcome).toEqual({ status: 'available' });
+    expect(result.current.canSubmit).toBe(true);
+  });
+
+  test('When the check is rate limited, then availability reports rateLimited without the hook retrying (the SDK owns backoff)', async () => {
+    const rateLimitError = Object.assign(new Error('Too Many Requests'), { status: 429 });
+    checkAddressAvailability.mockRejectedValue(rateLimitError);
+    const { result } = renderValidationHook();
+
+    await typeAndSettle(result, 'jane.doe');
+
+    expect(result.current.availability.status).toBe('rateLimited');
+    expect(result.current.rules.find((rule) => rule.id === 'available')!.status).toBe('idle');
+    expect(result.current.canSubmit).toBe(true);
+    expect(checkAddressAvailability).toHaveBeenCalledTimes(1);
   });
 });

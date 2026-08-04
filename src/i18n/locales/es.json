@@ -169,6 +169,7 @@
       "passwordWrong": "La contraseña es incorrecta. Por favor, inténtalo de nuevo.",
       "emailNotSelected": "Por favor, elige una dirección de correo primero",
       "availabilityCheckFailed": "Algo salió mal al comprobar la disponibilidad de la dirección. Por favor, inténtalo de nuevo.",
+      "availabilityCheckRateLimited": "Hubo un error al comprobar la disponibilidad de la dirección. Por favor, espera un momento e inténtalo de nuevo.",
       "passwordCheckFailed": "Algo ha ido mal al verificar tu contraseña",
       "setupFailed": "Algo ha ido mal al configurar tu cuenta"
     },

@@ -39,7 +39,8 @@ export type AddressAvailability =
   | { status: 'unknown' }
   | { status: 'checking' }
   | { status: 'available' }
-  | { status: 'taken'; suggestion: string | null };
+  | { status: 'taken'; suggestion: string | null }
+  | { status: 'rateLimited' };
 
 export const UNKNOWN_AVAILABILITY: AddressAvailability = { status: 'unknown' };
 
