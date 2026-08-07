@@ -27,6 +27,7 @@ export const initialFilterState: FilterState = {
 
 export const ActionTypes = {
   TOGGLE_FILTER: 'TOGGLE_FILTER',
+  CLEAR_FILTER: 'CLEAR_FILTER',
   ADD_EMAIL: 'ADD_EMAIL',
   SET_SEARCH_QUERY: 'SET_SEARCH_QUERY',
   SET_DATE_PRESET: 'SET_DATE_PRESET',
@@ -38,6 +39,7 @@ export const ActionTypes = {
 
 export type FiltersAction =
   | { type: (typeof ActionTypes)['TOGGLE_FILTER']; payload: { id: FilterId; offsetLeft: number } }
+  | { type: (typeof ActionTypes)['CLEAR_FILTER']; payload: { id: FilterId } }
   | {
       type: (typeof ActionTypes)['ADD_EMAIL'];
       payload: { filterId: 'from' | 'to'; email: string };

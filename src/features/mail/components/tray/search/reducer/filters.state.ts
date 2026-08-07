@@ -8,6 +8,11 @@ export const filterReducer = (state: FilterState, action: FiltersAction): Filter
       return toggleFilter(id, offsetLeft, state);
     }
 
+    case ActionTypes.CLEAR_FILTER: {
+      const { id } = action.payload;
+      return clearFilter(id, state);
+    }
+
     case ActionTypes.SET_SEARCH_QUERY: {
       const { query } = action.payload;
       return {
@@ -60,6 +65,25 @@ const toggleFilter = (id: FilterId, offsetLeft: number, state: FilterState): Fil
     ...state,
     activeFilters: isActive ? state.activeFilters.filter((f) => f !== id) : [...state.activeFilters, id],
   };
+};
+
+const clearFilter = (id: FilterId, state: FilterState): FilterState => {
+  const cleared: FilterState = {
+    ...state,
+    activeFilters: state.activeFilters.filter((f) => f !== id),
+    expandedFilter: state.expandedFilter === id ? null : state.expandedFilter,
+  };
+
+  switch (id) {
+    case 'from':
+      return { ...cleared, fromEmails: [] };
+    case 'to':
+      return { ...cleared, toEmails: [] };
+    case 'date':
+      return { ...cleared, datePreset: 'anyDate', afterDate: null, beforeDate: null };
+    default:
+      return cleared;
+  }
 };
 
 const addEmail = (filterId: FilterId, email: string, state: FilterState): FilterState => {

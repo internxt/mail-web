@@ -1,3 +1,4 @@
+import { useTranslationContext } from '@/i18n';
 import { useState } from 'react';
 import isValidEmail from '@internxt/lib/dist/auth/isValidEmail';
 import { XIcon } from '@phosphor-icons/react';
@@ -11,6 +12,7 @@ interface ContactInputProps {
 }
 
 const ContactInput = ({ emails, onAdd, onRemove, placeholder, offsetLeft }: ContactInputProps) => {
+  const { translate } = useTranslationContext();
   const [draft, setDraft] = useState('');
 
   const commit = () => {
@@ -41,14 +43,14 @@ const ContactInput = ({ emails, onAdd, onRemove, placeholder, offsetLeft }: Cont
         {emails.map((email) => (
           <span
             key={email}
-            className="flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
+            className="flex max-w-full items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
           >
-            {email}
+            <span className="truncate">{email}</span>
             <button
               type="button"
-              aria-label={email}
+              aria-label={translate('search.removeEmail', { email })}
               onClick={() => onRemove(email)}
-              className="opacity-60 hover:opacity-100"
+              className="shrink-0 opacity-60 hover:opacity-100"
             >
               <XIcon size={10} />
             </button>
@@ -62,7 +64,7 @@ const ContactInput = ({ emails, onAdd, onRemove, placeholder, offsetLeft }: Cont
           onKeyDown={onKeyDown}
           onBlur={commit}
           placeholder={emails.length === 0 ? placeholder : ''}
-          className="w-full bg-transparent text-sm text-gray-100 placeholder-gray-40 outline-none"
+          className="min-w-0 grow basis-16 bg-transparent text-sm text-gray-100 placeholder-gray-40 outline-none"
         />
       </div>
     </div>

@@ -93,7 +93,9 @@
       "description": "Cerca per nome e allegati"
     },
     "emailInputPlaceholder": "Cerca per nome o email",
+    "removeEmail": "Rimuovi {{email}}",
     "filters": {
+      "clear": "Rimuovi il filtro {{filter}}",
       "from": "Da",
       "to": "A",
       "date": "Data",
