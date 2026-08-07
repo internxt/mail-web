@@ -7,6 +7,7 @@ import {
   setAddEmail,
   setAfterDate,
   setBeforeDate,
+  setClearFilter,
   setDatePreset,
   setRemoveEmail,
   setSearchQuery,
@@ -171,6 +172,47 @@ describe('Search filters', () => {
       const state = filterReducer(initialFilterState, setBeforeDate(date));
 
       expect(state.beforeDate).toStrictEqual(date);
+    });
+  });
+
+  describe('Clearing a single filter', () => {
+    test('When the sender filter is cleared, then its emails are dropped and its panel closes', () => {
+      const withEmails = filterReducer(
+        filterReducer(
+          filterReducer(initialFilterState, setAddEmail('from', 'a@test.com')),
+          setAddEmail('to', 'b@test.com'),
+        ),
+        setToggleFilter('from', 40),
+      );
+
+      const state = filterReducer(withEmails, setClearFilter('from'));
+
+      expect(state.fromEmails).toStrictEqual([]);
+      expect(state.activeFilters).not.toContain('from');
+      expect(state.expandedFilter).toBeNull();
+      expect(state.toEmails).toStrictEqual(['b@test.com']);
+    });
+
+    test('When the date filter is cleared, then the preset and the entered dates are reset', () => {
+      const withDates = filterReducer(
+        filterReducer(initialFilterState, setDatePreset('specificDate')),
+        setAfterDate(dayjs('2024-01-01')),
+      );
+
+      const state = filterReducer(withDates, setClearFilter('date'));
+
+      expect(state.datePreset).toStrictEqual('anyDate');
+      expect(state.afterDate).toBeNull();
+      expect(state.beforeDate).toBeNull();
+      expect(state.activeFilters).not.toContain('date');
+    });
+
+    test('When a simple filter is cleared, then it stops being active', () => {
+      const enabled = filterReducer(initialFilterState, setToggleFilter('unread', 0));
+
+      const state = filterReducer(enabled, setClearFilter('unread'));
+
+      expect(state.activeFilters).not.toContain('unread');
     });
   });
 

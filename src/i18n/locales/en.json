@@ -91,7 +91,9 @@
       "description": "Search by name and attachments"
     },
     "emailInputPlaceholder": "Search by name or email",
+    "removeEmail": "Remove {{email}}",
     "filters": {
+      "clear": "Clear {{filter}} filter",
       "from": "From",
       "to": "To",
       "date": "Date",

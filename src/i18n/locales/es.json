@@ -93,7 +93,9 @@
       "description": "Busca por nombre y adjuntos"
     },
     "emailInputPlaceholder": "Buscar por nombre o correo",
+    "removeEmail": "Eliminar {{email}}",
     "filters": {
+      "clear": "Quitar el filtro {{filter}}",
       "from": "De",
       "to": "Para",
       "date": "Fecha",

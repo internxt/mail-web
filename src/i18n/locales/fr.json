@@ -93,7 +93,9 @@
       "description": "Recherchez par nom et pièces jointes"
     },
     "emailInputPlaceholder": "Rechercher par nom ou e-mail",
+    "removeEmail": "Supprimer {{email}}",
     "filters": {
+      "clear": "Effacer le filtre {{filter}}",
       "from": "De",
       "to": "À",
       "date": "Date",

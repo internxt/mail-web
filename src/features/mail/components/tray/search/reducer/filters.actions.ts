@@ -7,6 +7,11 @@ export const setToggleFilter = (id: FilterId, offsetLeft: number) => ({
   payload: { id, offsetLeft },
 });
 
+export const setClearFilter = (id: FilterId) => ({
+  type: ActionTypes.CLEAR_FILTER,
+  payload: { id },
+});
+
 export const setAddEmail = (filterId: 'from' | 'to', email: string) => ({
   type: ActionTypes.ADD_EMAIL,
   payload: { filterId, email },

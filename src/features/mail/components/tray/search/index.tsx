@@ -14,11 +14,13 @@ import {
   setAddEmail,
   setAfterDate,
   setBeforeDate,
+  setClearFilter,
   setDatePreset,
   setRemoveEmail,
   setSearchQuery,
   setToggleFilter,
 } from './reducer/filters.actions';
+import { getDatePresetLabel } from './filters/date-filter/presets';
 import useEmailSearch from '@/hooks/mail/useEmailSearch';
 import SearchInput from './components/search-input';
 import SearchEmailList from './components/list';
@@ -62,6 +64,7 @@ const Search = ({ onMailSelected }: SearchProps) => {
   });
 
   const handleFilterToggle = (id: FilterId, offsetLeft: number) => dispatch(setToggleFilter(id, offsetLeft));
+  const handleFilterClear = (id: FilterId) => dispatch(setClearFilter(id));
   const handleAddEmail = (filterId: 'from' | 'to', email: string) => dispatch(setAddEmail(filterId, email));
   const onSearchQueryChanges = (searchQuery: string) => dispatch(setSearchQuery(searchQuery));
   const handleRemoveEmail = (filterId: 'from' | 'to', email: string) => dispatch(setRemoveEmail(filterId, email));
@@ -91,10 +94,23 @@ const Search = ({ onMailSelected }: SearchProps) => {
     { enableOnFormTags: ['INPUT'] },
   );
 
-  const filterItems: { id: FilterId; label: string }[] = [
-    { id: 'from', label: translate('search.filters.from') },
-    { id: 'to', label: translate('search.filters.to') },
-    { id: 'date', label: translate('search.filters.date') },
+  const emailsSummary = (emails: string[]) => (emails.length > 1 ? `${emails[0]} +${emails.length - 1}` : emails[0]);
+
+  const dateSummary = (() => {
+    if (datePreset !== 'specificDate') return getDatePresetLabel(datePreset, translate);
+
+    const after = afterDate?.format('DD/MM/YY');
+    const before = beforeDate?.format('DD/MM/YY');
+    if (after && before) return `${after} - ${before}`;
+    if (after) return `${translate('search.date.after')} ${after}`;
+    if (before) return `${translate('search.date.before')} ${before}`;
+    return undefined;
+  })();
+
+  const filterItems: { id: FilterId; label: string; value?: string }[] = [
+    { id: 'from', label: translate('search.filters.from'), value: emailsSummary(fromEmails) },
+    { id: 'to', label: translate('search.filters.to'), value: emailsSummary(toEmails) },
+    { id: 'date', label: translate('search.filters.date'), value: dateSummary },
     { id: 'hasAttachments', label: translate('search.filters.hasAttachments') },
     { id: 'unread', label: translate('search.filters.unread') },
   ];
@@ -108,6 +124,10 @@ const Search = ({ onMailSelected }: SearchProps) => {
 
   const contactFilter = expandedFilter === 'from' || expandedFilter === 'to' ? expandedFilter : null;
   const currentEmails = expandedFilter === 'from' ? fromEmails : toEmails;
+
+  const collapseFilterPanel = () => {
+    if (expandedFilter) dispatch(setToggleFilter(expandedFilter, filterOffsetLeft));
+  };
 
   return (
     <div className="relative flex h-full w-full items-center">
@@ -127,15 +147,20 @@ const Search = ({ onMailSelected }: SearchProps) => {
         onMouseLeave={() => setPreventBlur(false)}
       >
         <div className="flex h-full w-full flex-col gap-3 px-3 py-3">
-          <fieldset className="relative flex flex-wrap items-center gap-1.5">
+          <fieldset
+            onKeyDown={(e) => e.key === 'Escape' && collapseFilterPanel()}
+            className="relative flex flex-wrap items-center gap-1.5"
+          >
             {filterItems.map((item) => (
               <FilterItem
                 key={item.id}
                 id={item.id}
                 label={item.label}
+                value={activeFilters.includes(item.id) ? item.value : undefined}
                 activeFilters={activeFilters}
                 expandedFilter={expandedFilter}
                 onToggle={handleFilterToggle}
+                onClear={handleFilterClear}
               />
             ))}
 
