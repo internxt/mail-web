@@ -32,6 +32,7 @@ interface MailViewProps {
 const MailView = ({ folder }: MailViewProps) => {
   const { translate } = useTranslationContext();
   const [activeMailId, setActiveMailId] = useState<string | undefined>(undefined);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const [renderedFolder, setRenderedFolder] = useState(folder);
   if (renderedFolder !== folder) {
@@ -130,9 +131,13 @@ const MailView = ({ folder }: MailViewProps) => {
             onCheckboxClicked={toggleSelectAll}
             onToggleUnreadFilter={folder === 'sent' ? undefined : toggleUnreadFilter}
             onSearchEmailSelected={onSelectEmail}
+            onSearchOpenChange={setIsSearchOpen}
           />
         </div>
-        <div className="flex-1 w-full overflow-hidden">
+        <div
+          className={`flex-1 w-full overflow-hidden ${isSearchOpen ? 'pointer-events-none' : ''}`}
+          inert={isSearchOpen}
+        >
           <Tray
             loading={isLoadingListFolder}
             mails={formattedMails}
@@ -147,7 +152,7 @@ const MailView = ({ folder }: MailViewProps) => {
         </div>
       </div>
       {/* Mail Preview */}
-      <div className="flex flex-col w-full">
+      <div className={`flex flex-col w-full ${isSearchOpen ? 'pointer-events-none' : ''}`} inert={isSearchOpen}>
         <div className="flex flex-row w-full pl-1 justify-between">
           <ActionsBar isRead={activeMail?.isRead ?? false} optionsDisabled={!activeMailId} {...previewActions} />
           <Settings />

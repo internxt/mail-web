@@ -27,9 +27,10 @@ import SearchEmailList from './components/list';
 
 interface SearchProps {
   onMailSelected?: (id: string, isRead?: boolean) => void;
+  onOpenChange?: (open: boolean) => void;
 }
 
-const Search = ({ onMailSelected }: SearchProps) => {
+const Search = ({ onMailSelected, onOpenChange }: SearchProps) => {
   const { translate } = useTranslationContext();
 
   const searchInput = useRef<HTMLInputElement>(null);
@@ -72,16 +73,24 @@ const Search = ({ onMailSelected }: SearchProps) => {
   const handleAfterDate = (date: Dayjs) => dispatch(setAfterDate(date));
   const handleBeforeDate = (date: Dayjs) => dispatch(setBeforeDate(date));
 
+  const changeSearchBoxOpen = (open: boolean) => {
+    setOpenSearchBox(open);
+    onOpenChange?.(open);
+  };
+
+  const closeSearchBox = () => {
+    changeSearchBoxOpen(false);
+    dispatch(resetFilters());
+  };
+
   const handleBlur = () => {
     if (preventBlur) return;
-    setOpenSearchBox(false);
-    dispatch(resetFilters());
+    closeSearchBox();
   };
 
   const handleMessageSelected = (mailId: string, isRead?: boolean) => {
     onMailSelected?.(mailId, isRead);
-    setOpenSearchBox(false);
-    dispatch(resetFilters());
+    closeSearchBox();
   };
 
   useHotkeys(
@@ -129,16 +138,26 @@ const Search = ({ onMailSelected }: SearchProps) => {
     if (expandedFilter) dispatch(setToggleFilter(expandedFilter, filterOffsetLeft));
   };
 
+  const backdropClassName = (() => {
+    const base = 'fixed inset-0 z-0 bg-black/30 transition-opacity duration-150 ease-out';
+    if (openSearchBox) return `${base} opacity-100`;
+    return `${base} pointer-events-none opacity-0`;
+  })();
+
   return (
-    <div className="relative flex h-full w-full items-center">
-      <SearchInput
-        handleBlur={handleBlur}
-        onSearchQueryChanges={onSearchQueryChanges}
-        openSearchBox={openSearchBox}
-        searchInput={searchInput}
-        searchQuery={searchQuery}
-        setOpenSearchBox={setOpenSearchBox}
-      />
+    <div className="relative z-40 flex h-full w-full items-center">
+      <div role="none" className={backdropClassName} onMouseDown={closeSearchBox} />
+
+      <div className="relative z-10 flex w-full items-center">
+        <SearchInput
+          handleBlur={handleBlur}
+          onSearchQueryChanges={onSearchQueryChanges}
+          openSearchBox={openSearchBox}
+          searchInput={searchInput}
+          searchQuery={searchQuery}
+          setOpenSearchBox={changeSearchBoxOpen}
+        />
+      </div>
 
       <div
         role="none"

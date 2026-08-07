@@ -24,7 +24,7 @@ const SearchEmailList = ({ mails, hasMoreItems, loading, onLoadMore, onMailSelec
 
   return (
     <div className="flex flex-col w-full h-full">
-      <div id="tray-scroll-container" className="overflow-y-auto w-full h-full min-h-0">
+      <div id="search-scroll-container" className="overflow-y-auto w-full h-full min-h-0">
         {loading && (!mails || mails.length === 0) ? (
           <>
             {new Array(8).fill(0).map((_, index) => (
@@ -38,7 +38,7 @@ const SearchEmailList = ({ mails, hasMoreItems, loading, onLoadMore, onMailSelec
             handleNextPage={onLoadMore}
             hasMoreItems={hasMoreItems}
             loader={loader}
-            scrollableTarget="tray-scroll-container"
+            scrollableTarget="search-scroll-container"
           >
             {formattedMails.map((email) => (
               <div key={email.id} className="flex items-center w-full flex-col">
