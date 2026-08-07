@@ -33,7 +33,7 @@ import type {
   ReplyEmailRequest,
   SendEmailRequest,
 } from '@internxt/sdk/dist/mail/types';
-import type { AppDispatch } from '@/store';
+import type { AppDispatch, RootState } from '@/store';
 import { MailEncryptionService } from '@/services/mail-encryption';
 
 const normalizeLookupAddresses = (addresses: string[]): string[] => {
@@ -123,6 +123,32 @@ export const mailApi = api.injectEndpoints({
         } catch (error) {
           const err = ErrorService.instance.castError(error);
           return { error: new FetchMailboxesInfoError(err.message, err.requestId) };
+        }
+      },
+
+      async onQueryStarted(_, { dispatch, getState, queryFulfilled }) {
+        const previousMailboxes = mailApi.endpoints.getMailboxesInfo.select()(getState() as RootState).data;
+        if (!previousMailboxes) return;
+
+        try {
+          const { data: mailboxes } = await queryFulfilled;
+
+          const changedMailboxes = mailboxes.filter((mailbox) => {
+            const previous = previousMailboxes.find((m) => m.id === mailbox.id);
+            return (
+              previous &&
+              (previous.totalEmails !== mailbox.totalEmails || previous.unreadEmails !== mailbox.unreadEmails)
+            );
+          });
+
+          const changedTags = changedMailboxes
+            .map((mailbox) => mailbox.type)
+            .filter((type): type is Exclude<MailboxResponse['type'], null> => type !== null)
+            .map((id) => ({ type: 'ListFolder' as const, id }));
+
+          if (changedTags.length > 0) dispatch(mailApi.util.invalidateTags(changedTags));
+        } catch {
+          // A failed refresh leaves the cached counts and lists as they were.
         }
       },
       providesTags: ['Mailbox'],

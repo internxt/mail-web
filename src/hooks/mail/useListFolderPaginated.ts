@@ -1,4 +1,4 @@
-import { AUTO_POLLING_INTERVAL_IN_MILLISECONDS, DEFAULT_FOLDER_LIMIT } from '@/constants';
+import { DEFAULT_FOLDER_LIMIT } from '@/constants';
 import { useGetListFolderQuery } from '@/store/api/mail';
 import type { FolderType } from '@/types/mail';
 import { useState } from 'react';
@@ -25,11 +25,7 @@ const useListFolderPaginated = (mailbox: FolderType) => {
       anchorId,
       unread: unreadFilter,
     },
-    {
-      pollingInterval: AUTO_POLLING_INTERVAL_IN_MILLISECONDS,
-      skipPollingIfUnfocused: true,
-      skip: !mailbox,
-    },
+    { skip: !mailbox },
   );
 
   const onLoadMore = () => {
