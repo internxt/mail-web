@@ -3,6 +3,7 @@ import { matchPath, useLocation } from 'react-router-dom';
 import { TrashIcon, TrayIcon, PaperPlaneTiltIcon, FileIcon, WarningOctagonIcon } from '@phosphor-icons/react';
 import type { SidenavOption } from '@internxt/ui';
 import { useTranslationContext } from '@/i18n';
+import { AUTO_POLLING_INTERVAL_IN_MILLISECONDS } from '@/constants';
 import { AppView } from '@/routes/paths';
 import { NavigationService } from '@/services/navigation';
 import { useUnreadByMailbox } from '@/hooks/mail/useUnreadByMailbox';
@@ -14,7 +15,11 @@ export const useSidenavNavigation = () => {
   const { translate } = useTranslationContext();
   const { pathname } = useLocation();
   const dispatch = useAppDispatch();
-  const { unreadByMailbox, refetch } = useUnreadByMailbox({ pollingInterval: 30000, skipPollingIfUnfocused: true });
+  const { unreadByMailbox, refetch } = useUnreadByMailbox({
+    pollingInterval: AUTO_POLLING_INTERVAL_IN_MILLISECONDS,
+    skipPollingIfUnfocused: true,
+    refetchOnFocus: true,
+  });
 
   const isActiveButton = useCallback((path: string) => !!matchPath(path, pathname), [pathname]);
 
