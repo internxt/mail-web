@@ -11,6 +11,7 @@ interface HeaderProps {
   totalCount: number;
   onCheckboxClicked: () => void;
   onSearchEmailSelected?: (mailId: string, isRead?: boolean) => void;
+  onSearchOpenChange?: (open: boolean) => void;
   onToggleUnreadFilter?: () => void;
 }
 
@@ -23,6 +24,7 @@ const TrayHeader = ({
   totalCount,
   onCheckboxClicked,
   onSearchEmailSelected,
+  onSearchOpenChange,
   onToggleUnreadFilter,
 }: HeaderProps) => {
   const allSelected = totalCount > 0 && selectedCount === totalCount;
@@ -32,7 +34,7 @@ const TrayHeader = ({
   return (
     <section className="flex flex-col w-full">
       <div className="py-3 flex w-full px-5">
-        <Search onMailSelected={onSearchEmailSelected} />
+        <Search onMailSelected={onSearchEmailSelected} onOpenChange={onSearchOpenChange} />
       </div>
       <div className="flex flex-row w-full justify-between px-5 py-3 z-10">
         <div className="flex flex-row gap-2 items-center">
