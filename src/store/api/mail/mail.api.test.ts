@@ -130,11 +130,12 @@ describe('Mail API', () => {
     describe('Refreshing the folder listing from the mailbox counts', () => {
       const setupOpenedInbox = async (refreshedInbox: (inbox: MailboxResponse) => MailboxResponse) => {
         const mailboxes = getMockedMailBoxes();
-        const inbox = mailboxes.find((m) => m.type === 'inbox')!;
+        const inbox = { ...mailboxes.find((m) => m.type === 'inbox')!, unreadEmails: 5 };
+        const baseMailboxes = mailboxes.map((m) => (m.type === 'inbox' ? inbox : m));
         const listFolderSpy = vi.spyOn(MailService.instance, 'listFolder').mockResolvedValue(getMockedMails());
         vi.spyOn(MailService.instance, 'getMailboxesInfo')
-          .mockResolvedValueOnce(mailboxes)
-          .mockResolvedValueOnce(mailboxes.map((m) => (m.type === 'inbox' ? refreshedInbox(inbox) : m)));
+          .mockResolvedValueOnce(baseMailboxes)
+          .mockResolvedValueOnce(baseMailboxes.map((m) => (m.type === 'inbox' ? refreshedInbox(inbox) : m)));
 
         const store = createTestStore();
         await store.dispatch(mailApi.endpoints.getListFolder.initiate(mailboxQuery));
@@ -159,7 +160,7 @@ describe('Mail API', () => {
       test('When an email is read somewhere else, then the emails of that folder are fetched again', async () => {
         const { listFolderSpy } = await setupOpenedInbox((inbox) => ({
           ...inbox,
-          unreadEmails: inbox.unreadEmails + 1,
+          unreadEmails: inbox.unreadEmails - 1,
         }));
 
         await waitFor(() => expect(listFolderSpy).toHaveBeenCalledTimes(1));
@@ -203,6 +204,61 @@ describe('Mail API', () => {
 
         await new Promise((resolve) => setTimeout(resolve, 0));
         expect(listFolderSpy).not.toHaveBeenCalled();
+      });
+
+      test('When refreshing the mailbox counts fails, then the opened folder is not fetched again', async () => {
+        const mailboxes = getMockedMailBoxes();
+        const listFolderSpy = vi.spyOn(MailService.instance, 'listFolder').mockResolvedValue(getMockedMails());
+        vi.spyOn(MailService.instance, 'getMailboxesInfo')
+          .mockResolvedValueOnce(mailboxes)
+          .mockRejectedValueOnce(new Error('Network error'));
+
+        const store = createTestStore();
+        await store.dispatch(mailApi.endpoints.getListFolder.initiate(mailboxQuery));
+        await store.dispatch(mailApi.endpoints.getMailboxesInfo.initiate());
+        listFolderSpy.mockClear();
+
+        await store.dispatch(mailApi.endpoints.getMailboxesInfo.initiate(undefined, { forceRefetch: true }));
+
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        expect(listFolderSpy).not.toHaveBeenCalled();
+      });
+
+      test('When mailbox counts change while a second page is loaded, then the folder resets to a fresh first page instead of duplicating pages', async () => {
+        const mailboxes = getMockedMailBoxes();
+        const inbox = { ...mailboxes.find((m) => m.type === 'inbox')!, unreadEmails: 5 };
+        const baseMailboxes = mailboxes.map((m) => (m.type === 'inbox' ? inbox : m));
+        const page1 = getMockedMails(DEFAULT_FOLDER_LIMIT);
+        const page2 = getMockedMails(DEFAULT_FOLDER_LIMIT);
+        const freshPage1 = getMockedMails(DEFAULT_FOLDER_LIMIT);
+        const listFolderSpy = vi
+          .spyOn(MailService.instance, 'listFolder')
+          .mockResolvedValueOnce(page1)
+          .mockResolvedValueOnce(page2)
+          .mockResolvedValueOnce(freshPage1);
+        vi.spyOn(MailService.instance, 'getMailboxesInfo')
+          .mockResolvedValueOnce(baseMailboxes)
+          .mockResolvedValueOnce(
+            baseMailboxes.map((m) => (m.type === 'inbox' ? { ...inbox, unreadEmails: inbox.unreadEmails - 1 } : m)),
+          );
+
+        const store = createTestStore();
+        await store.dispatch(mailApi.endpoints.getListFolder.initiate(mailboxQuery));
+        await store.dispatch(
+          mailApi.endpoints.getListFolder.initiate({ ...mailboxQuery, anchorId: 'anchor-page-2' } as ListEmailsQuery),
+        );
+        await store.dispatch(mailApi.endpoints.getMailboxesInfo.initiate());
+        listFolderSpy.mockClear();
+
+        await store.dispatch(mailApi.endpoints.getMailboxesInfo.initiate(undefined, { forceRefetch: true }));
+
+        await waitFor(() => {
+          const state = store.getState() as unknown as RootState;
+          const cache = mailApi.endpoints.getListFolder.select(mailboxQuery)(state);
+          expect(cache.data?.emails).toStrictEqual(freshPage1.emails);
+        });
+        expect(listFolderSpy).toHaveBeenCalledWith(expect.objectContaining({ anchorId: undefined }));
+        expect(listFolderSpy).toHaveBeenCalledTimes(1);
       });
     });
   });

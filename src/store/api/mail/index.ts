@@ -146,7 +146,28 @@ export const mailApi = api.injectEndpoints({
             .filter((type): type is Exclude<MailboxResponse['type'], null> => type !== null)
             .map((id) => ({ type: 'ListFolder' as const, id }));
 
-          if (changedTags.length > 0) dispatch(mailApi.util.invalidateTags(changedTags));
+          if (changedTags.length === 0) return;
+
+          const affectedListFolders = mailApi.util
+            .selectInvalidatedBy(getState() as RootState, changedTags)
+            .filter((entry) => entry.endpointName === 'getListFolder');
+
+          const resetMailboxIds = new Set<string>();
+          for (const { originalArgs } of affectedListFolders) {
+            const arg = originalArgs as ListEmailsQuery;
+            if (arg?.anchorId) {
+              resetMailboxIds.add(String(arg.mailbox));
+              dispatch(
+                mailApi.endpoints.getListFolder.initiate(
+                  { ...arg, anchorId: undefined },
+                  { forceRefetch: true, subscribe: false },
+                ),
+              );
+            }
+          }
+
+          const tagsToInvalidate = changedTags.filter((tag) => !resetMailboxIds.has(String(tag.id)));
+          if (tagsToInvalidate.length > 0) dispatch(mailApi.util.invalidateTags(tagsToInvalidate));
         } catch {
           // A failed refresh leaves the cached counts and lists as they were.
         }
