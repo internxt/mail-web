@@ -8,6 +8,7 @@ const translate = vi.fn((key: string, props?: Record<string, unknown>) =>
 
 describe('Date filter options', () => {
   beforeEach(() => {
+    vi.restoreAllMocks();
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-03-15T10:00:00.000Z'));
   });

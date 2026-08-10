@@ -12,6 +12,7 @@ const renderDateFilter = (afterDate = null as dayjs.Dayjs | null, beforeDate = n
 
 describe('Date filter panel', () => {
   beforeEach(() => {
+    vi.restoreAllMocks();
     onSelectPreset.mockClear();
     onAfterDate.mockClear();
     onBeforeDate.mockClear();

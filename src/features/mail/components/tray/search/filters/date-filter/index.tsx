@@ -80,7 +80,10 @@ const DateFilter = ({
                     onFocus={() => focusDateInput(side)}
                     onBlur={() => blurDateInput(side)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') e.currentTarget.blur();
+                      if (e.key === 'Enter') {
+                        if (e.nativeEvent.isComposing) return;
+                        e.currentTarget.blur();
+                      }
                       if (e.key === 'Escape') {
                         e.stopPropagation();
                         discardDateInput(side);
