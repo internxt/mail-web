@@ -96,6 +96,7 @@
     "removeEmail": "Rimuovi {{email}}",
     "filters": {
       "clear": "Rimuovi il filtro {{filter}}",
+      "emailsSummary": "{{email}} +{{count}}",
       "from": "Da",
       "to": "A",
       "date": "Data",
@@ -113,7 +114,10 @@
       "after": "Dopo il",
       "before": "Prima del",
       "selectToday": "Seleziona oggi",
-      "format": "gg/mm/aaaa"
+      "format": "gg/mm/aaaa",
+      "rangeSummary": "{{after}} - {{before}}",
+      "afterSummary": "Dopo il {{date}}",
+      "beforeSummary": "Prima del {{date}}"
     }
   },
   "mail": {

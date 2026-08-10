@@ -43,9 +43,9 @@ const ContactInput = ({ emails, onAdd, onRemove, placeholder, offsetLeft }: Cont
         {emails.map((email) => (
           <span
             key={email}
-            className="flex max-w-full items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
+            className="flex min-w-0 max-w-full items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
           >
-            <span className="truncate">{email}</span>
+            <span className="min-w-0 truncate">{email}</span>
             <button
               type="button"
               aria-label={translate('search.removeEmail', { email })}
