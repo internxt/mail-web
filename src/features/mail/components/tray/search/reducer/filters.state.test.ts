@@ -193,10 +193,26 @@ describe('Search filters', () => {
       expect(state.toEmails).toStrictEqual(['b@test.com']);
     });
 
-    test('When the date filter is cleared, then the preset and the entered dates are reset', () => {
+    test('When the recipient filter is cleared, then its emails are dropped and the sender emails are kept', () => {
+      const withEmails = filterReducer(
+        filterReducer(initialFilterState, setAddEmail('from', 'a@test.com')),
+        setAddEmail('to', 'b@test.com'),
+      );
+
+      const state = filterReducer(withEmails, setClearFilter('to'));
+
+      expect(state.toEmails).toStrictEqual([]);
+      expect(state.activeFilters).not.toContain('to');
+      expect(state.fromEmails).toStrictEqual(['a@test.com']);
+    });
+
+    test('When the date filter is cleared, then the preset and both entered dates are reset', () => {
       const withDates = filterReducer(
-        filterReducer(initialFilterState, setDatePreset('specificDate')),
-        setAfterDate(dayjs('2024-01-01')),
+        filterReducer(
+          filterReducer(initialFilterState, setDatePreset('specificDate')),
+          setAfterDate(dayjs('2024-01-01')),
+        ),
+        setBeforeDate(dayjs('2024-12-31')),
       );
 
       const state = filterReducer(withDates, setClearFilter('date'));
