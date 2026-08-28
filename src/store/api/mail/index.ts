@@ -333,7 +333,7 @@ export const mailApi = api.injectEndpoints({
       async queryFn(): Promise<{ data: EmailDomainsResponse } | { error: FetchActiveDomainsError }> {
         try {
           const domains = await MailService.instance.getActiveDomains();
-          return { data: domains };
+          return { data: domains.sort((a, b) => a.domain.localeCompare(b.domain)) };
         } catch (error) {
           const err = ErrorService.instance.castError(error);
           return { error: new FetchActiveDomainsError(err.message, err.requestId) };
