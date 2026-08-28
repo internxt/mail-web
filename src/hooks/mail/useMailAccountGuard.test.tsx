@@ -41,7 +41,7 @@ describe('useMailAccountGuard', () => {
 
   test('When the keys query is in flight, then it should stay in loading state', () => {
     vi.spyOn(MailService.instance, 'getMailAccountKeys').mockReturnValue(new Promise(() => undefined));
-    const store = createTestStore();
+    const store = createTestStore({ user: { isAuthenticated: true } });
 
     const { result } = renderHook(() => useMailAccountGuard(), { wrapper: createWrapper(store) });
 
@@ -53,7 +53,7 @@ describe('useMailAccountGuard', () => {
     vi.spyOn(LocalStorageService.instance, 'getMnemonic').mockReturnValue('mnemonic');
     const decryptedKeys = { publicKey: new Uint8Array([1]), secretKey: new Uint8Array([2]) };
     mockedOpenKeystore.mockResolvedValue(decryptedKeys);
-    const store = createTestStore();
+    const store = createTestStore({ user: { isAuthenticated: true } });
 
     const { result } = renderHook(() => useMailAccountGuard(), { wrapper: createWrapper(store) });
 
@@ -65,7 +65,7 @@ describe('useMailAccountGuard', () => {
     vi.spyOn(MailService.instance, 'getMailAccountKeys').mockResolvedValue(mockKeys);
     vi.spyOn(LocalStorageService.instance, 'getMnemonic').mockReturnValue('mnemonic');
     mockedOpenKeystore.mockRejectedValue(new Error('bad keystore'));
-    const store = createTestStore();
+    const store = createTestStore({ user: { isAuthenticated: true } });
 
     const { result } = renderHook(() => useMailAccountGuard(), { wrapper: createWrapper(store) });
 
@@ -77,7 +77,7 @@ describe('useMailAccountGuard', () => {
     vi.spyOn(LocalStorageService.instance, 'getMnemonic').mockReturnValue('mnemonic');
     const decryptedKeys = { publicKey: new Uint8Array([1]), secretKey: new Uint8Array([2]) };
     mockedOpenKeystore.mockRejectedValueOnce(new Error('bad keystore')).mockResolvedValueOnce(decryptedKeys);
-    const store = createTestStore();
+    const store = createTestStore({ user: { isAuthenticated: true } });
 
     const { result } = renderHook(() => useMailAccountGuard(), { wrapper: createWrapper(store) });
 
@@ -93,7 +93,7 @@ describe('useMailAccountGuard', () => {
       status: 403,
       code: MAIL_NOT_SETUP_CODE,
     } as never);
-    const store = createTestStore();
+    const store = createTestStore({ user: { isAuthenticated: true } });
 
     const { result } = renderHook(() => useMailAccountGuard(), { wrapper: createWrapper(store) });
 
@@ -105,7 +105,7 @@ describe('useMailAccountGuard', () => {
     const getMnemonicSpy = vi.spyOn(LocalStorageService.instance, 'getMnemonic').mockReturnValue('mnemonic');
     const cachedKeys = { publicKey: new Uint8Array([9]), secretKey: new Uint8Array([8]) };
     MailKeysService.instance.set(mockKeys.address, cachedKeys);
-    const store = createTestStore();
+    const store = createTestStore({ user: { isAuthenticated: true } });
 
     const { result } = renderHook(() => useMailAccountGuard(), { wrapper: createWrapper(store) });
 
@@ -118,7 +118,7 @@ describe('useMailAccountGuard', () => {
   test('When the mnemonic is missing, then the status should be error and no keystore should be loaded', async () => {
     vi.spyOn(MailService.instance, 'getMailAccountKeys').mockResolvedValue(mockKeys);
     vi.spyOn(LocalStorageService.instance, 'getMnemonic').mockReturnValue(null as unknown as string);
-    const store = createTestStore();
+    const store = createTestStore({ user: { isAuthenticated: true } });
 
     const { result } = renderHook(() => useMailAccountGuard(), { wrapper: createWrapper(store) });
 
@@ -133,10 +133,20 @@ describe('useMailAccountGuard', () => {
       message: 'Network error',
       status: 500,
     } as never);
-    const store = createTestStore();
+    const store = createTestStore({ user: { isAuthenticated: true } });
 
     const { result } = renderHook(() => useMailAccountGuard(), { wrapper: createWrapper(store) });
 
     await waitFor(() => expect(result.current.status).toBe('error'));
+  });
+
+  test('When the user is not authenticated, then the keys should not be requested', () => {
+    const getKeysSpy = vi.spyOn(MailService.instance, 'getMailAccountKeys').mockResolvedValue(mockKeys);
+    const store = createTestStore();
+
+    const { result } = renderHook(() => useMailAccountGuard(), { wrapper: createWrapper(store) });
+
+    expect(getKeysSpy).not.toHaveBeenCalled();
+    expect(result.current.status).toBe('loading');
   });
 });

@@ -26,6 +26,10 @@
     "message": "Sei passato a un piano che non supporta Internxt Mail. Il tuo account verrà eliminato tra {{days}} giorni.",
     "upgrade": "Aggiorna piano"
   },
+  "planRequired": {
+    "notice": "Mail non è incluso nel tuo piano.",
+    "seePlans": "Vedi i piani"
+  },
   "filter": {
     "all": "Tutti",
     "none": "Nessuno",
@@ -177,7 +181,8 @@
       "availabilityCheckFailed": "Qualcosa è andato storto durante il controllo della disponibilità dell'indirizzo. Riprova.",
       "availabilityCheckRateLimited": "Si è verificato un errore durante il controllo della disponibilità dell'indirizzo. Attendi un momento e riprova.",
       "passwordCheckFailed": "Si è verificato un errore durante la verifica della password",
-      "setupFailed": "Si è verificato un errore durante la configurazione del tuo account"
+      "setupFailed": "Si è verificato un errore durante la configurazione del tuo account",
+      "planNotSupported": "Il tuo piano attuale non include Internxt Mail. Passa a un piano superiore per completare la configurazione del tuo indirizzo."
     },
     "downloadingDesktopApp": "Si è verificato un errore durante il download dell'app",
     "mail": {

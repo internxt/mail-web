@@ -26,6 +26,10 @@
     "message": "Has bajado a un plan que no incluye Internxt Mail. Tu cuenta se eliminará en {{days}} días.",
     "upgrade": "Mejorar plan"
   },
+  "planRequired": {
+    "notice": "Mail no está incluido en tu plan.",
+    "seePlans": "Ver planes"
+  },
   "filter": {
     "all": "Todos",
     "none": "Ninguno",
@@ -177,7 +181,8 @@
       "availabilityCheckFailed": "Algo salió mal al comprobar la disponibilidad de la dirección. Por favor, inténtalo de nuevo.",
       "availabilityCheckRateLimited": "Hubo un error al comprobar la disponibilidad de la dirección. Por favor, espera un momento e inténtalo de nuevo.",
       "passwordCheckFailed": "Algo ha ido mal al verificar tu contraseña",
-      "setupFailed": "Algo ha ido mal al configurar tu cuenta"
+      "setupFailed": "Algo ha ido mal al configurar tu cuenta",
+      "planNotSupported": "Tu plan actual no incluye Internxt Mail. Mejora tu plan para terminar de configurar tu dirección."
     },
     "downloadingDesktopApp": "Algo ha ido mal al descargar la aplicación",
     "mail": {

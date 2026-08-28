@@ -1,16 +1,17 @@
 import { useAppSelector } from '@/store/hooks';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AppView, getRouteConfig } from '../paths';
-import { useMailAccountGuard } from '@/hooks/mail/useMailAccountGuard';
+import { useMailAccess } from '@/hooks/mail/useMailAccess';
 
 export const ProtectedRoute = () => {
   const { isAuthenticated } = useAppSelector((state) => state.user);
   const location = useLocation();
-  const { status } = useMailAccountGuard();
+  const { status } = useMailAccess();
+
+  const welcomePath = getRouteConfig(AppView.Welcome).path;
 
   if (!isAuthenticated) {
-    const to = getRouteConfig(AppView.Welcome).path;
-    return <Navigate to={to} state={{ from: location }} replace />;
+    return <Navigate to={welcomePath} state={{ from: location }} replace />;
   }
 
   const identitySetupPath = getRouteConfig(AppView.IdentitySetup).path;
@@ -18,7 +19,11 @@ export const ProtectedRoute = () => {
 
   if (status === 'loading') return null;
 
-  if (status === 'not-setup' && !isOnIdentitySetup) {
+  if (status === 'plan-required') {
+    return <Navigate to={welcomePath} state={{ from: location }} replace />;
+  }
+
+  if (status === 'needs-setup' && !isOnIdentitySetup) {
     return <Navigate to={identitySetupPath} state={{ from: location }} replace />;
   }
 

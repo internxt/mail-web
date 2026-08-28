@@ -1,22 +1,16 @@
 import { DEFAULT_USER_NAME } from '@/constants';
 import { useTranslationContext } from '@/i18n';
-import { AppView } from '@/routes/paths';
-import { CryptoService } from '@/services/crypto';
 import { ErrorService } from '@/services/error';
-import { LocalStorageService } from '@/services/local-storage';
-import { NavigationService } from '@/services/navigation';
 import { AuthService } from '@/services/sdk/auth';
 import { MailService } from '@/services/sdk/mail';
-import { mailApi } from '@/store/api/mail';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import type { SetupMailAccountPayload } from '@internxt/sdk/dist/mail/types';
-import { createEncryptionAndRecoveryKeystores } from 'internxt-crypto';
+import { useAppSelector } from '@/store/hooks';
 import { use, useState, type ReactNode } from 'react';
 import { ConfirmChange } from './components/ConfirmChange';
 import { ConfirmPassword } from './components/ConfirmPassword';
 import { Footer } from './components/Footer';
 import { Header } from './components/Header';
 import { UpdateEmail } from './components/UpdateEmail';
+import { useSetupMailAccount } from './hooks/useSetupMailAccount';
 
 type Step = 'updateEmail' | 'confirmPassword' | 'confirmChange';
 
@@ -28,13 +22,12 @@ const IdentitySetup = () => {
     address: '',
     domain: '',
   });
-  const [isConfirmingChange, setIsConfirmingChange] = useState<boolean>(false);
   const [hashedPassword, setHashedPassword] = useState<string>('');
   const [step, setStep] = useState<Step>('updateEmail');
-  const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.user);
   const currentEmail = user?.email ?? '';
   const userFullName = user ? `${user.name} ${user.lastname}` : DEFAULT_USER_NAME;
+  const { isConfirmingChange, setupMailAccount } = useSetupMailAccount({ userFullName });
 
   const onConfirmPassword = async (password: string) => {
     try {
@@ -57,44 +50,7 @@ const IdentitySetup = () => {
     }
   };
 
-  const onConfirmChange = async () => {
-    setIsConfirmingChange(true);
-
-    try {
-      const mailboxEmail = `${newEmail.address}@${newEmail.domain}`;
-      const mnemonic = LocalStorageService.instance.getMnemonic();
-
-      if (!mnemonic) {
-        ErrorService.instance.notifyUser(translate('errors.identitySetup.setupFailed'));
-        return;
-      }
-
-      const { encryptionKeystore, recoveryKeystore } = await createEncryptionAndRecoveryKeystores(
-        mailboxEmail,
-        mnemonic,
-      );
-
-      const confirmIdentitySetupPayload: SetupMailAccountPayload = {
-        address: newEmail.address,
-        displayName: userFullName,
-        domain: newEmail.domain,
-        password: CryptoService.instance.encryptTextWithKey(hashedPassword),
-        keys: {
-          publicKey: encryptionKeystore.publicKey,
-          encryptionPrivateKey: encryptionKeystore.privateKeyEncrypted,
-          recoveryPrivateKey: recoveryKeystore.privateKeyEncrypted,
-        },
-      };
-
-      await MailService.instance.setupMailAccount(confirmIdentitySetupPayload);
-      dispatch(mailApi.util.invalidateTags(['MailAccountKeys']));
-      NavigationService.instance.replace({ id: AppView.Inbox });
-    } catch {
-      ErrorService.instance.notifyUser(translate('errors.identitySetup.setupFailed'));
-    } finally {
-      setIsConfirmingChange(false);
-    }
-  };
+  const onConfirmChange = () => setupMailAccount({ ...newEmail, hashedPassword });
 
   const stepContent: Record<Step, ReactNode> = {
     updateEmail: (

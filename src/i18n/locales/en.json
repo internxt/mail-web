@@ -26,6 +26,10 @@
     "message": "You downgraded to a plan that doesn't support Internxt Mail. Your account will be deleted in {{days}} days.",
     "upgrade": "Upgrade"
   },
+  "planRequired": {
+    "notice": "Mail isn't part of your plan.",
+    "seePlans": "See plans"
+  },
   "filter": {
     "all": "All",
     "none": "None",
@@ -175,7 +179,8 @@
       "availabilityCheckFailed": "Something went wrong while checking the address availability. Please try again.",
       "availabilityCheckRateLimited": "An error occurred while checking the address availability. Please wait a moment and try again.",
       "passwordCheckFailed": "Something went wrong while verifying your password",
-      "setupFailed": "Something went wrong while setting up your account"
+      "setupFailed": "Something went wrong while setting up your account",
+      "planNotSupported": "Your current plan doesn't include Internxt Mail. Upgrade to finish setting up your address."
     },
     "downloadingDesktopApp": "Something went wrong while downloading the app",
     "mail": {

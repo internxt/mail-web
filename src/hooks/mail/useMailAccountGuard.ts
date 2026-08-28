@@ -4,11 +4,13 @@ import { useGetMailAccountKeysQuery } from '@/store/api/mail';
 import { MailNotSetupError } from '@/errors';
 import { LocalStorageService } from '@/services/local-storage';
 import { MailKeysService } from '@/services/mail-keys';
+import { useAppSelector } from '@/store/hooks';
 
 export type MailAccountGuardStatus = 'loading' | 'ready' | 'not-setup' | 'error';
 
 export const useMailAccountGuard = (): { status: MailAccountGuardStatus } => {
-  const { data, error, isLoading, isFetching } = useGetMailAccountKeysQuery();
+  const isAuthenticated = useAppSelector((state) => state.user.isAuthenticated);
+  const { data, error, isLoading, isFetching } = useGetMailAccountKeysQuery(undefined, { skip: !isAuthenticated });
   const lastStartedAddress = useRef<string | null>(null);
   const [isDecrypted, setIsDecrypted] = useState(false);
   const [decryptError, setDecryptError] = useState(false);

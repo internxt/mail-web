@@ -11,6 +11,7 @@ export const api = createApi({
     'MailMe',
     'StorageUsage',
     'StorageLimit',
+    'UserTier',
     'RecipientKeys',
     'ActiveDomains',
     'ThreadMessage',
