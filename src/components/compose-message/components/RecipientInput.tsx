@@ -57,12 +57,6 @@ export const RecipientInput = ({
     }
   };
 
-  const onRemoveUser = (recipientId: string) => {
-    if (readOnly) return;
-
-    onRemoveRecipient(recipientId);
-  };
-
   return (
     <div className="flex flex-row gap-2 items-start">
       <p className="font-medium max-w-16 w-full text-gray-100 py-2">{label}</p>
@@ -77,7 +71,7 @@ export const RecipientInput = ({
                 email={recipient.email}
                 name={(recipient.name ?? '').trim() || recipient.email}
                 avatar={recipient.avatar}
-                onRemove={() => onRemoveUser(recipient.id)}
+                onRemove={readOnly ? undefined : () => onRemoveRecipient(recipient.id)}
               />
             </div>
           ))}
