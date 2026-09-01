@@ -4,6 +4,7 @@ import PreviewHeader, { type User } from './header';
 import Preview from './preview';
 import type { EmailResponse, EncryptionBlock } from '@internxt/sdk/dist/mail/types';
 import { useSanitizedMailHtml } from './utils/useSanitizedMailHtml';
+import { useEncryptedBadge } from './useEncryptedBadge';
 
 interface PreviewMailProps {
   from: User;
@@ -28,6 +29,12 @@ interface PreviewMailProps {
 const PreviewMail = ({ from, to, cc, bcc, mail, collapsed = false, onToggleCollapsed }: PreviewMailProps) => {
   const { translate } = useTranslationContext();
   const sanitizedBody = useSanitizedMailHtml(mail.htmlBody);
+  const showEncryptedBadge = useEncryptedBadge({
+    isEncrypted: mail.isEncrypted,
+    decryptError: mail.decryptError,
+    envelope: mail.envelope,
+    collapsed,
+  });
 
   const isInteractive = !!onToggleCollapsed;
 
@@ -53,7 +60,7 @@ const PreviewMail = ({ from, to, cc, bcc, mail, collapsed = false, onToggleColla
           }
         />
       </button>
-      {mail.isEncrypted && !mail.decryptError && !collapsed && (
+      {showEncryptedBadge && (
         <div className="mx-5 mt-2 inline-flex items-center gap-1 self-start rounded-full bg-green/10 px-2.5 py-1 text-sm font-medium text-green">
           <LockKeyIcon size={14} weight="fill" />
           {translate('modals.composeMessageDialog.encryptedBadge')}

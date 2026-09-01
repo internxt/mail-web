@@ -220,11 +220,12 @@ export const mailApi = api.injectEndpoints({
           const mailList = await MailService.instance.getThreads(emailId);
           const decrypted = await Promise.all(
             mailList.map(async (email): Promise<DecryptedMail> => {
+              const isEncrypted = MailEncryptionService.instance.hasEncryptionSummary(email);
               const result = await MailEncryptionService.instance.decryptMailBody(email);
               if (!result.ok) {
                 return {
                   ...email,
-                  isEncrypted: result.isEncrypted,
+                  isEncrypted,
                   decryptError: result.decryptError,
                 };
               }
@@ -232,7 +233,7 @@ export const mailApi = api.injectEndpoints({
                 ...email,
                 htmlBody: result.text,
                 ...(result.envelope ? { encryption: result.envelope } : {}),
-                isEncrypted: result.isEncrypted,
+                isEncrypted,
               };
             }),
           );

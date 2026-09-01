@@ -377,7 +377,13 @@ describe('Mail API', () => {
 
     test('When one message in the thread cannot be opened, then the rest still arrive and the broken one carries an error description', async () => {
       const readableMail = getMockedMail({ textBody: 'plain', htmlBody: '<p>plain</p>' });
-      const unreadableMail = getMockedMail({ textBody: 'INTERNXT-ENCRYPTED-EMAIL-v1\ncorrupt' });
+      const unreadableMail = getMockedMail({
+        textBody: 'INTERNXT-ENCRYPTED-EMAIL-v1\ncorrupt',
+        encryption: {
+          encryptedPreview: 'ep',
+          wrappedKeys: [{ hybridCiphertext: 'h', encryptedKey: 'k', encryptedForEmail: 'bob@inxt.me' }],
+        },
+      });
       vi.spyOn(MailService.instance, 'getThreads').mockResolvedValue([readableMail, unreadableMail]);
       const store = createTestStore();
 
@@ -386,6 +392,19 @@ describe('Mail API', () => {
       expect(result.data).toHaveLength(2);
       expect(result.data?.[0]).toMatchObject({ isEncrypted: false });
       expect(result.data?.[1]).toMatchObject({ isEncrypted: true, decryptError: expect.any(String) });
+    });
+
+    test('When a message is stored in the sealed wire format but was not end-to-end encrypted, then it should not be marked as encrypted', async () => {
+      const sealedCleartextMail = getMockedMail({
+        textBody: 'INTERNXT-ENCRYPTED-EMAIL-v1\ncorrupt',
+        htmlBody: '',
+      });
+      vi.spyOn(MailService.instance, 'getThreads').mockResolvedValue([sealedCleartextMail]);
+      const store = createTestStore();
+
+      const result = await store.dispatch(mailApi.endpoints.getThread.initiate({ emailId: sealedCleartextMail.id }));
+
+      expect(result.data?.[0]).toMatchObject({ isEncrypted: false });
     });
 
     test('When the thread cannot be retrieved, then an error indicating so is thrown', async () => {

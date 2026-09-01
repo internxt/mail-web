@@ -79,6 +79,10 @@ export class MailEncryptionService {
     return textBody.startsWith(`${ENCRYPTED_EMAIL_PREFIX}\n`);
   }
 
+  hasEncryptionSummary(mail: Pick<EmailResponse, 'encryption'>): boolean {
+    return (mail.encryption?.wrappedKeys?.length ?? 0) > 0;
+  }
+
   parseEncryptionBlock(textBody: string): EncryptionBlock {
     const payload = textBody.slice(ENCRYPTED_EMAIL_PREFIX.length + 1);
     const json = typeof atob === 'function' ? atob(payload) : Buffer.from(payload, 'base64').toString('utf8');
