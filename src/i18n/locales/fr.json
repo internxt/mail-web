@@ -267,6 +267,9 @@
       "sections": {
         "general": {
           "title": "Général",
+          "account": {
+            "title": "Internxt Mail"
+          },
           "appearance": {
             "title": "Apparence",
             "dark": "Sombre",

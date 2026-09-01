@@ -11,12 +11,7 @@ interface UseRecipientInputParams {
 
 const LIST_SEPARATORS = /[,;\s]/;
 
-export const useRecipientInput = ({
-  recipients,
-  onAddRecipient,
-  onRemoveRecipient,
-  readOnly = false,
-}: UseRecipientInputParams) => {
+export const useRecipientInput = ({ recipients, onAddRecipient, onRemoveRecipient }: UseRecipientInputParams) => {
   const [inputValue, setInputValue] = useState('');
 
   const addRecipients = (value: string) => {
@@ -53,11 +48,5 @@ export const useRecipientInput = ({
     addRecipients(`${inputValue}${pastedText}`);
   };
 
-  const onRemoveUser = (recipientId: string) => {
-    if (readOnly) return;
-
-    onRemoveRecipient(recipientId);
-  };
-
-  return { inputValue, onInputChange, onKeyDown, onBlur, onPaste, onRemoveUser };
+  return { inputValue, onInputChange, onKeyDown, onBlur, onPaste };
 };

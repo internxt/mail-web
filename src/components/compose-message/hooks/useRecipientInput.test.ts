@@ -121,15 +121,6 @@ describe('Typing and pasting recipients', () => {
     expect(params.onRemoveRecipient).toHaveBeenCalledExactlyOnceWith('2');
   });
 
-  test('When a chip is removed, then that recipient is dropped', () => {
-    const params = createParams([{ id: '1', email: 'alice@example.com' }]);
-    const { result } = renderHook(() => useRecipientInput(params));
-
-    act(() => result.current.onRemoveUser('1'));
-
-    expect(params.onRemoveRecipient).toHaveBeenCalledExactlyOnceWith('1');
-  });
-
   test('When the typed address is confirmed with a separator key, then it is added', () => {
     const params = createParams();
     const { result } = renderHook(() => useRecipientInput(params));
@@ -146,15 +137,6 @@ describe('Typing and pasting recipients', () => {
 
     act(() => result.current.onInputChange('bo'));
     act(() => result.current.onKeyDown(keyEvent('Backspace')));
-
-    expect(params.onRemoveRecipient).not.toHaveBeenCalled();
-  });
-
-  test('When the recipients cannot be edited, then removing a chip does nothing', () => {
-    const params = { ...createParams([{ id: '1', email: 'alice@example.com' }]), readOnly: true };
-    const { result } = renderHook(() => useRecipientInput(params));
-
-    act(() => result.current.onRemoveUser('1'));
 
     expect(params.onRemoveRecipient).not.toHaveBeenCalled();
   });

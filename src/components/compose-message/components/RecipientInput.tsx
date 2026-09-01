@@ -33,7 +33,7 @@ export const RecipientInput = ({
   disabled,
   readOnly = false,
 }: RecipientInputProps) => {
-  const { inputValue, onInputChange, onKeyDown, onBlur, onPaste, onRemoveUser } = useRecipientInput({
+  const { inputValue, onInputChange, onKeyDown, onBlur, onPaste } = useRecipientInput({
     recipients,
     onAddRecipient,
     onRemoveRecipient,
@@ -54,7 +54,7 @@ export const RecipientInput = ({
                 email={recipient.email}
                 name={(recipient.name ?? '').trim() || recipient.email}
                 avatar={recipient.avatar}
-                onRemove={() => onRemoveUser(recipient.id)}
+                onRemove={readOnly ? undefined : () => onRemoveRecipient(recipient.id)}
               />
             </div>
           ))}
