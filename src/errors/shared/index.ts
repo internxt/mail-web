@@ -1,5 +1,7 @@
 import type { ConfigKeys } from '@/types/config';
 
+export const RATE_LIMITED_STATUS = 429;
+
 export class UserNotFoundError extends Error {
   constructor() {
     super('User not found');

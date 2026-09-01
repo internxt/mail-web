@@ -192,6 +192,7 @@
       "noRecipients": "Aggiungi almeno un destinatario prima di inviare",
       "sendFailed": "Impossibile inviare l'email",
       "replyFailed": "Impossibile inviare la risposta",
+      "sendRateLimited": "Limite di invio raggiunto. Attendi un momento e riprova.",
       "keyLookupFailed": "Impossibile recuperare le chiavi del destinatario",
       "forwardAttachmentFailed": "Impossibile preparare un allegato per l'inoltro. Riprova.",
       "internxtKeyMissing": "Impossibile trovare le chiavi di cifratura per un destinatario Internxt. Riprova più tardi.",

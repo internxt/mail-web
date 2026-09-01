@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
+import { RATE_LIMITED_STATUS } from '@/errors';
 import { ErrorService } from '@/services/error';
 import { MailService } from '@/services/sdk/mail';
 import {
@@ -12,7 +13,6 @@ import {
 } from './emailAddressRules';
 
 export const DEFAULT_DEBOUNCE_MS = 600;
-const RATE_LIMIT_STATUS = 429;
 
 interface ResolvedAvailability {
   key: string;
@@ -29,7 +29,7 @@ const fetchAvailability = async (username: string, domain: string): Promise<Addr
     const { available, suggestion } = await MailService.instance.checkAddressAvailability(username, domain);
     return available ? { status: 'available' } : { status: 'taken', suggestion };
   } catch (error) {
-    if (ErrorService.instance.castError(error).status === RATE_LIMIT_STATUS) {
+    if (ErrorService.instance.castError(error).status === RATE_LIMITED_STATUS) {
       return { status: 'rateLimited' };
     }
     return UNKNOWN_AVAILABILITY;

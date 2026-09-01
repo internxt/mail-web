@@ -192,6 +192,7 @@
       "noRecipients": "Agrega al menos un destinatario antes de enviar",
       "sendFailed": "No se pudo enviar el correo",
       "replyFailed": "No se pudo enviar la respuesta",
+      "sendRateLimited": "Has alcanzado el límite de envío. Espera un momento e inténtalo de nuevo.",
       "keyLookupFailed": "No se pudieron obtener las claves del destinatario",
       "forwardAttachmentFailed": "No se pudo preparar un adjunto para reenviar. Inténtalo de nuevo.",
       "internxtKeyMissing": "No se encontraron claves de cifrado para un destinatario de Internxt. Inténtalo de nuevo más tarde.",

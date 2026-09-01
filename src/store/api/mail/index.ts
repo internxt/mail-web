@@ -369,7 +369,7 @@ export const mailApi = api.injectEndpoints({
           return { data: result };
         } catch (error) {
           const err = ErrorService.instance.castError(error);
-          return { error: new SendEmailError(err.message, err.requestId) };
+          return { error: new SendEmailError(err.message, err.requestId, err.status) };
         }
       },
       invalidatesTags: () => [
@@ -391,7 +391,7 @@ export const mailApi = api.injectEndpoints({
           return { data: result };
         } catch (error) {
           const err = ErrorService.instance.castError(error);
-          return { error: new SendEmailError(err.message, err.requestId) };
+          return { error: new SendEmailError(err.message, err.requestId, err.status) };
         }
       },
       invalidatesTags: () => [
