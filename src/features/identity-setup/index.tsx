@@ -7,11 +7,11 @@ import { LocalStorageService } from '@/services/local-storage';
 import { NavigationService } from '@/services/navigation';
 import { AuthService } from '@/services/sdk/auth';
 import { MailService } from '@/services/sdk/mail';
-import { mailApi } from '@/store/api/mail';
+import { mailApi, useGetActiveDomainsQuery } from '@/store/api/mail';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import type { SetupMailAccountPayload } from '@internxt/sdk/dist/mail/types';
 import { createEncryptionAndRecoveryKeystores } from 'internxt-crypto';
-import { use, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { ConfirmChange } from './components/ConfirmChange';
 import { ConfirmPassword } from './components/ConfirmPassword';
 import { Footer } from './components/Footer';
@@ -20,9 +20,8 @@ import { UpdateEmail } from './components/UpdateEmail';
 
 type Step = 'updateEmail' | 'confirmPassword' | 'confirmChange';
 
-const activeDomainsPromise = MailService.instance.getActiveDomains();
 const IdentitySetup = () => {
-  const activeDomains = use(activeDomainsPromise);
+  const { data: activeDomains } = useGetActiveDomainsQuery();
   const { translate } = useTranslationContext();
   const [newEmail, setNewEmail] = useState({
     address: '',
@@ -35,6 +34,8 @@ const IdentitySetup = () => {
   const { user } = useAppSelector((state) => state.user);
   const currentEmail = user?.email ?? '';
   const userFullName = user ? `${user.name} ${user.lastname}` : DEFAULT_USER_NAME;
+
+  if (!activeDomains) return null;
 
   const onConfirmPassword = async (password: string) => {
     try {
