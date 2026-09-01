@@ -200,6 +200,22 @@ describe('isEncryptedEmailBody / parseEncryptionBlock', () => {
     expect(mailEncryption.isEncryptedEmailBody(undefined)).toBe(false);
   });
 
+  test('When checking whether a message is end-to-end encrypted, then only a summary with wrapped keys should count', () => {
+    expect(mailEncryption.hasEncryptionSummary({})).toBe(false);
+    expect(mailEncryption.hasEncryptionSummary({ encryption: null })).toBe(false);
+    expect(mailEncryption.hasEncryptionSummary({ encryption: { encryptedPreview: 'ep', wrappedKeys: [] } })).toBe(
+      false,
+    );
+    expect(
+      mailEncryption.hasEncryptionSummary({
+        encryption: {
+          encryptedPreview: 'ep',
+          wrappedKeys: [{ hybridCiphertext: 'h', encryptedKey: 'k', encryptedForEmail: 'bob@inxt.me' }],
+        },
+      }),
+    ).toBe(true);
+  });
+
   test('When the body contains a valid encrypted bundle, then it should parse the encryption block', () => {
     const block = {
       version: 'v3' as const,

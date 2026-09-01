@@ -52,9 +52,7 @@
     "updateEmail": {
       "title": "Set up Internxt email",
       "description": [
-        "Hey {{name}}, to use Mail, you’ll need to create your new Internxt email address.",
-        "This email will become your new login for all Internxt services.",
-        "Your previous email {{current_email}} will be saved for account recovery."
+        "Hey {{name}}, to use Mail, you’ll need to create your new Internxt email address. This email will become your new login for all Internxt services. Your previous email {{current_email}} will be saved for account recovery."
       ],
       "mail": "Mail",
       "mailType": "Lowercase letters, numbers, ., - and _",

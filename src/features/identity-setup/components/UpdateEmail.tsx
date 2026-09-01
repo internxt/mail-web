@@ -54,7 +54,7 @@ export const UpdateEmail = ({ userFullName, activeDomains, currentEmail, onNext 
       {/* Title and description */}
       <div className="flex flex-col text-center">
         <h1 className="text-2xl font-medium text-gray-100">{translate('identitySetup.updateEmail.title')}</h1>
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 text-justify mt-4">
           {descriptions.map((description) => (
             <p key={description} className="text-gray-80">
               {description}

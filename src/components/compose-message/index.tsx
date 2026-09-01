@@ -1,4 +1,4 @@
-import { LockKeyIcon, PaperclipIcon, TrashIcon, WarningIcon, XIcon } from '@phosphor-icons/react';
+import { LockKeyIcon, PaperclipIcon, TrashIcon, XIcon } from '@phosphor-icons/react';
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
 
 import { genSymmetricKey } from 'internxt-crypto';
@@ -317,15 +317,6 @@ export const ComposeMessageDialog = () => {
               >
                 <LockKeyIcon size={14} weight="fill" />
                 {translate('modals.composeMessageDialog.encryptedBadge')}
-              </span>
-            )}
-            {encryptionState === 'external' && (
-              <span
-                data-testid="encryption-badge-cleartext"
-                className="inline-flex items-center gap-1 rounded-full bg-yellow/10 px-2.5 py-1 text-sm font-medium text-yellow"
-              >
-                <WarningIcon size={14} weight="fill" />
-                {translate('modals.composeMessageDialog.cleartextBadge')}
               </span>
             )}
             <Button variant="ghost" onClick={() => fileInputRef.current?.click()} disabled={isSending}>

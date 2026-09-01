@@ -39,7 +39,6 @@ export const useSuiteLauncher = () => {
       onClick: () => {
         window.open(ConfigService.instance.getVariable('DRIVE_APP_URL'), '_self', 'noopener');
       },
-      isMain: true,
     },
     {
       icon: <VideoCameraIcon />,
@@ -59,7 +58,7 @@ export const useSuiteLauncher = () => {
       onClick: () => {
         NavigationService.instance.navigate({ id: AppView.Inbox });
       },
-      availableSoon: true,
+      isMain: true,
       isLocked: !userFeatures?.[Service.Mail]?.enabled,
     },
     {
