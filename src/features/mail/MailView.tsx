@@ -20,6 +20,7 @@ import { TrayEmptyState } from './components/tray/tray-empty-state';
 import { formatEmailsToList } from '@/utils/format-emails';
 import { useListActionContext } from '@/hooks/mail/useListActionContext';
 import { usePreviewMailActions } from '@/hooks/mail/usePreviewMailActions';
+import { useBulkMailActions } from '@/hooks/mail/useBulkMailActions';
 import ActionsBar from './components/mail-preview/actions-bar';
 import { useActionDialog } from '@/context/dialog-manager';
 import { ThreadView } from './components/thread-view';
@@ -87,7 +88,38 @@ const MailView = ({ folder }: MailViewProps) => {
     },
     openDialog,
   });
+  const bulkActions = useBulkMailActions({
+    folder,
+    selectedEmails,
+    listFolderEmails,
+    clearSelection: selectNone,
+    updateReadStatus: async (args) => {
+      await updateReadStatus(args).unwrap();
+    },
+    moveToFolder: async (args) => {
+      await moveToFolder(args).unwrap();
+    },
+    deleteEmails: async (args) => {
+      await deleteEmails(args).unwrap();
+    },
+    openDialog,
+  });
   const { unreadByMailbox } = useUnreadByMailbox();
+
+  const hasSelection = selectedEmails.length > 0;
+  const actionsBarProps = hasSelection
+    ? {
+        ...previewActions,
+        ...bulkActions,
+        isRead: bulkActions.areAllSelectedRead,
+        optionsDisabled: false,
+        replyOptionsDisabled: selectedEmails.length > 1 || !activeMailId,
+      }
+    : {
+        ...previewActions,
+        isRead: activeMail?.isRead ?? false,
+        optionsDisabled: !activeMailId,
+      };
 
   const folderName = translate(`mail.${folder}`);
 
@@ -154,7 +186,7 @@ const MailView = ({ folder }: MailViewProps) => {
       {/* Mail Preview */}
       <div className={`flex flex-col w-full ${isSearchOpen ? 'pointer-events-none' : ''}`} inert={isSearchOpen}>
         <div className="flex flex-row w-full pl-1 justify-between">
-          <ActionsBar isRead={activeMail?.isRead ?? false} optionsDisabled={!activeMailId} {...previewActions} />
+          <ActionsBar {...actionsBarProps} />
           <Settings />
         </div>
 

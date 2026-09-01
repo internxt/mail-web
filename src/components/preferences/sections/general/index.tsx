@@ -1,5 +1,6 @@
 import { useTranslationContext } from '@/i18n';
 import PreferencesSection from '../../components/PreferencesSection';
+import Account from './components/account';
 import Appearance from './components/appearance';
 import Language from './components/language';
 import Support from './components/support';
@@ -12,6 +13,7 @@ const GeneralSection = ({ onClose }: { onClose: () => void }) => {
       title={translate('modals.preferences.sections.general.title')}
       onClose={onClose}
     >
+      <Account />
       <Appearance />
       <Language />
       <Support />

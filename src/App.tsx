@@ -35,6 +35,8 @@ function App() {
         position="bottom-center"
         containerStyle={{
           filter: 'drop-shadow(0 32px 40px rgba(18, 22, 25, 0.08))',
+          // Modals from @internxt/ui use z-[9999], so toasts must sit above them.
+          zIndex: 10000,
         }}
       />
       <Suspense fallback={<AppLoader className="h-screen w-screen" />}>

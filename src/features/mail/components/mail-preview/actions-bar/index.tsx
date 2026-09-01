@@ -13,6 +13,7 @@ import { useActionsBar } from '../../../../../hooks/mail/useActionsBar';
 interface ActionsBarProps {
   isRead: boolean;
   optionsDisabled: boolean;
+  replyOptionsDisabled?: boolean;
   onMarkAsRead: () => void;
   onMarkAsUnread: () => void;
   onReply: () => void;
@@ -27,6 +28,7 @@ const Separator = () => <div className="h-5 w-px bg-gray-10" />;
 const ActionsBar = ({
   isRead,
   optionsDisabled,
+  replyOptionsDisabled,
   onMarkAsRead,
   onMarkAsUnread,
   onTrash,
@@ -35,6 +37,7 @@ const ActionsBar = ({
   onReplyAll,
   onForward,
 }: ActionsBarProps) => {
+  const areReplyOptionsDisabled = replyOptionsDisabled ?? optionsDisabled;
   const { translate, moveToItems, toggleReadTitle, onToggleRead } = useActionsBar({
     isRead,
     optionsDisabled,
@@ -82,7 +85,7 @@ const ActionsBar = ({
 
       <div className="flex flex-row items-center gap-1">
         <button
-          disabled={optionsDisabled}
+          disabled={areReplyOptionsDisabled}
           type="button"
           title={translate('actions.reply')}
           className={iconButtonClass}
@@ -92,7 +95,7 @@ const ActionsBar = ({
         </button>
         <Separator />
         <button
-          disabled={optionsDisabled}
+          disabled={areReplyOptionsDisabled}
           type="button"
           title={translate('actions.replyAll')}
           className={iconButtonClass}
@@ -102,7 +105,7 @@ const ActionsBar = ({
         </button>
         <Separator />
         <button
-          disabled={optionsDisabled}
+          disabled={areReplyOptionsDisabled}
           type="button"
           title={translate('actions.forward')}
           className={iconButtonClass}
