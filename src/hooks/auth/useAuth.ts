@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { LocalStorageService } from '@/services/local-storage';
-import { PaymentsService } from '@/services/sdk/payments';
 import type { LoginCredentials } from '@/types/oauth';
 import { OauthService } from '@/services/oauth/oauth.service';
 import { useAppDispatch } from '@/store/hooks';
@@ -23,19 +22,6 @@ export function useAuth({ onSuccess, translate }: UseWebAuthProps) {
 
       dispatch(userActions.setUser(credentials.user));
       await dispatch(initializeUserThunk());
-      try {
-        const [userTier, userSubscription] = await Promise.all([
-          PaymentsService.instance.getUserTier(),
-          PaymentsService.instance.getUserSubscription(),
-        ]);
-
-        LocalStorageService.instance.setTier(userTier);
-        LocalStorageService.instance.setSubscription(userSubscription);
-        dispatch(userActions.setUserSubscription(userSubscription));
-        dispatch(userActions.setUserTier(userTier));
-      } catch (err) {
-        console.error('Error getting user subscription and tier:', err);
-      }
 
       onSuccess?.(credentials.newToken);
     },

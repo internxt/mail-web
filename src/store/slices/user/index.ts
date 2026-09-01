@@ -46,6 +46,8 @@ export const userSlice = createSlice({
     },
     setUserSubscription: (state: UserState, action: PayloadAction<UserSubscription>) => {
       state.userSubscription = action.payload;
+
+      LocalStorageService.instance.setSubscription(action.payload);
     },
     setUser: (state: UserState, action: PayloadAction<UserSettings | undefined>) => {
       state.isAuthenticated = !!action.payload;
