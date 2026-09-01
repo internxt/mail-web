@@ -10,6 +10,7 @@ import { OauthService } from '@/services/oauth/oauth.service';
 import type { LoginCredentials } from '@/types/oauth';
 import { getMockedLoginCredentials, getMockedSubscription, getMockedTier } from '@/test-utils/fixtures';
 import { ErrorService } from '@/services/error';
+import { auth, TokenStatus } from '@internxt/lib';
 
 const mockedTier = getMockedTier();
 const mockedSubscription = getMockedSubscription();
@@ -33,6 +34,8 @@ describe('Auth custom hook', () => {
     vi.spyOn(LocalStorageService.instance, 'saveCredentials');
     vi.spyOn(LocalStorageService.instance, 'setTier');
     vi.spyOn(LocalStorageService.instance, 'setSubscription');
+    vi.spyOn(LocalStorageService.instance, 'getToken').mockReturnValue('test-token');
+    vi.spyOn(auth, 'validateTokenAndCheckExpiration').mockReturnValue(TokenStatus.VALID);
     vi.spyOn(PaymentsService.instance, 'getUserTier').mockResolvedValue(mockedTier);
     vi.spyOn(PaymentsService.instance, 'getUserSubscription').mockResolvedValue(mockedSubscription);
   });

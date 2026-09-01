@@ -1,3 +1,3 @@
-export { initializeUserThunk } from './initializeUserThunk';
+export { initializeUserThunk, refreshUserTierAndSubscriptionThunk } from './initializeUserThunk';
 export { logoutThunk } from './logOutThunk';
 export { refreshAvatarThunk } from './refreshAvatarThunk';

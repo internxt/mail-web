@@ -17,12 +17,29 @@ import { ConfirmPassword } from './components/ConfirmPassword';
 import { Footer } from './components/Footer';
 import { Header } from './components/Header';
 import { UpdateEmail } from './components/UpdateEmail';
+import { UpgradeRequired } from './components/UpgradeRequired';
+import { Service } from '@internxt/sdk/dist/drive/payments/types/tiers';
 
 type Step = 'updateEmail' | 'confirmPassword' | 'confirmChange';
+
+const IdentitySetupLayout = ({ children }: { children: ReactNode }) => (
+  <div className="flex flex-col w-screen h-screen justify-between py-10 bg-gray-1">
+    <Header />
+    <div className="flex flex-col items-center w-full justify-center">
+      <div className="flex flex-col max-w-96 rounded-2xl bg-surface border border-gray-10 p-8 gap-5 shadow-subtle">
+        {children}
+      </div>
+    </div>
+    <Footer />
+  </div>
+);
 
 const IdentitySetup = () => {
   const { data: activeDomains } = useGetActiveDomainsQuery();
   const { translate } = useTranslationContext();
+  const userTier = useAppSelector((state) => state.user.userTier);
+  const isMailEnabled = userTier?.featuresPerService[Service.Mail].enabled;
+
   const [newEmail, setNewEmail] = useState({
     address: '',
     domain: '',
@@ -34,6 +51,14 @@ const IdentitySetup = () => {
   const { user } = useAppSelector((state) => state.user);
   const currentEmail = user?.email ?? '';
   const userFullName = user ? `${user.name} ${user.lastname}` : DEFAULT_USER_NAME;
+
+  if (!isMailEnabled) {
+    return (
+      <IdentitySetupLayout>
+        <UpgradeRequired userFullName={userFullName} />
+      </IdentitySetupLayout>
+    );
+  }
 
   if (!activeDomains) return null;
 
@@ -124,17 +149,7 @@ const IdentitySetup = () => {
     ),
   };
 
-  return (
-    <div className="flex flex-col w-screen h-screen justify-between py-10 bg-gray-1">
-      <Header />
-      <div className="flex flex-col items-center w-full justify-center">
-        <div className="flex flex-col max-w-96 rounded-2xl bg-surface border border-gray-10 p-8 gap-5 shadow-subtle">
-          {stepContent[step]}
-        </div>
-      </div>
-      <Footer />
-    </div>
-  );
+  return <IdentitySetupLayout>{stepContent[step]}</IdentitySetupLayout>;
 };
 
 export default IdentitySetup;
