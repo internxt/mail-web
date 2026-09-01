@@ -84,6 +84,10 @@
       "description": "D'ora in poi, usa la tua email Internxt per accedere a tutti i servizi Internxt.",
       "action": "Salva nuova email"
     },
+    "upgradeRequired": {
+      "title": "Aggiornamento necessario",
+      "description": "Internxt Mail è disponibile solo per gli utenti Ultimate. Aggiorna il tuo piano per poter utilizzare il servizio."
+    },
     "termsAndConditions": "Termini e condizioni",
     "contactSupport": "Contatta il supporto"
   },

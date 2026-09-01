@@ -80,6 +80,10 @@
       "description": "From now on, use your Internxt email to sign in to all Internxt services.",
       "action": "Save new email"
     },
+    "upgradeRequired": {
+      "title": "Upgrade required",
+      "description": "Internxt Mail is only available for Ultimate users. Please upgrade your plan in order to be able to use the service."
+    },
     "termsAndConditions": "Terms and Conditions",
     "contactSupport": "Contact Support"
   },
