@@ -50,7 +50,6 @@ export const useMailAccountGuard = (): { status: MailAccountGuardStatus } => {
           },
           mnemonic,
         );
-        console.log(btoa(String.fromCharCode(...keys.secretKey)));
         MailKeysService.instance.set(address, keys);
         setIsDecrypted(true);
       } catch {

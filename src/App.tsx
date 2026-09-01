@@ -7,7 +7,6 @@ import { initializeUserThunk } from './store/slices/user/thunks';
 import { Toaster } from 'react-hot-toast';
 import { AppLoader } from './components/AppLoader';
 import { DialogsRoot } from './context/dialog-manager/DialogsRoot';
-import { MailKeysService } from './services/mail-keys';
 
 const router = createBrowserRouter(routes);
 const navigation = router.navigate;
@@ -24,8 +23,6 @@ function App() {
 
   useEffect(() => {
     void initializeUser();
-    const keys = MailKeysService.instance.getCurrentKeys();
-    if (keys) btoa(String.fromCharCode(...keys.secretKey));
   }, []);
 
   if (isAuthenticated && !isInitialized) {
