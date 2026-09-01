@@ -1,7 +1,6 @@
-import { useState, type KeyboardEvent } from 'react';
 import type { Recipient } from '../types';
 import UserChip from '@/components/user-chip';
-import isValidEmail from '@internxt/lib/dist/auth/isValidEmail';
+import { useRecipientInput } from '../hooks/useRecipientInput';
 
 interface RecipientInputProps {
   label: string;
@@ -34,34 +33,12 @@ export const RecipientInput = ({
   disabled,
   readOnly = false,
 }: RecipientInputProps) => {
-  const [inputValue, setInputValue] = useState('');
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault();
-      const email = inputValue.trim().replace(/,$/, '');
-      if (email && isValidEmail(email)) {
-        onAddRecipient(email);
-        setInputValue('');
-      }
-    } else if (e.key === 'Backspace' && inputValue === '' && recipients.length > 0) {
-      onRemoveRecipient(recipients.at(-1)!.id);
-    }
-  };
-
-  const handleBlur = () => {
-    const email = inputValue.trim();
-    if (email && isValidEmail(email)) {
-      onAddRecipient(email);
-      setInputValue('');
-    }
-  };
-
-  const onRemoveUser = (recipientId: string) => {
-    if (readOnly) return;
-
-    onRemoveRecipient(recipientId);
-  };
+  const { inputValue, onInputChange, onKeyDown, onBlur, onPaste, onRemoveUser } = useRecipientInput({
+    recipients,
+    onAddRecipient,
+    onRemoveRecipient,
+    readOnly,
+  });
 
   return (
     <div className="flex flex-row gap-2 items-start">
@@ -85,9 +62,10 @@ export const RecipientInput = ({
             <input
               type="email"
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onBlur={handleBlur}
+              onChange={(e) => onInputChange(e.target.value)}
+              onKeyDown={onKeyDown}
+              onPaste={onPaste}
+              onBlur={onBlur}
               disabled={disabled}
               aria-label={label}
               className={`flex-1 min-w-30 bg-transparent text-sm text-gray-100 placeholder:text-gray-40 focus:outline-none py-0.5 ${disabled ? 'cursor-not-allowed' : ''}`}
