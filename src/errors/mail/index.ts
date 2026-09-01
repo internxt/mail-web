@@ -1,3 +1,5 @@
+import { RATE_LIMITED_STATUS } from '../shared';
+
 export class FetchMailboxesInfoError extends Error {
   constructor(
     errorMsg?: string,
@@ -90,10 +92,16 @@ export class SendEmailError extends Error {
   constructor(
     errorMsg?: string,
     public requestId?: string,
+    public status?: number,
   ) {
     super('Error while sending email: ' + errorMsg);
 
     Object.setPrototypeOf(this, SendEmailError.prototype);
+  }
+
+  /** The server throttled the send; the same email can be retried later. */
+  get isRateLimited(): boolean {
+    return this.status === RATE_LIMITED_STATUS;
   }
 }
 

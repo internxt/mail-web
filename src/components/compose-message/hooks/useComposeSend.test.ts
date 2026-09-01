@@ -6,6 +6,7 @@ import { MailEncryptionService } from '@/services/mail-encryption';
 import { ConfigService } from '@/services/config';
 import notificationsService from '@/services/notifications';
 import type { Recipient } from '../types';
+import { SendEmailError } from '@/errors';
 
 const mocks = vi.hoisted(() => ({
   activeDomains: undefined as { domain: string }[] | undefined,
@@ -148,6 +149,48 @@ describe('useComposeSend', () => {
     });
 
     expect(show).toHaveBeenCalledWith(expect.objectContaining({ text: 'errors.mail.sendFailed' }));
+    expect(onSent).not.toHaveBeenCalled();
+  });
+
+  test('When the server throttles the send, then it tells the user to retry later and keeps the dialog open', async () => {
+    mocks.triggerLookup.mockReturnValue({
+      unwrap: () => Promise.resolve([{ address: 'bob@inxt.me', publicKey: 'bob-pk' }]),
+    });
+    vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
+    mocks.sendEmail.mockReturnValue({
+      unwrap: () => Promise.reject(new SendEmailError('Sending rate limit reached', undefined, 429)),
+    });
+
+    const { result, onSent } = renderSend({ toRecipients: [recipient('bob@inxt.me')] });
+
+    await act(async () => {
+      await result.current.send();
+    });
+
+    expect(show).toHaveBeenCalledWith(expect.objectContaining({ text: 'errors.mail.sendRateLimited' }));
+    expect(onSent).not.toHaveBeenCalled();
+  });
+
+  test('When a reply is throttled by the server, then it tells the user to retry later instead of reporting a generic reply failure', async () => {
+    mocks.triggerLookup.mockReturnValue({
+      unwrap: () => Promise.resolve([{ address: 'bob@inxt.me', publicKey: 'bob-pk' }]),
+    });
+    vi.spyOn(MailEncryptionService.instance, 'buildEncryptionBlock').mockResolvedValue(mockEncryptionBlock);
+    mocks.replyEmail.mockReturnValue({
+      unwrap: () => Promise.reject(new SendEmailError('Sending rate limit reached', undefined, 429)),
+    });
+
+    const { result, onSent } = renderSend({
+      toRecipients: [recipient('bob@inxt.me')],
+      isReply: true,
+      inReplyTo: 'msg-1',
+    });
+
+    await act(async () => {
+      await result.current.send();
+    });
+
+    expect(show).toHaveBeenCalledWith(expect.objectContaining({ text: 'errors.mail.sendRateLimited' }));
     expect(onSent).not.toHaveBeenCalled();
   });
 

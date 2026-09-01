@@ -23,11 +23,18 @@ import { useTranslationContext } from '@/i18n';
 import type { Recipient } from '../types';
 import type { AttachmentTask } from './useAttachments';
 import type { TranslationKey } from '@/i18n/types';
-import { ComposeSendError } from '@/errors';
+import { ComposeSendError, SendEmailError } from '@/errors';
 
 export type EncryptionState = 'none' | 'unknown' | 'internxt' | 'external';
 
 const toEmailAddress = (r: Recipient): EmailAddress => (r.name ? { name: r.name, email: r.email } : { email: r.email });
+
+const resolveErrorKey = (error: unknown, isReply: boolean): TranslationKey => {
+  if (error instanceof ComposeSendError) return error.translationKey as TranslationKey;
+  if (error instanceof SendEmailError && error.isRateLimited) return 'errors.mail.sendRateLimited';
+
+  return isReply ? 'errors.mail.replyFailed' : 'errors.mail.sendFailed';
+};
 
 interface UseComposeSendParams {
   toRecipients: Recipient[];
@@ -234,9 +241,7 @@ export const useComposeSend = ({
       onSent();
     } catch (error) {
       console.error('Failed to send email', error);
-      const fallbackKey = isReply ? 'errors.mail.replyFailed' : 'errors.mail.sendFailed';
-      const messageKey = error instanceof ComposeSendError ? error.translationKey : fallbackKey;
-      notificationsService.show({ text: translate(messageKey as TranslationKey), type: ToastType.Error });
+      notificationsService.show({ text: translate(resolveErrorKey(error, isReply)), type: ToastType.Error });
     }
   };
 

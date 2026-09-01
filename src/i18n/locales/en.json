@@ -188,6 +188,7 @@
       "noRecipients": "Add at least one recipient before sending",
       "sendFailed": "Could not send the email",
       "replyFailed": "Could not send the reply",
+      "sendRateLimited": "Sending limit reached. Wait a moment and try again.",
       "keyLookupFailed": "Could not fetch recipient keys",
       "forwardAttachmentFailed": "Could not prepare an attachment for forwarding. Please try again.",
       "internxtKeyMissing": "Could not find encryption keys for an Internxt recipient. Please try again later.",

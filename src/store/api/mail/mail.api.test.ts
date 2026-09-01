@@ -27,7 +27,7 @@ import type { RootState } from '@/store';
 vi.mock('@/services/error', () => ({
   ErrorService: {
     instance: {
-      castError: vi.fn((err) => ({ message: err.message, requestId: 'req-123' })),
+      castError: vi.fn((err) => ({ message: err.message, requestId: 'req-123', status: err.status })),
     },
   },
 }));
@@ -883,6 +883,27 @@ describe('Mail API', () => {
       );
 
       expect('error' in result && result.error).toBeInstanceOf(SendEmailError);
+    });
+
+    test('When the server throttles the send, then the returned error is marked as rate limited', async () => {
+      vi.spyOn(MailService.instance, 'sendEmail').mockRejectedValue(
+        Object.assign(new Error('Sending rate limit reached, please try again later'), { status: 429 }),
+      );
+      vi.spyOn(ErrorService.instance, 'castError').mockReturnValue({
+        message: 'Sending rate limit reached, please try again later',
+        status: 429,
+        requestId: 'req-123',
+      } as never);
+      const store = createTestStore();
+
+      const result = await store.dispatch(
+        mailApi.endpoints.sendEmail.initiate({
+          to: [{ email: 'bob@inxt.me' }],
+          subject: 'hi',
+        }),
+      );
+
+      expect('error' in result && (result.error as SendEmailError).isRateLimited).toBe(true);
     });
   });
 
