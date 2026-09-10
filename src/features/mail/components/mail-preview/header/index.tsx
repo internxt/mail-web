@@ -1,4 +1,5 @@
 import UserChip from '@/components/user-chip';
+import UserHoverCard from '@/components/user-hover-card';
 import { useTranslationContext } from '@/i18n';
 import { DateService } from '@/services/date';
 import { Avatar } from '@internxt/ui';
@@ -42,9 +43,18 @@ const PreviewHeader = ({ sender, date, to, cc, bcc, attachmentsLength, collapsed
   return (
     <div className="flex w-full flex-row items-start justify-between p-5">
       <div className="flex flex-row gap-3 min-w-0 flex-1">
-        <Avatar fullName={sender.name} src={sender.avatar} diameter={40} />
+        <UserHoverCard avatar={sender.avatar} name={sender.name} email={sender.email} className="shrink-0">
+          <Avatar fullName={sender.name} src={sender.avatar} diameter={40} />
+        </UserHoverCard>
         <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-          <p className="text-lg font-medium text-gray-100">{sender.name}</p>
+          <UserHoverCard
+            avatar={sender.avatar}
+            name={sender.name}
+            email={sender.email}
+            className="self-start max-w-full"
+          >
+            <p className="truncate text-lg font-medium text-gray-100">{sender.name}</p>
+          </UserHoverCard>
           {collapsedSnippet ?? (
             <div className="flex flex-col gap-2">
               <RecipientLine label={translate('mail.preview.to')} users={to} />
