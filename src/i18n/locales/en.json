@@ -138,6 +138,10 @@
       "bcc": "BCC",
       "decrypting": "Decrypting message…",
       "decryptFailed": "Could not decrypt this message",
+      "spamSuggestion": {
+        "spam": "Likely spam · {{percent}}%",
+        "notSpam": "Looks legitimate · {{percent}}%"
+      },
       "errors": {
         "downloadAttachmentFailed": "Could not download the attachment"
       },

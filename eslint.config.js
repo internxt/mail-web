@@ -7,7 +7,7 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 import internxtConfig from '@internxt/eslint-config-internxt';
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'public/spam-detector']),
   ...internxtConfig,
   {
     files: ['**/*.{ts,tsx}'],

@@ -142,6 +142,10 @@
       "bcc": "CCI",
       "decrypting": "Déchiffrement du message…",
       "decryptFailed": "Impossible de déchiffrer ce message",
+      "spamSuggestion": {
+        "spam": "Spam probable · {{percent}} %",
+        "notSpam": "Semble légitime · {{percent}} %"
+      },
       "errors": {
         "downloadAttachmentFailed": "Impossible de télécharger la pièce jointe"
       },

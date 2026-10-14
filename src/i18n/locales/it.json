@@ -142,6 +142,10 @@
       "bcc": "CCN",
       "decrypting": "Decrittazione del messaggio…",
       "decryptFailed": "Impossibile decrittare questo messaggio",
+      "spamSuggestion": {
+        "spam": "Probabile spam · {{percent}}%",
+        "notSpam": "Sembra legittimo · {{percent}}%"
+      },
       "errors": {
         "downloadAttachmentFailed": "Impossibile scaricare l'allegato"
       },
