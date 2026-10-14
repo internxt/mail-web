@@ -142,6 +142,10 @@
       "bcc": "CCO",
       "decrypting": "Descifrando mensaje…",
       "decryptFailed": "No se pudo descifrar este mensaje",
+      "spamSuggestion": {
+        "spam": "Posible spam · {{percent}} %",
+        "notSpam": "Parece legítimo · {{percent}} %"
+      },
       "errors": {
         "downloadAttachmentFailed": "No se pudo descargar el adjunto"
       },

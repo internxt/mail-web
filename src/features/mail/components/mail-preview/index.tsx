@@ -1,10 +1,11 @@
-import { LockKeyIcon, WarningIcon } from '@phosphor-icons/react';
+import { LockKeyIcon, ShieldCheckIcon, WarningIcon, WarningOctagonIcon } from '@phosphor-icons/react';
 import { useTranslationContext } from '@/i18n';
 import PreviewHeader, { type User } from './header';
 import Preview from './preview';
 import type { EmailResponse, EncryptionBlock } from '@internxt/sdk/dist/mail/types';
 import { useSanitizedMailHtml } from './utils/useSanitizedMailHtml';
 import { useEncryptedBadge } from './useEncryptedBadge';
+import { useSpamSuggestion } from './useSpamSuggestion';
 
 interface PreviewMailProps {
   from: User;
@@ -35,6 +36,13 @@ const PreviewMail = ({ from, to, cc, bcc, mail, collapsed = false, onToggleColla
     envelope: mail.envelope,
     collapsed,
   });
+  const spamSuggestion = useSpamSuggestion({
+    subject: mail.subject,
+    htmlBody: mail.htmlBody,
+    collapsed,
+    isDecrypting: mail.isDecrypting,
+    decryptError: mail.decryptError,
+  });
 
   const isInteractive = !!onToggleCollapsed;
 
@@ -64,6 +72,22 @@ const PreviewMail = ({ from, to, cc, bcc, mail, collapsed = false, onToggleColla
         <div className="mx-5 mt-2 inline-flex items-center gap-1 self-start rounded-full bg-green/10 px-2.5 py-1 text-sm font-medium text-green">
           <LockKeyIcon size={14} weight="fill" />
           {translate('modals.composeMessageDialog.encryptedBadge')}
+        </div>
+      )}
+      {spamSuggestion && (
+        <div
+          className={`mx-5 mt-2 inline-flex items-center gap-1 self-end rounded-full px-2.5 py-1 text-sm font-medium ${
+            spamSuggestion.isSpam ? 'bg-orange/10 text-orange' : 'bg-green/10 text-green'
+          }`}
+        >
+          {spamSuggestion.isSpam ? (
+            <WarningOctagonIcon size={14} weight="fill" />
+          ) : (
+            <ShieldCheckIcon size={14} weight="fill" />
+          )}
+          {translate(spamSuggestion.isSpam ? 'mail.preview.spamSuggestion.spam' : 'mail.preview.spamSuggestion.notSpam', {
+            percent: String(spamSuggestion.confidencePercent),
+          })}
         </div>
       )}
       {mail.decryptError && !collapsed && (

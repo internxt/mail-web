@@ -38,4 +38,5 @@ export interface ConfigKeys {
   DRIVE_APP_URL: string;
   INTERCOM_PROVIDER_KEY: string;
   SERVER_PUBLIC_KEY: string;
+  SPAM_MODEL_URL: string;
 }
