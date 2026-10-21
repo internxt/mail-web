@@ -244,6 +244,7 @@
     },
     "composeMessageDialog": {
       "title": "Nouveau message",
+      "from": "De",
       "to": "À",
       "cc": "Cc",
       "bcc": "Cci",

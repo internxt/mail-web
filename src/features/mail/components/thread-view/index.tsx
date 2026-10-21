@@ -36,7 +36,7 @@ export const ThreadView = ({ thread }: ThreadViewProps) => {
         <div className="flex flex-col w-full" key={mail.id}>
           <PreviewMail
             from={{
-              name: mail.from[0]?.name ?? mail.from[0]?.email ?? '',
+              name: mail.from[0]?.name?.trim() || mail.from[0]?.email || '',
               email: mail.from[0]?.email ?? '',
             }}
             to={mail.to.map((u) => ({ name: u.name ?? '', email: u.email }))}

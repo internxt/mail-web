@@ -240,6 +240,7 @@
     },
     "composeMessageDialog": {
       "title": "New Message",
+      "from": "From",
       "to": "To",
       "cc": "Cc",
       "bcc": "Bcc",

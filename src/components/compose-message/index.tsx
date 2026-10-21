@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'reac
 import { genSymmetricKey } from 'internxt-crypto';
 import type { Recipient } from './types';
 import { RecipientInput } from './components/RecipientInput';
+import { SenderField } from './components/SenderField';
 import { AttachmentList } from './components/AttachmentList';
 import { Button, Input } from '@internxt/ui';
 import RichTextEditor from './components/RichTextEditor';
@@ -245,6 +246,7 @@ export const ComposeMessageDialog = () => {
             <p className="text-lg font-medium text-gray-100">{title}</p>
             <XIcon onClick={isSending ? undefined : onClose} className={isSending ? 'opacity-40' : 'cursor-pointer'} />
           </div>
+          <SenderField />
           <RecipientInput
             label={translate('modals.composeMessageDialog.to')}
             recipients={toRecipients}

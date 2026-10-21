@@ -39,6 +39,7 @@ const RecipientLine = ({ label, users }: { label: string; users: User[] }) => {
 const PreviewHeader = ({ sender, date, to, cc, bcc, attachmentsLength, collapsedSnippet }: HeaderProps) => {
   const formattedDate = DateService.formatWithTime(date);
   const { translate } = useTranslationContext();
+  const showSenderEmail = !!sender.email && sender.name !== sender.email;
 
   return (
     <div className="flex w-full flex-row items-start justify-between p-5">
@@ -53,7 +54,10 @@ const PreviewHeader = ({ sender, date, to, cc, bcc, attachmentsLength, collapsed
             email={sender.email}
             className="self-start max-w-full"
           >
-            <p className="truncate text-lg font-medium text-gray-100">{sender.name}</p>
+            <p className="flex min-w-0 flex-row items-baseline gap-2">
+              <span className="truncate text-lg font-medium text-gray-100">{sender.name}</span>
+              {showSenderEmail && <span className="truncate text-sm text-gray-60">{sender.email}</span>}
+            </p>
           </UserHoverCard>
           {collapsedSnippet ?? (
             <div className="flex flex-col gap-2">

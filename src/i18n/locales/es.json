@@ -244,6 +244,7 @@
     },
     "composeMessageDialog": {
       "title": "Nuevo mensaje",
+      "from": "De",
       "to": "Para",
       "cc": "CC",
       "bcc": "CCO",
