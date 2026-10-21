@@ -65,27 +65,34 @@ describe('Viewing an email with inline images', () => {
   });
 
   test('When the body references an inline image, then the image is shown in place', async () => {
-    renderMail('<p>Hello</p><img alt="Logo" src="cid:logo@sender.com">');
+    const body = '<p>Hello</p><img alt="Logo" src="cid:logo@sender.com">';
+
+    renderMail(body);
 
     await waitFor(() => expect(screen.getByAltText('Logo').getAttribute('src')).toBe(objectUrlFor('image/png')));
   });
 
   test('When an inline image is still downloading, then the email does not show it as a broken image', () => {
     downloadAttachment.mockReturnValue(new Promise(() => {}));
+    const body = '<p>Hello</p><img alt="Logo" src="cid:logo@sender.com">';
 
-    renderMail('<p>Hello</p><img alt="Logo" src="cid:logo@sender.com">');
+    renderMail(body);
 
     expect(screen.getByAltText('Logo').getAttribute('src')).toMatch(/^data:image\//);
   });
 
   test('When the reference differs in casing, brackets or encoding from the image id, then the image is still shown', async () => {
-    renderMail('<img alt="Logo" src="cid:%3CLOGO@Sender.com%3E">');
+    const body = '<img alt="Logo" src="CID:%3CLOGO@Sender.com%3E">';
+
+    renderMail(body);
 
     await waitFor(() => expect(screen.getByAltText('Logo').getAttribute('src')).toBe(objectUrlFor('image/png')));
   });
 
   test('When an image is shown in the body, then it is not listed again as a downloadable attachment', async () => {
-    renderMail('<img alt="Logo" src="cid:logo@sender.com">', [LOGO, INVOICE]);
+    const body = '<img alt="Logo" src="cid:logo@sender.com">';
+
+    renderMail(body, [LOGO, INVOICE]);
 
     await waitFor(() => expect(screen.getByAltText('Logo').getAttribute('src')).toBe(objectUrlFor('image/png')));
     expect(screen.queryByText('logo.png')).toBeNull();
@@ -94,7 +101,9 @@ describe('Viewing an email with inline images', () => {
   });
 
   test('When an inline image is not referenced by the body, then the user gets it as a regular attachment', () => {
-    renderMail('<p>No images here</p>', [LOGO]);
+    const body = '<p>No images here</p>';
+
+    renderMail(body, [LOGO]);
 
     expect(screen.getByText('logo.png')).toBeTruthy();
     expect(downloadAttachment).not.toHaveBeenCalled();
@@ -105,11 +114,10 @@ describe('Viewing an email with inline images', () => {
       if (blobId === LOGO.blobId) throw new Error('Network error');
       return { data: new ArrayBuffer(8), contentType: BANNER.type };
     });
+    const body =
+      '<p>Monthly news</p><img alt="Logo" src="cid:logo@sender.com"><img alt="Banner" src="cid:banner@sender.com">';
 
-    renderMail(
-      '<p>Monthly news</p><img alt="Logo" src="cid:logo@sender.com"><img alt="Banner" src="cid:banner@sender.com">',
-      [LOGO, BANNER],
-    );
+    renderMail(body, [LOGO, BANNER]);
 
     await waitFor(() => expect(screen.getByAltText('Banner').getAttribute('src')).toBe(objectUrlFor('image/gif')));
     expect(screen.getByText('Monthly news')).toBeTruthy();
@@ -117,7 +125,9 @@ describe('Viewing an email with inline images', () => {
   });
 
   test('When the body references an image the email does not include, then it is not shown as a broken image', () => {
-    renderMail('<p>Hello</p><img alt="Missing" src="cid:missing@sender.com">', []);
+    const body = '<p>Hello</p><img alt="Missing" src="cid:missing@sender.com">';
+
+    renderMail(body, []);
 
     expect(screen.getByAltText('Missing').getAttribute('src')).toMatch(/^data:image\//);
   });

@@ -2,7 +2,9 @@ import DOMPurify from 'dompurify';
 
 const purify = DOMPurify();
 
-const isAllowedUrl = (url: string): boolean => url.startsWith('data:') || url.startsWith('cid:');
+const ALLOWED_URL = /^(?:data|cid):/i;
+
+const isAllowedUrl = (url: string): boolean => ALLOWED_URL.test(url);
 
 // srcset values may legitimately contain commas inside data: URIs, which makes a naive
 // split unreliable. Instead, look for any protocol that would trigger a network request.
