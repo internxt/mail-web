@@ -13,6 +13,8 @@ interface UseInlineImagesParams {
 
 type DownloadedImages = { source: EmailAttachment[]; urlsByCid: Map<string, string> };
 
+const NO_URLS: ReadonlyMap<string, string> = new Map();
+
 const downloadInlineImages = async (
   mailId: string,
   inlineImages: EmailAttachment[],
@@ -62,7 +64,7 @@ export const useInlineImages = ({
   }, [mailId, inlineImages, attachmentsSessionKey, isAwaitingSessionKey]);
 
   return useMemo(() => {
-    if (downloaded?.source !== inlineImages || downloaded.urlsByCid.size === 0) return html;
-    return resolveInlineImages(html, downloaded.urlsByCid);
+    const urlsByCid = downloaded?.source === inlineImages ? downloaded.urlsByCid : NO_URLS;
+    return resolveInlineImages(html, urlsByCid);
   }, [html, inlineImages, downloaded]);
 };

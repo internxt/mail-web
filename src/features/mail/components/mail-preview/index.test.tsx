@@ -70,6 +70,14 @@ describe('Viewing an email with inline images', () => {
     await waitFor(() => expect(screen.getByAltText('Logo').getAttribute('src')).toBe(objectUrlFor('image/png')));
   });
 
+  test('When an inline image is still downloading, then the email does not show it as a broken image', () => {
+    downloadAttachment.mockReturnValue(new Promise(() => {}));
+
+    renderMail('<p>Hello</p><img alt="Logo" src="cid:logo@sender.com">');
+
+    expect(screen.getByAltText('Logo').getAttribute('src')).toMatch(/^data:image\//);
+  });
+
   test('When the reference differs in casing, brackets or encoding from the image id, then the image is still shown', async () => {
     renderMail('<img alt="Logo" src="cid:%3CLOGO@Sender.com%3E">');
 
@@ -92,7 +100,7 @@ describe('Viewing an email with inline images', () => {
     expect(downloadAttachment).not.toHaveBeenCalled();
   });
 
-  test('When an inline image cannot be downloaded, then the rest of the email and its other images are still shown', async () => {
+  test('When an inline image cannot be downloaded, then the rest of the email and its other images are still shown without a broken image', async () => {
     downloadAttachment.mockImplementation(async (_mailId, blobId) => {
       if (blobId === LOGO.blobId) throw new Error('Network error');
       return { data: new ArrayBuffer(8), contentType: BANNER.type };
@@ -105,7 +113,13 @@ describe('Viewing an email with inline images', () => {
 
     await waitFor(() => expect(screen.getByAltText('Banner').getAttribute('src')).toBe(objectUrlFor('image/gif')));
     expect(screen.getByText('Monthly news')).toBeTruthy();
-    expect(screen.getByAltText('Logo').getAttribute('src')).toBe('cid:logo@sender.com');
+    expect(screen.getByAltText('Logo').getAttribute('src')).toMatch(/^data:image\//);
+  });
+
+  test('When the body references an image the email does not include, then it is not shown as a broken image', () => {
+    renderMail('<p>Hello</p><img alt="Missing" src="cid:missing@sender.com">', []);
+
+    expect(screen.getByAltText('Missing').getAttribute('src')).toMatch(/^data:image\//);
   });
 
   test('When the images are embedded in the body itself, then they are shown without downloading anything', () => {

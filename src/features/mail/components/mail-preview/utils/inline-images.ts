@@ -1,6 +1,7 @@
 import type { EmailAttachment } from '../preview';
 
 const CID_SCHEME = /^cid:/i;
+const HIDDEN_IMAGE_SRC = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
 const decodeCid = (cid: string): string => {
   try {
@@ -43,9 +44,10 @@ export const getInlineImageKey = (attachment: EmailAttachment): string => normal
 
 export const resolveInlineImages = (html: string, urlsByCid: ReadonlyMap<string, string>): string => {
   const fragment = parseHtml(html);
-  for (const { img, cid } of getCidImages(fragment)) {
-    const url = urlsByCid.get(cid);
-    if (url) img.setAttribute('src', url);
+  const cidImages = getCidImages(fragment);
+  if (cidImages.length === 0) return html;
+  for (const { img, cid } of cidImages) {
+    img.setAttribute('src', urlsByCid.get(cid) ?? HIDDEN_IMAGE_SRC);
   }
   const container = document.createElement('div');
   container.append(fragment);
