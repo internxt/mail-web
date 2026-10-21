@@ -51,7 +51,7 @@ export const useInlineImages = ({
     let cancelled = false;
     let createdUrls: string[] = [];
 
-    downloadInlineImages(mailId, inlineImages, attachmentsSessionKey).then((entries) => {
+    void downloadInlineImages(mailId, inlineImages, attachmentsSessionKey).then((entries) => {
       createdUrls = entries.map(([, url]) => url);
       if (cancelled) {
         createdUrls.forEach((url) => URL.revokeObjectURL(url));
