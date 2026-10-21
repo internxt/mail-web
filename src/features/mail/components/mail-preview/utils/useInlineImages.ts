@@ -28,14 +28,9 @@ const downloadInlineImages = async (
       return [getInlineImageKey(image), URL.createObjectURL(blob)];
     }),
   );
-  // An image that fails to download keeps its broken source; the rest of the body still renders.
   return results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
 };
 
-/**
- * Downloads the inline images referenced by the body and returns the HTML pointing to
- * them. Object URLs are revoked when the images change or the component unmounts.
- */
 export const useInlineImages = ({
   mailId,
   html,
