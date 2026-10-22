@@ -1,9 +1,11 @@
+import { useMemo } from 'react';
 import { LockKeyIcon, WarningIcon } from '@phosphor-icons/react';
 import { useTranslationContext } from '@/i18n';
 import PreviewHeader, { type User } from './header';
 import Preview from './preview';
 import type { EmailResponse, EncryptionBlock } from '@internxt/sdk/dist/mail/types';
 import { useSanitizedMailHtml } from './utils/useSanitizedMailHtml';
+import { splitInlineImages } from './utils/inline-images';
 import { useEncryptedBadge } from './useEncryptedBadge';
 
 interface PreviewMailProps {
@@ -29,6 +31,10 @@ interface PreviewMailProps {
 const PreviewMail = ({ from, to, cc, bcc, mail, collapsed = false, onToggleCollapsed }: PreviewMailProps) => {
   const { translate } = useTranslationContext();
   const sanitizedBody = useSanitizedMailHtml(mail.htmlBody);
+  const { inlineImages, files } = useMemo(
+    () => splitInlineImages(sanitizedBody, mail.attachments),
+    [sanitizedBody, mail.attachments],
+  );
   const showEncryptedBadge = useEncryptedBadge({
     isEncrypted: mail.isEncrypted,
     decryptError: mail.decryptError,
@@ -52,7 +58,7 @@ const PreviewMail = ({ from, to, cc, bcc, mail, collapsed = false, onToggleColla
           to={to}
           cc={cc}
           bcc={bcc}
-          attachmentsLength={mail.attachments?.length}
+          attachmentsLength={files.length}
           collapsedSnippet={
             collapsed ? (
               <div className="line-clamp-1 text-sm text-gray-60" dangerouslySetInnerHTML={{ __html: sanitizedBody }} />
@@ -78,7 +84,8 @@ const PreviewMail = ({ from, to, cc, bcc, mail, collapsed = false, onToggleColla
           mailId={mail.id}
           subject={mail.subject}
           body={mail.htmlBody}
-          attachments={mail.attachments}
+          attachments={files}
+          inlineImages={inlineImages}
           envelope={mail.envelope ?? null}
         />
       )}

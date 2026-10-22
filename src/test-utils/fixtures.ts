@@ -9,10 +9,7 @@ import type { AttachmentRef, EmailListResponse, EmailResponse, MailboxResponse }
 export const getMockedUser = (params?: Partial<LoginCredentials['user']>): LoginCredentials['user'] => {
   return {
     hasReferralsProgram: false,
-    privateKey: faker.string.alphanumeric(64),
-    publicKey: faker.string.alphanumeric(64),
     registerCompleted: false,
-    revocationKey: faker.string.uuid(),
     root_folder_id: faker.number.int({ min: 100000, max: 999999999 }),
     rootFolderUuid: faker.string.uuid(),
     userId: faker.string.uuid(),
@@ -159,6 +156,7 @@ export const getMockedAttachment = (): AttachmentRef => ({
   size: faker.number.int({ min: 1024, max: 16384 }),
   type: faker.system.mimeType(),
   blobId: faker.string.uuid(),
+  cid: null,
 });
 
 export const getMockedMail = (overrides?: Partial<EmailResponse>): EmailResponse => ({

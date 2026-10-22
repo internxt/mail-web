@@ -191,8 +191,8 @@ describe('Preparing the initial state of the compose dialog', () => {
     const draft = getMockedMail({
       id: 'draft-with-att',
       attachments: [
-        { blobId: 'blob-1', name: 'one.pdf', size: 100, type: 'application/pdf' },
-        { blobId: 'blob-2', name: 'two.png', size: 200, type: 'image/png' },
+        { blobId: 'blob-1', name: 'one.pdf', size: 100, type: 'application/pdf', cid: null },
+        { blobId: 'blob-2', name: 'two.png', size: 200, type: 'image/png', cid: null },
       ],
     });
     const draftPayload: ComposePayload = { mode: 'draft', draft };
