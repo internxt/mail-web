@@ -10,7 +10,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [24.x]
+        node-version: [24.22.1]
 
     env:
       VITE_PAYMENTS_API_URL: ${{ secrets.PAYMENTS_API_URL }}
